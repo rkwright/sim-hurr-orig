@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MazeTest</title>
+    <meta charset="UTF8">
+    <script src="Maze.js"></script>
+    <script src="MazeRat.js"></script>
+</head>
+<body>
+
+<script>
+    var	NCELLS = 4;
+
+    var startTime = performance.now();
+
+    var	maze = new MAZE.Maze( NCELLS, NCELLS, 0, 0 );
+
+    maze.build();
+
+    var elapsed = (performance.now() - startTime)/1000.0;
+
+    maze.dumpEdges( NCELLS, NCELLS );
+    console.log("Maze complete! elapsed: " +  elapsed.toFixed(3) + " seconds. maxNeighbors: " +
+            maze.maxNeighbors.toFixed(0));
+
+    /*
+    maze.dumpEdges(NCELLS, NCELLS);
+
+    startTime = performance.now();
+
+    var rat = new MAZE.MazeRat(maze, 0x80, false, mazeEvent);
+
+    rat.findSolution(maze, -10, -10 );
+
+    elapsed = (perforance.now() - startTime)/1000.0;
+
+    console.log("Maze solved! elapsed: " +  elapsed.toFixed(3) + " seconds. maxNeighbors: " +
+            maze.maxNeighbors.toFixed(0));
+    */
+    function mazeEvent() {
+        console.log("Maze event");
+    }
+</script>
+
