@@ -77,12 +77,10 @@ MAZE.Maze = function ( col, row, seedX, seedY, mazeEvent ) {
 
     this.cells = new Int8Array(this.row * this.col).fill(0);
 
-    this.seedX = seedX;
-    this.seedY = seedY;
-    this.cells[seedY * this.row + seedX] = 0xff;
+    this.seedX = this.curX = seedX;
+    this.seedY = this.curY = seedY;
 
-    this.curX = seedX;
-    this.curY = seedY;
+    this.cells[seedY * this.row + seedX] = 0x0f;
 
     this.srcKnt--;
 
@@ -112,11 +110,15 @@ MAZE.Maze.prototype = {
             var k = this.getRandomInt(0, this.neighbors.length);
 
             var c = this.neighbors.splice( k, 1 );
+
+            console.log("Dissolving edge for current cell: " + this.curX.toFixed(0) + " " +
+                    this.curY.toFixed() + " into: " + c[0].x.toFixed(0) + " " +
+                c[0].y.toFixed() + " k: "  + k.toFixed(0));
+
+            this.dissolveEdge( c[0].x, c[0].y);
+
             this.curX = c[0].x;
             this.curY = c[0].y;
-
-            console.log("Dissolving edge for current cell: " + this.curX.toFixed(0) + " " +  this.curY.toFixed() + " k: "  + k.toFixed(2));
-            this.dissolveEdge( this.curX, this.curY);
         }
         while (this.neighbors.length > 0);
     },
@@ -145,7 +147,7 @@ MAZE.Maze.prototype = {
 
             if (zx >= 0 && zx < this.col && zy >= 0 && zy < this.row &&
                         this.cells[zy * this.row + zx] === 0) {
-                this.cells[zy * this.row + zx] = 0xf0;
+                //this.cells[zy * this.row + zx] = 0xf0;
 
                 this.neighbors.push(new MAZE.Coord(zx,zy));
 
@@ -172,44 +174,36 @@ MAZE.Maze.prototype = {
      * The algorithm is such that it is guaranteed that each cell will
      * only be visited once.
      *
-     * @param x - current index into the array
-     * @param y
+     * @param nbX - neighbor's index
+     * @param nbY
      * return - true if added to the tree
      */
-    dissolveEdge: function(  x, y ) {
+    dissolveEdge: function(  nbX, nbY ) {
 
-        var		nabknt = 0;
-        var		edg;
-        var 	EdgeRay = [ 0,0,0,0 ];
-        var		zx,zy;
+        var	x,y;
+        var edg = -1;
 
-        // build the fence for this cell
-        this.cells[y * this.row + x] = 0xff;
+        // if the cell has never been visited, then set up the edges
+        if (this.cells[nbY * this.row + nbX] === 0)
+            this.cells[nbY * this.row + nbX] = 0x0f;
 
-        for ( var i=0; i<4; i++ ) {
+        do {
 
-            zx = x + this.XEdge[i];
-            zy = y + this.YEdge[i];
+            edg++;
+            if (edg > 3)
+                debugger;
 
-            // if indicies in range
-            if ( zx >= 0 && zx < this.col && zy >= 0 && zy < this.row &&
-                    (this.cells[zy * this.row + zx] & this.OppEdgeBit[i]) !== 0 ) {
-                EdgeRay[nabknt++] = i;
-            }
-        }
+            x = this.curX + this.XEdge[edg];
+            y = this.curY + this.YEdge[edg];
 
-        if ( nabknt > 0 )  {
+        } while ( x !== nbX || y !== nbY );
 
-            edg = this.getRandomInt(0, nabknt);
-            zx  = x + this.XEdge[edg];
-            zy  = y + this.YEdge[edg];
+        this.cells[this.curY * this.row + this.curX] ^= this.EdgeBit[edg];
+        this.cells[y * this.row + x] ^= this.OppEdgeBit[edg];
 
-            this.cells[y * this.row + x] ^= this.EdgeBit[edg];  //(1 << edg);
-            this.cells[zy * this.row + zx] ^= this.OppEdgeBit[edg];
-
-            console.log(this.nStep.toFixed(0) + " In cell " + x.toFixed(0) + " " + y.toFixed(0) +
-                " dissolving edge: " + this.EdgeStr[edg] + " into cell: " + zx.toFixed(0) + " " + zy.toFixed(0));
-       }
+        console.log(this.nStep.toFixed(0) + " In cell " + this.curX.toFixed(0) + " " + this.curY.toFixed(0) +
+                " dissolving edge: " + this.EdgeStr[edg] + " into cell: " + x.toFixed(0) + " " + y.toFixed(0) + " " +
+            this.cells[this.curY * this.row + this.curX].toString(2) + " " + this.cells[y * this.row + x].toString(2));
     },
 
     /**
