@@ -7,7 +7,7 @@
     <script src="MazeRat.js"></script>
 </head>
 <body>
-    <canvas id="myCanvas" width="600" height="800" style="border:1px solid #d3d3d3;">
+    <canvas id="myCanvas" width="820" height="820" style="border:1px solid #d3d3d3;">
         Your browser does not support the HTML5 canvas tag.</canvas>
 
 <script>
@@ -17,13 +17,13 @@
 </body>
 </html>
 <script>
-    var	NCELLS = 4;
+    var	NCELLS = 30;
 
     var startTime = performance.now();
 
     var	maze = new MAZE.Maze( NCELLS, NCELLS, 0, 0 );
 
-    maze.build();
+    maze.buildBFS();
 
     var elapsed = (performance.now() - startTime)/1000.0;
 
@@ -52,11 +52,47 @@
     }
 
     function drawMaze( maze ) {
+        var cellSize = 800 / maze.row;
         var c = document.getElementById("myCanvas");
         var ctx = c.getContext("2d");
-        ctx.moveTo(0,0);
-        ctx.lineTo(200,100);
-        ctx.stroke();
+
+        var x = 20;
+        var y = 20;
+        for ( var  i=0; i<maze.row; i++ ) {
+            for ( var j = 0; j < maze.col; j++ ) {
+                var mz = maze.cells[i * maze.row + j];
+
+                console.log(i.toFixed(0) + " " + j.toFixed(0) +
+                    " S: " + (mz & maze.SOUTH_BIT) + " W: " + (mz & maze.WEST_BIT) +
+                    " N: " + (mz & maze.NORTH_BIT) + " E: " + (mz & maze.EAST_BIT)  );
+
+                if  ((mz & maze.SOUTH_BIT) !== 0) {
+                    ctx.moveTo(x,y);
+                    ctx.lineTo(x + cellSize, y);
+                    ctx.stroke();
+                }
+                if  ((mz & maze.WEST_BIT) !== 0) {
+                    ctx.moveTo(x,y);
+                    ctx.lineTo(x, y + cellSize);
+                    ctx.stroke();
+                }
+                if  ((mz & maze.NORTH_BIT) !== 0) {
+                    ctx.moveTo(x, y + cellSize);
+                    ctx.lineTo(x + cellSize, y + cellSize);
+                    ctx.stroke();
+                }
+                if  ((mz & maze.EAST_BIT) !== 0) {
+                    ctx.moveTo(x + cellSize, y);
+                    ctx.lineTo(x + cellSize, y + cellSize);
+                    ctx.stroke();
+                }
+
+                x += cellSize;
+            }
+
+            x = 20;
+            y += cellSize;
+        }
     }
 </script>
 
