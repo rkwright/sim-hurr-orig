@@ -7,7 +7,15 @@
     <script src="MazeRat.js"></script>
 </head>
 <body>
+    <canvas id="myCanvas" width="600" height="800" style="border:1px solid #d3d3d3;">
+        Your browser does not support the HTML5 canvas tag.</canvas>
 
+<script>
+
+</script>
+
+</body>
+</html>
 <script>
     var	NCELLS = 4;
 
@@ -22,6 +30,8 @@
     maze.dumpEdges( NCELLS, NCELLS );
     console.log("Maze complete! elapsed: " +  elapsed.toFixed(3) + " seconds. maxNeighbors: " +
             maze.maxNeighbors.toFixed(0));
+
+    drawMaze( maze );
 
     /*
     maze.dumpEdges(NCELLS, NCELLS);
@@ -39,6 +49,14 @@
     */
     function mazeEvent() {
         console.log("Maze event");
+    }
+
+    function drawMaze( maze ) {
+        var c = document.getElementById("myCanvas");
+        var ctx = c.getContext("2d");
+        ctx.moveTo(0,0);
+        ctx.lineTo(200,100);
+        ctx.stroke();
     }
 </script>
 
