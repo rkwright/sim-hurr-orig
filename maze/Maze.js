@@ -101,7 +101,7 @@ MAZE.Maze.prototype = {
      * and visits that cell and tries to connect it to surrounding cells that
      * been visited, i.e. add that cell to the tree.
      */
-    build: function ()
+    buildBFS: function ()
     {
         var k,dir = 0;
 
@@ -116,27 +116,22 @@ MAZE.Maze.prototype = {
             console.log("Neighbors: " + this.neighbors.length);
             while (this.neighbors.length > 0) {
 
-                //var k = this.getRandomInt(0, this.neighbors.length);
-                if (this.neighbors.length > 1) {
-                    k = dir;
-                    dir = (dir === 0) ? 1 : 0;
-                } else
-                    k = 0;
-
-                console.log("dir: " + dir);
+                k = this.getRandomInt(0, this.neighbors.length);
+                //if (this.neighbors.length > 1) {
+                //    k = dir;
+                //    dir = (dir === 0) ? 1 : 0;
+                //} else
+                //    k = 0;
 
                 var c = this.neighbors.splice(k, 1);
 
                 this.enqueueCell(c[0]);
 
                 console.log("Dissolving edge for current cell: " + coord.x.toFixed(0) + " " +
-                    coord.y.toFixed() + " into: " + c[0].x.toFixed(0) + " " +
-                    c[0].y.toFixed());
+                    coord.y.toFixed() + " into: " + c[0].x.toFixed(0) + " " + c[0].y.toFixed());
 
                 this.dissolveEdge(coord.x, coord.y, c[0].x, c[0].y);
             }
-            //this.curX = c[0].x;
-            //this.curY = c[0].y;
         }
 
     },
@@ -236,16 +231,17 @@ MAZE.Maze.prototype = {
     },
 
     /**
+     * Get a random integer between the minimum and the maximum.  The result may include the minimum
+     * but will NOT include the maximum.
      * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
      *
      * @param min
      * @param max
-     * @returns {*}
      */
     getRandomInt: function ( min, max ) {
         min = Math.ceil(min);
         max = Math.floor(max);
-        return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+        return Math.floor(Math.random() * (max - min)) + min;
     },
 
     /**
@@ -262,7 +258,7 @@ MAZE.Maze.prototype = {
                     " N: " + (mz & this.NORTH_BIT) + " E: " + (mz & this.EAST_BIT)  );
             }
     },
-	
+
     /**
      * @see com.geofx.example.erosion.MazeEvent#mazeEvent(int, int, int, int, int, boolean)
      */
