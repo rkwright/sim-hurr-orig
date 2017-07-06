@@ -96,10 +96,6 @@ MAZE.Maze.prototype = {
      * Builds the maze.  basically, it just starts with the seed and visits
      * that cell and checks if there are any neighbors that have NOT been
      * visited yet.  If so, it adds the to neighbors list.
-     *
-     * Then it randomly removes one of the current set of unvisited neighbors
-     * and visits that cell and tries to connect it to surrounding cells that
-     * been visited, i.e. add that cell to the tree.
      */
     buildBFS: function ()
     {
@@ -136,14 +132,56 @@ MAZE.Maze.prototype = {
 
     },
 
+    buildDFS: function ()
+    {
+        var k,dir = 0;
+
+        this.pushCell( new MAZE.Coord( this.seedX, this.seedY ));
+
+        while (this.queue.length > 0) {
+
+            var coord = this.popCell();
+            console.log("Coord: " + coord.x.toFixed(0) + " " + coord.y.toFixed());
+
+            this.findNeighbors( coord.x, coord.y );
+
+            console.log("Neighbors: " + this.neighbors.length);
+            while (this.neighbors.length > 0) {
+
+                k = this.getRandomInt(0, this.neighbors.length);
+
+                var c = this.neighbors.splice(k, 1);
+
+                this.pushCell(c[0]);
+
+                console.log("Dissolving edge for current cell: " + coord.x.toFixed(0) + " " +
+                    coord.y.toFixed() + " into: " + c[0].x.toFixed(0) + " " + c[0].y.toFixed());
+
+                this.dissolveEdge(coord.x, coord.y, c[0].x, c[0].y);
+            }
+        }
+
+    },
+
     enqueueCell: function ( coord ) {
-        this.cells[coord.y * this.row + coord.x] = 0x0f;
+        this.cells[coord.y * this.row + coord.x] = 0xff;
         this.queue.push( coord );
     },
 
     dequeueCell: function () {
         return this.queue.shift();
     },
+
+    pushCell: function ( coord ) {
+        this.cells[coord.y * this.row + coord.x] = 0xff;
+        this.queue.push( coord );
+    },
+
+    popCell: function () {
+        return this.queue.pop();
+    },
+
+
 
     /**
      * Finds all neighbors of the specified cell.  Each neighbor is pushed onto
@@ -169,12 +207,10 @@ MAZE.Maze.prototype = {
 
             if (zx >= 0 && zx < this.col && zy >= 0 && zy < this.row &&
                         this.cells[zy * this.row + zx] === 0) {
-                //this.cells[zy * this.row + zx] = 0xf0;
 
                 this.neighbors.push(new MAZE.Coord(zx,zy));
 
-                console.log("Adding to neighbors[" + this.neighbors.length.toFixed(0) + " : "
-                        + zx.toFixed(0) + " " + zy.toFixed(0));
+                console.log("Adding to neighbors: " + zx.toFixed(0) + " " + zy.toFixed(0));
 
                 if (this.neighbors.length > this.maxNeighbors)
                     this.maxNeighbors = this.neighbors.length;
@@ -207,10 +243,6 @@ MAZE.Maze.prototype = {
         var	x,y;
         var edg = -1;
 
-        // if the cell has never been visited, then set up the edges
-        //if (this.cells[nbY * this.row + nbX] === 0)
-         //   this.cells[nbY * this.row + nbX] = 0x0f;
-
         do {
 
             edg++;
@@ -225,9 +257,9 @@ MAZE.Maze.prototype = {
         this.cells[ curY * this.row + curX] ^= this.EdgeBit[edg];
         this.cells[y * this.row + x] ^= this.OppEdgeBit[edg];
 
-        console.log( " In cell " + this.curX.toFixed(0) + " " + this.curY.toFixed(0) +
-                " dissolving edge: " + this.EdgeStr[edg] + " into cell: " + x.toFixed(0) + " " + y.toFixed(0) + " " +
-            this.cells[this.curY * this.row + this.curX].toString(2) + " " + this.cells[y * this.row + x].toString(2));
+        //console.log( " In cell " + this.curX.toFixed(0) + " " + this.curY.toFixed(0) +
+        //        " dissolving edge: " + this.EdgeStr[edg] + " into cell: " + x.toFixed(0) + " " + y.toFixed(0) + " " +
+        //    this.cells[this.curY * this.row + this.curX].toString(2) + " " + this.cells[y * this.row + x].toString(2));
     },
 
     /**

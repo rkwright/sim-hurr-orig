@@ -17,13 +17,13 @@
 </body>
 </html>
 <script>
-    var	NCELLS = 30;
+    var	NCELLS = 10;
 
     var startTime = performance.now();
 
     var	maze = new MAZE.Maze( NCELLS, NCELLS, 0, 0 );
 
-    maze.buildBFS();
+    maze.buildDFS();
 
     var elapsed = (performance.now() - startTime)/1000.0;
 
@@ -57,7 +57,7 @@
         var ctx = c.getContext("2d");
 
         var x = 20;
-        var y = 20;
+        var y = 800;
         for ( var  i=0; i<maze.row; i++ ) {
             for ( var j = 0; j < maze.col; j++ ) {
                 var mz = maze.cells[i * maze.row + j];
@@ -73,17 +73,17 @@
                 }
                 if  ((mz & maze.WEST_BIT) !== 0) {
                     ctx.moveTo(x,y);
-                    ctx.lineTo(x, y + cellSize);
+                    ctx.lineTo(x, y - cellSize);
                     ctx.stroke();
                 }
                 if  ((mz & maze.NORTH_BIT) !== 0) {
-                    ctx.moveTo(x, y + cellSize);
-                    ctx.lineTo(x + cellSize, y + cellSize);
+                    ctx.moveTo(x, y - cellSize);
+                    ctx.lineTo(x + cellSize, y - cellSize);
                     ctx.stroke();
                 }
                 if  ((mz & maze.EAST_BIT) !== 0) {
                     ctx.moveTo(x + cellSize, y);
-                    ctx.lineTo(x + cellSize, y + cellSize);
+                    ctx.lineTo(x + cellSize, y - cellSize);
                     ctx.stroke();
                 }
 
@@ -91,7 +91,7 @@
             }
 
             x = 20;
-            y += cellSize;
+            y -= cellSize;
         }
     }
 </script>
