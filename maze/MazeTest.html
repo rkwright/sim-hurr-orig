@@ -17,17 +17,17 @@
 </body>
 </html>
 <script>
-    var	NCELLS = 10;
+    var	NCELLS = 4;
 
     var startTime = performance.now();
 
     var	maze = new MAZE.Maze( NCELLS, NCELLS, 0, 0 );
 
-    maze.buildDFS();
+    maze.build();
 
     var elapsed = (performance.now() - startTime)/1000.0;
 
-    maze.dumpEdges( NCELLS, NCELLS );
+    //maze.dumpEdges( NCELLS, NCELLS );
     console.log("Maze complete! elapsed: " +  elapsed.toFixed(3) + " seconds. maxNeighbors: " +
             maze.maxNeighbors.toFixed(0));
 
@@ -58,33 +58,41 @@
 
         var x = 20;
         var y = 800;
+        var sKnt = 0;
         for ( var  i=0; i<maze.row; i++ ) {
             for ( var j = 0; j < maze.col; j++ ) {
                 var mz = maze.cells[i * maze.row + j];
 
-                console.log(i.toFixed(0) + " " + j.toFixed(0) +
-                    " S: " + (mz & maze.SOUTH_BIT) + " W: " + (mz & maze.WEST_BIT) +
-                    " N: " + (mz & maze.NORTH_BIT) + " E: " + (mz & maze.EAST_BIT)  );
+                //console.log(i.toFixed(0) + " " + j.toFixed(0) +
+                //    " S: " + (mz & maze.SOUTH_BIT) + " W: " + (mz & maze.WEST_BIT) +
+                //    " N: " + (mz & maze.NORTH_BIT) + " E: " + (mz & maze.EAST_BIT)  );
 
                 if  ((mz & maze.SOUTH_BIT) !== 0) {
                     ctx.moveTo(x,y);
                     ctx.lineTo(x + cellSize, y);
                     ctx.stroke();
+                    sKnt += 2;
                 }
+
                 if  ((mz & maze.WEST_BIT) !== 0) {
                     ctx.moveTo(x,y);
                     ctx.lineTo(x, y - cellSize);
                     ctx.stroke();
+                    sKnt += 2;
                 }
+
                 if  ((mz & maze.NORTH_BIT) !== 0) {
                     ctx.moveTo(x, y - cellSize);
                     ctx.lineTo(x + cellSize, y - cellSize);
                     ctx.stroke();
+                    sKnt += 2;
                 }
+
                 if  ((mz & maze.EAST_BIT) !== 0) {
                     ctx.moveTo(x + cellSize, y);
                     ctx.lineTo(x + cellSize, y - cellSize);
                     ctx.stroke();
+                    sKnt += 2;
                 }
 
                 x += cellSize;
@@ -92,7 +100,9 @@
 
             x = 20;
             y -= cellSize;
+            console.log("y: " + y.toFixed(0));
         }
+        console.log("Drawmaze done! sKnt: " + sKnt.toFixed(0));
     }
 </script>
 

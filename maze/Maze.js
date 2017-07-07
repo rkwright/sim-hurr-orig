@@ -76,7 +76,7 @@ MAZE.Maze = function ( col, row, seedX, seedY, mazeEvent ) {
 
     this.srcKnt = col * row;
 
-    this.cells = new Int8Array(this.row * this.col).fill(0);
+    this.cells = new Uint8Array(this.row * this.col).fill(0);
 
     this.seedX = this.curX = seedX;
     this.seedY = this.curY = seedY;
@@ -86,6 +86,8 @@ MAZE.Maze = function ( col, row, seedX, seedY, mazeEvent ) {
     //this.srcKnt--;
 
     this.maxNeighbors = 0;
+
+    this.enqueueCell( new MAZE.Coord( this.curX, this.curY ));
 
     this.mazeEvent = mazeEvent;
 };
@@ -97,11 +99,29 @@ MAZE.Maze.prototype = {
      * that cell and checks if there are any neighbors that have NOT been
      * visited yet.  If so, it adds the to neighbors list.
      */
+    build: function ()
+    {
+        do {
+
+            if (this.srcKnt > 0)
+                this.findNeighbors(  this.curX, this.curY );
+
+            var k = this.getRandomInt( 0, this.neighbors.length );
+
+            var c = this.neighbors.splice(k,1);
+            this.curX = c[0].x;
+            this.curY = c[0].y;
+
+            //console.log("Dissolving edge for current cell: " + this.curX.toFixed(0) + " " +  this.curY.toFixed() + " k: "  + k.toFixed(2));
+
+            this.dissolveEdge( c[0].x, c[0].y);
+        }
+        while (this.neighbors.length > 0);
+    },
+
     buildBFS: function ()
     {
         var k,dir = 0;
-
-        this.enqueueCell( new MAZE.Coord( this.curX, this.curY ));
 
         while (this.queue.length > 0) {
 
@@ -113,11 +133,6 @@ MAZE.Maze.prototype = {
             while (this.neighbors.length > 0) {
 
                 k = this.getRandomInt(0, this.neighbors.length);
-                //if (this.neighbors.length > 1) {
-                //    k = dir;
-                //    dir = (dir === 0) ? 1 : 0;
-                //} else
-                //    k = 0;
 
                 var c = this.neighbors.splice(k, 1);
 
@@ -126,7 +141,7 @@ MAZE.Maze.prototype = {
                 console.log("Dissolving edge for current cell: " + coord.x.toFixed(0) + " " +
                     coord.y.toFixed() + " into: " + c[0].x.toFixed(0) + " " + c[0].y.toFixed());
 
-                this.dissolveEdge(coord.x, coord.y, c[0].x, c[0].y);
+                this.dissolveEdgeS(coord.x, coord.y, c[0].x, c[0].y);
             }
         }
 
@@ -135,8 +150,6 @@ MAZE.Maze.prototype = {
     buildDFS: function ()
     {
         var k,dir = 0;
-
-        this.pushCell( new MAZE.Coord( this.seedX, this.seedY ));
 
         while (this.queue.length > 0) {
 
@@ -157,7 +170,7 @@ MAZE.Maze.prototype = {
                 console.log("Dissolving edge for current cell: " + coord.x.toFixed(0) + " " +
                     coord.y.toFixed() + " into: " + c[0].x.toFixed(0) + " " + c[0].y.toFixed());
 
-                this.dissolveEdge(coord.x, coord.y, c[0].x, c[0].y);
+                this.dissolveEdgeS(coord.x, coord.y, c[0].x, c[0].y);
             }
         }
 
@@ -208,9 +221,11 @@ MAZE.Maze.prototype = {
             if (zx >= 0 && zx < this.col && zy >= 0 && zy < this.row &&
                         this.cells[zy * this.row + zx] === 0) {
 
+                this.cells[zy * this.row + zx] = 0xf0;
+
                 this.neighbors.push(new MAZE.Coord(zx,zy));
 
-                console.log("Adding to neighbors: " + zx.toFixed(0) + " " + zy.toFixed(0));
+                //console.log("Adding to neighbors: " + zx.toFixed(0) + " " + zy.toFixed(0));
 
                 if (this.neighbors.length > this.maxNeighbors)
                     this.maxNeighbors = this.neighbors.length;
@@ -232,13 +247,49 @@ MAZE.Maze.prototype = {
      * The algorithm is such that it is guaranteed that each cell will
      * only be visited once.
      *
-     * @param curX - cur index
-     * @param curY
-     * @param nabX - neighbor's index
-     * @param nabY
-     * return - true if added to the tree
+     * @param x - cur index
+     * @param y
+      * return - true if added to the tree
      */
-    dissolveEdge: function(  curX, curY, nabX, nabY ) {
+    dissolveEdge: function( x, y ) {
+
+        var		edg;
+        var     edgeRay = [];
+        var		zx,zy;
+        var     cellVal;
+
+        // build the fence for this cell
+        maze.cells[y * this.row + x] = 0xff;
+
+        for ( var i=0; i<4; i++ ) {
+            // set local variables
+            zx = x + this.XEdge[i];
+            zy = y + this.YEdge[i];
+
+            cellVal = this.cells[zy * this.row + zx] & this.OppEdgeBit[i];
+             // if indicies in range
+            if ( zx >= 0 && zx < this.col && zy >= 0 && zy < this.row && cellVal !== 0 ) {
+
+                edgeRay.push( i );
+            }
+        }
+
+        if ( edgeRay.length > 0 ) {
+
+            var n = this.getRandomInt(0, edgeRay.length);
+            edg = edgeRay[n];
+            zx  = x + this.XEdge[edg];
+            zy  = y + this.YEdge[edg];
+
+            maze.cells[y * this.row + x] ^= this.EdgeBit[edg];
+            maze.cells[zy * this.row + zx] ^= this.OppEdgeBit[edg];
+
+            //console.log("In cell " + x.toFixed(0) + " " + y.toFixed(0) +
+             //   " dissolving edge: " + this.EdgeStr[edg] + " into cell: " + zx.toFixed(0) + " " + zy.toFixed(0));
+        }
+    },
+
+    dissolveEdgeS: function(  curX, curY, nabX, nabY ) {
 
         var	x,y;
         var edg = -1;
