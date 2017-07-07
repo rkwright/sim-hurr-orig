@@ -39,20 +39,33 @@
 
     var rat = new MAZE.MazeRat(maze, 0x80, false, mazeEvent);
 
-    var bSuccess = rat.findSolution( -10, -10 );
+    rat.initSolveObj(0x80, false, mazeEvent);
+
+    var bSuccess = rat.findSolution( -1, -1 );
 
     elapsed = (performance.now() - startTime)/1000.0;
 
     console.log("Maze solved? " + bSuccess + "  elapsed: " +  elapsed.toFixed(3) + " seconds. maxNeighbors: " +
             maze.maxNeighbors.toFixed(0));
 
+    startTime = performance.now();
+
+    rat.initSolveObj(0x80, true, mazeEvent);
+
+    bSuccess = rat.findSolution( -1, -1 );
+
+    elapsed = (performance.now() - startTime)/1000.0;
+
+    console.log("Maze solved? " + bSuccess + "  elapsed: " +  elapsed.toFixed(3) + " seconds. maxNeighbors: " +
+        maze.maxNeighbors.toFixed(0));
+
     /**
      * Callback function that gets the path of the rat
      */
-    function mazeEvent( i,  j, nexi, nexj, pathlen, bsac ) {
-        console.log("Maze event: i,j: " + i.toFixed(0) + " " + j.toFixed(0) +
-            " nexi,j: " + nexi.toFixed(0) + " " + nexj.toFixed(0)
-            + " pathlen: " + pathlen.toFixed(0) + " bsac: " + bsac );
+    function mazeEvent( label, i,  j, nexi, nexj, pathlen, bsac ) {
+        console.log(label + " i,j: " + i.toFixed(0) + " " + j.toFixed(0)
+                     + " nexi,j: " + nexi.toFixed(0) + " " + nexj.toFixed(0)
+                     + " pathlen: " + pathlen.toFixed(0) + " bsac: " + bsac );
     }
 
     function drawMaze( maze ) {

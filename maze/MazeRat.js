@@ -6,7 +6,7 @@
  */
 
 
-MAZE.MazeRat = function( maze, mask, bSingleHit, mazeEvent) {
+MAZE.MazeRat = function( maze, mask ) {
 
 //	this.   		maxFront;  		// max count of items in front list
 
@@ -24,21 +24,41 @@ MAZE.MazeRat = function( maze, mask, bSingleHit, mazeEvent) {
     this.mouseStack = [];		    // mouse-values stack
 
     this.maze = maze;
-    this.mask = mask;               // unique mask value for this object
-    this.bSingleHit = bSingleHit;
-    this.mazeEvent = mazeEvent;
-
-    for (var i = 0; i < this.maze.row; i++)
-        for (var j = 0; j < this.maze.col; j++)
-            this.maze.cells[i * this.maze.row + j] |= 0xf0;
-
-    // push seed on Stack
-    this.stack.push(new MAZE.Coord(this.maze.seedX, this.maze.seedY));
 };
-
 
 MAZE.MazeRat.prototype = {
 
+    /**
+     * Init the rat for the search
+     * @param maskVal
+     * @param bSingleHit
+     * @param mazeEvent
+     * @returns {boolean}
+     */
+    initSolveObj: function ( maskVal, bSingleHit, mazeEvent ) {
+
+        this.mask = maskVal;          // unique mask value for this object
+
+        this.bSingleHit = bSingleHit;
+        this.mazeEvent = mazeEvent;
+
+        this.bSearch  = true;			// true if still searching
+        this.bSuccess = false;			// true if search was successful
+        this.bSac     = false;
+
+        for (var i = 0; i < this.maze.row; i++)
+            for (var j = 0; j < this.maze.col; j++)
+                this.maze.cells[i * this.maze.row + j] |= 0xf0;
+
+        // clear stacks
+        this.stack = []; 			    // solution search stack
+        this.mouseStack = [];		    // mouse-values stack
+
+        // push seed on stack
+        this.stack.push(new MAZE.Coord(this.maze.seedX, this.maze.seedY));
+
+        return true;
+},
     /**
      * Solves the specified maze by using a variant of the 4x4 seed fill.
      */
@@ -77,8 +97,7 @@ MAZE.MazeRat.prototype = {
         {
             mazval = this.maze.cells[py * this.maze.row + px];
 
-            if (this.mazeEvent !== null)
-                this.report("   solveStep",  px,  py,  -1,  -1,  this.stack.length, false);
+            this.report("   solveStep",  px,  py,  -1,  -1,  this.stack.length, false);
 
             // turn off top bit to show this cell has been checked
             this.maze.cells[py * this.maze.row + px] ^= this.mask;
@@ -95,8 +114,8 @@ MAZE.MazeRat.prototype = {
                 {
                     this.bSac = false;
                     this.stack.push(new MAZE.Coord(zx, zy));
-                    if (this.mazeEvent !== null)
-                        this.report("    addStack",  px,  py,  zx,  zy,  this.stack.length, false);
+
+                    this.report("    addStack",  px,  py,  zx,  zy,  this.stack.length, false);
                 }
             }
 
@@ -132,8 +151,8 @@ MAZE.MazeRat.prototype = {
                 msy = -1;
             }
 
-            if (this.mazeEvent !== null)
-                this.report( "updateObject", posx, posy, msx, msy, this.stack.length, this.bSac );
+            if (this.mazeEvent)
+            this.mazeEvent( "updateObject", posx, posy, msx, msy, this.mouseStack.length, this.bSac );
         }
 
         // if cul-de-sac then re-trace "steps"
@@ -183,8 +202,8 @@ MAZE.MazeRat.prototype = {
                 msx = coord.x;
                 msy = coord.y;
 
-                if ( !this.bSingleHit && this.mazeEvent !== null )
-                    this.report( "retraceSteps", this.lastX, this.lastY, msx, msy, this.stack.length, this.bSac );
+                if ( !this.bSingleHit && this.mazeEvent !== undefined)
+                    this.mazeEvent( "retraceSteps", this.lastX, this.lastY, msx, msy, this.stack.length, this.bSac );
 
                 // only the first cell is a real cul-de-sac, so clear the local flag
     //			bCulDeSac = false;
@@ -226,7 +245,7 @@ MAZE.MazeRat.prototype = {
      * @see com.geofx.example.erosion.MazeEvent#mazeEvent(int, int, int, int, int, boolean)
      */
     report: function (  description, posx, posy, msx, msy, stackDepth, bSac ) {
-        console.log(description + " posx: " +  posx.toFixed(0) + "  posy: " + posy.toFixed(0) + " msx: " + msx.toFixed(0) +
-            " msy: " + msy.toFixed(0) + " depth: " + stackDepth.toFixed(0) + " bSac: " + bSac);
+        //console.info(description + " posx: " +  posx.toFixed(0) + "  posy: " + posy.toFixed(0) + " msx: " + msx.toFixed(0) +
+        //    " msy: " + msy.toFixed(0) + " depth: " + stackDepth.toFixed(0) + " bSac: " + bSac);
     }
 };
