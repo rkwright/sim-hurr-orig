@@ -78,7 +78,7 @@ MAZE.MazeRat.prototype = {
             mazval = this.maze.cells[py * this.maze.row + px];
 
             if (this.mazeEvent !== null)
-                this.mazeEvent("solveStep",  px,  py,  -1,  -1,  this.stack.length, false);
+                this.report("   solveStep",  px,  py,  -1,  -1,  this.stack.length, false);
 
             // turn off top bit to show this cell has been checked
             this.maze.cells[py * this.maze.row + px] ^= this.mask;
@@ -86,8 +86,8 @@ MAZE.MazeRat.prototype = {
             this.bSac = true;
             for ( var k=0; k<4; k++ )
             {
-                zx = px + MAZE.XEdge[k];
-                zy = py + MAZE.YEdge[k];
+                zx = px + this.maze.XEdge[k];
+                zy = py + this.maze.YEdge[k];
 
                 if ( zx >= 0 && zx < this.maze.col && zy >= 0 && zy < this.maze.row &&
                       (this.maze.cells[zy * this.maze.row + zx] & this.mask) !== 0 &&
@@ -96,7 +96,7 @@ MAZE.MazeRat.prototype = {
                     this.bSac = false;
                     this.stack.push(new MAZE.Coord(zx, zy));
                     if (this.mazeEvent !== null)
-                        this.mazeEvent.report("addStack",  px,  py,  zx,  zy,  this.stack.size(), false);
+                        this.report("    addStack",  px,  py,  zx,  zy,  this.stack.length, false);
                 }
             }
 
@@ -133,7 +133,7 @@ MAZE.MazeRat.prototype = {
             }
 
             if (this.mazeEvent !== null)
-                this.mazeEvent.report( "updateObject", posx, posy, msx, msy, this.stack.length, this.bSac );
+                this.report( "updateObject", posx, posy, msx, msy, this.stack.length, this.bSac );
         }
 
         // if cul-de-sac then re-trace "steps"
@@ -184,7 +184,7 @@ MAZE.MazeRat.prototype = {
                 msy = coord.y;
 
                 if ( !this.bSingleHit && this.mazeEvent !== null )
-                    this.mazeEvent.report( "retraceSteps", this.lastX, this.lastY, msx, msy, this.stack.length, this.bSac );
+                    this.report( "retraceSteps", this.lastX, this.lastY, msx, msy, this.stack.length, this.bSac );
 
                 // only the first cell is a real cul-de-sac, so clear the local flag
     //			bCulDeSac = false;
@@ -203,22 +203,30 @@ MAZE.MazeRat.prototype = {
 
                 if ( adjacent && !this.last_step )  {
                     // see if the way is open..
-                    edg = MAZE.EdgeIndx[msy+1][msx+1];
+                    edg = this.maze.EdgeIndx[msy+1][msx+1];
 
                     if ((adjacent = ((mazval & (1 << edg))) === 0))
                         this.mouseStack.push(coord);   // was mouseIndex++;  ??
                 }
             }
         }
-        while ((this.mouseStack.size() > 0) && ( !adjacent || this.last_step ));
+        while ((this.mouseStack.length > 0) && ( !adjacent || this.last_step ));
 
         // if this is the end, call back and report that we are exiting the initial seed point
         if (this.last_step) {
             if ( !this.bSingleHit && this.mazeEvent !== null )
-                this.mazeEvent.report( "retraceSteps", this.maze.seedX, this.maze.seedY, -1, -1, this.stack.length, this.bSac );
+                this.report( "retraceSteps", this.maze.seedX, this.maze.seedY, -1, -1, this.stack.length, this.bSac );
 
         }
 
         return true;
+    },
+
+    /**
+     * @see com.geofx.example.erosion.MazeEvent#mazeEvent(int, int, int, int, int, boolean)
+     */
+    report: function (  description, posx, posy, msx, msy, stackDepth, bSac ) {
+        console.log(description + " posx: " +  posx.toFixed(0) + "  posy: " + posy.toFixed(0) + " msx: " + msx.toFixed(0) +
+            " msy: " + msy.toFixed(0) + " depth: " + stackDepth.toFixed(0) + " bSac: " + bSac);
     }
 };

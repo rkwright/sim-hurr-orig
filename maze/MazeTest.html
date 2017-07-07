@@ -33,22 +33,26 @@
 
     drawMaze( maze );
 
-    /*
     maze.dumpEdges(NCELLS, NCELLS);
 
     startTime = performance.now();
 
     var rat = new MAZE.MazeRat(maze, 0x80, false, mazeEvent);
 
-    rat.findSolution(maze, -10, -10 );
+    var bSuccess = rat.findSolution( -10, -10 );
 
-    elapsed = (perforance.now() - startTime)/1000.0;
+    elapsed = (performance.now() - startTime)/1000.0;
 
-    console.log("Maze solved! elapsed: " +  elapsed.toFixed(3) + " seconds. maxNeighbors: " +
+    console.log("Maze solved? " + bSuccess + "  elapsed: " +  elapsed.toFixed(3) + " seconds. maxNeighbors: " +
             maze.maxNeighbors.toFixed(0));
-    */
-    function mazeEvent() {
-        console.log("Maze event");
+
+    /**
+     * Callback function that gets the path of the rat
+     */
+    function mazeEvent( i,  j, nexi, nexj, pathlen, bsac ) {
+        console.log("Maze event: i,j: " + i.toFixed(0) + " " + j.toFixed(0) +
+            " nexi,j: " + nexi.toFixed(0) + " " + nexj.toFixed(0)
+            + " pathlen: " + pathlen.toFixed(0) + " bsac: " + bsac );
     }
 
     function drawMaze( maze ) {
@@ -100,7 +104,6 @@
 
             x = 20;
             y -= cellSize;
-            console.log("y: " + y.toFixed(0));
         }
         console.log("Drawmaze done! sKnt: " + sKnt.toFixed(0));
     }
