@@ -33,14 +33,13 @@ MAZE.MazeRat.prototype = {
      * @param mazeEvent
      * @returns {boolean}
      */
-    initSolveObj: function ( maskVal, bSingleHit, mazeEvent ) {
+    initSolveObj: function ( mask, bSingleHit, mazeEvent ) {
 
-        this.mask = maskVal;          // unique mask value for this object
+        this.mask = mask;          // unique mask value for this object
 
         this.bSingleHit = bSingleHit;
         this.mazeEvent = mazeEvent;
 
-        this.bSearch  = true;			// true if still searching
         this.bSuccess = false;			// true if search was successful
         this.bSac     = false;
 
@@ -65,7 +64,7 @@ MAZE.MazeRat.prototype = {
         this.targetY = yexit;
 
         // while Stack not empty...
-        while ( this.stack.length > 0 && this.bSearch ) {
+        while ( this.stack.length > 0 ) {
 
             this.solveStep();
 
@@ -85,10 +84,8 @@ MAZE.MazeRat.prototype = {
 
         // pop next value from Stack
         var c = this.stack.pop();
-        px = c.x;
-        py = c.y;
-        this.x = px;
-        this.y = py;
+        this.x = px = c.x;
+        this.y = py = c.y;
 
         // if exit not yet found...
         if ( px !== this.targetX || py !== this.targetY )
@@ -113,7 +110,7 @@ MAZE.MazeRat.prototype = {
                     this.bSac = false;
                     this.stack.push(new MAZE.Coord(zx, zy));
 
-                    this.report("    addStack",  px,  py,  zx,  zy,  this.stack.length, false);
+                    //this.report("    addStack",  px,  py,  zx,  zy,  this.stack.length, false);
                 }
             }
 
@@ -121,10 +118,6 @@ MAZE.MazeRat.prototype = {
         }
         else
             this.bSuccess = true;
-
-        this.bSearch = !this.bSuccess;
-
-        return this.bSearch;
     },
 
     /**
@@ -155,7 +148,7 @@ MAZE.MazeRat.prototype = {
 
         // if cul-de-sac then re-trace "steps"
         if ( this.bSac )
-            this.retraceSteps( false );
+            this.retraceSteps();
         else
             // if NOT a cul-de-sac, then save position  on stack
             this.mouseStack.push(new MAZE.Coord(posx,posy));
@@ -164,12 +157,11 @@ MAZE.MazeRat.prototype = {
     /**
      * This func updates the current position within the "maze".
      */
-    retraceSteps: function ( last_step ) {
+    retraceSteps: function () {
         var		    adjacent = false;
         var			msx, msy;
         var			posx, posy;
         var			mazval, edg;
-//		boolean		bCulDeSac = true;
         var 		coord;
 
         //if (stack.size() == 0 && !last_step)
