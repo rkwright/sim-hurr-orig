@@ -5,7 +5,24 @@
  *
  */
 
-var MAZE = { revision: '01' };
+var MAZE = {
+            revision: '01',
+
+            // 1 << (cardinal_direction)
+            SOUTH_BIT : 1,
+            WEST_BIT  : 2,
+            NORTH_BIT : 4,
+            EAST_BIT  : 8,
+
+            //this.EdgeStr = ["S", "W", "N", "E"];
+            EdgeBit    : [1, 2, 4, 8],
+            OppEdgeBit : [4, 8, 1, 2],
+            XEdge      : [0, -1, 0, 1],
+            YEdge      : [-1, 0, 1, 0],
+            EdgeIndx   : [[-1,  0, -1],
+                          [ 1, -1,  3],
+                          [-1,  2, -1]]
+};
 
 MAZE.Coord = function( x, y ) {
 
@@ -24,22 +41,6 @@ MAZE.Coord = function( x, y ) {
  * @param mazeEvent - callback function for maze Events
  */
 MAZE.Maze = function ( col, row, seedX, seedY, mazeEvent ) {
-
-    // 1 << (cardinal_direction)
-    this.SOUTH_BIT = 1;
-    this.WEST_BIT = 2;
-    this.NORTH_BIT = 4;
-    this.EAST_BIT = 8;
-
-    //this.EdgeStr = ["S", "W", "N", "E"];
-    this.EdgeBit = [this.SOUTH_BIT, this.WEST_BIT, this.NORTH_BIT, this.EAST_BIT];
-    this.OppEdgeBit = [this.NORTH_BIT, this.EAST_BIT, this.SOUTH_BIT, this.WEST_BIT];
-    this.XEdge    = [0, -1, 0, 1];
-    this.YEdge    = [-1, 0, 1, 0];
-    this.EdgeIndx = [[-1,  0, -1],
-                     [ 1, -1,  3],
-                     [-1,  2, -1]];
-
 
     this.srcKnt = 0;		// count of items in src list
 
@@ -63,7 +64,7 @@ MAZE.Maze = function ( col, row, seedX, seedY, mazeEvent ) {
     this.maxNeighbors = 0;
 
     this.queue.push( new MAZE.Coord( this.seedX, this.seedY ));
-    this.cells[seedY * this.row + seedX] = 0xff0;
+    this.cells[seedY * this.row + seedX] = 0xff;
 
     this.mazeEvent = mazeEvent;
 };
@@ -111,8 +112,8 @@ MAZE.Maze.prototype = {
         for ( var i=0; i<4; i++ )
         {
             // set local variables
-            zx = x + this.XEdge[i];
-            zy = y + this.YEdge[i];
+            zx = x + MAZE.XEdge[i];
+            zy = y + MAZE.YEdge[i];
 
             // if indicies in range and cell still zero then
             // the cell is still in the "src list"
@@ -162,10 +163,10 @@ MAZE.Maze.prototype = {
 
         for ( var i=0; i<4; i++ ) {
             // set local variables
-            zx = x + this.XEdge[i];
-            zy = y + this.YEdge[i];
+            zx = x + MAZE.XEdge[i];
+            zy = y + MAZE.YEdge[i];
 
-            cellVal = this.cells[zy * this.row + zx] & this.OppEdgeBit[i];
+            cellVal = this.cells[zy * this.row + zx] & MAZE.OppEdgeBit[i];
              // if indicies in range
             if ( zx >= 0 && zx < this.col && zy >= 0 && zy < this.row && cellVal !== 0 ) {
 
@@ -177,11 +178,11 @@ MAZE.Maze.prototype = {
 
             var n = this.getRandomInt(0, edgeRay.length);
             edg = edgeRay[n];
-            zx  = x + this.XEdge[edg];
-            zy  = y + this.YEdge[edg];
+            zx  = x + MAZE.XEdge[edg];
+            zy  = y + MAZE.YEdge[edg];
 
-            maze.cells[y * this.row + x] ^= this.EdgeBit[edg];
-            maze.cells[zy * this.row + zx] ^= this.OppEdgeBit[edg];
+            maze.cells[y * this.row + x]   ^= MAZE.EdgeBit[edg];
+            maze.cells[zy * this.row + zx] ^= MAZE.OppEdgeBit[edg];
 
             //console.log("In cell " + x.toFixed(0) + " " + y.toFixed(0) +
              //   " dissolving edge: " + this.EdgeStr[edg] + " into cell: " + zx.toFixed(0) + " " + zy.toFixed(0));
@@ -212,8 +213,8 @@ MAZE.Maze.prototype = {
             {
                 var mz = this.cells[i * this.row + j];
                 console.log(i.toFixed(0) + " " + j.toFixed(0) +
-                    " S: " + (mz & this.SOUTH_BIT) + " W: " + (mz & this.WEST_BIT) +
-                    " N: " + (mz & this.NORTH_BIT) + " E: " + (mz & this.EAST_BIT)  );
+                    " S: " + (mz & MAZE.SOUTH_BIT) + " W: " + (mz & MAZE.WEST_BIT) +
+                    " N: " + (mz & MAZE.NORTH_BIT) + " E: " + (mz & MAZE.EAST_BIT)  );
             }
     }
 };

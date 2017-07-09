@@ -8,8 +8,6 @@
 
 MAZE.MazeRat = function( maze, mask ) {
 
-//	this.   		maxFront;  		// max count of items in front list
-
     this.bSearch = true;			// true if still searching
     this.bSuccess = false;			// true if search was successful
     this.bSac = false;				// true if last cell was cul-de-sac
@@ -105,8 +103,8 @@ MAZE.MazeRat.prototype = {
             this.bSac = true;
             for ( var k=0; k<4; k++ )
             {
-                zx = px + this.maze.XEdge[k];
-                zy = py + this.maze.YEdge[k];
+                zx = px + MAZE.XEdge[k];
+                zy = py + MAZE.YEdge[k];
 
                 if ( zx >= 0 && zx < this.maze.col && zy >= 0 && zy < this.maze.row &&
                       (this.maze.cells[zy * this.maze.row + zx] & this.mask) !== 0 &&
@@ -222,7 +220,7 @@ MAZE.MazeRat.prototype = {
 
                 if ( adjacent && !this.last_step )  {
                     // see if the way is open..
-                    edg = this.maze.EdgeIndx[msy+1][msx+1];
+                    edg = MAZE.EdgeIndx[msy+1][msx+1];
 
                     if ((adjacent = ((mazval & (1 << edg))) === 0))
                         this.mouseStack.push(coord);   // was mouseIndex++;  ??

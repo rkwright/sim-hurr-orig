@@ -7,7 +7,7 @@
     <script src="MazeRat.js"></script>
 </head>
 <body>
-    <canvas id="myCanvas" width="820" height="820" style="border:1px solid #d3d3d3;">
+    <canvas id="myCanvas" width="840" height="840" style="border:1px solid #d3d3d3;">
         Your browser does not support the HTML5 canvas tag.</canvas>
 
 <script>
@@ -83,17 +83,17 @@
         ctx.lineWidth = 1;
 
         var x = 20;
-        var y = 800;
+        var y = 820;
         var sKnt = 0;
         for ( var  i=0; i<maze.row; i++ ) {
             for ( var j = 0; j < maze.col; j++ ) {
                 var mz = maze.cells[i * maze.row + j];
 
                 //console.log(i.toFixed(0) + " " + j.toFixed(0) +
-                //    " S: " + (mz & maze.SOUTH_BIT) + " W: " + (mz & maze.WEST_BIT) +
-                //    " N: " + (mz & maze.NORTH_BIT) + " E: " + (mz & maze.EAST_BIT)  );
+                //    " S: " + (mz & MAZE.SOUTH_BIT) + " W: " + (mz & MAZE.WEST_BIT) +
+                //    " N: " + (mz & MAZE.NORTH_BIT) + " E: " + (mz & MAZE.EAST_BIT)  );
 
-                if  ((mz & maze.SOUTH_BIT) !== 0) {
+                if  ((mz & MAZE.SOUTH_BIT) !== 0) {
                     ctx.beginPath();
                     ctx.moveTo(x,y);
                     ctx.lineTo(x + cellSize, y);
@@ -101,7 +101,7 @@
                     sKnt += 2;
                 }
 
-                if  ((mz & maze.WEST_BIT) !== 0) {
+                if  ((mz & MAZE.WEST_BIT) !== 0) {
                     ctx.beginPath();
                     ctx.moveTo(x,y);
                     ctx.lineTo(x, y - cellSize);
@@ -109,7 +109,7 @@
                     sKnt += 2;
                 }
 
-                if  ((mz & maze.NORTH_BIT) !== 0) {
+                if  ((mz & MAZE.NORTH_BIT) !== 0) {
                     ctx.beginPath();
                     ctx.moveTo(x, y - cellSize);
                     ctx.lineTo(x + cellSize, y - cellSize);
@@ -117,7 +117,7 @@
                     sKnt += 2;
                 }
 
-                if  ((mz & maze.EAST_BIT) !== 0) {
+                if  ((mz & MAZE.EAST_BIT) !== 0) {
                     ctx.beginPath();
                     ctx.moveTo(x + cellSize, y);
                     ctx.lineTo(x + cellSize, y - cellSize);
@@ -139,10 +139,10 @@
         var c = document.getElementById("myCanvas");
         var ctx = c.getContext("2d");
 
-        var px1 = 20 + x1 * cellSize + cellSize / 2;
-        var py1 = 800 - y1 * cellSize - cellSize / 2;
-        var px2 = 20 + x2 * cellSize + cellSize / 2;
-        var py2 = 800 - y2 * cellSize - cellSize / 2;
+        var px1 = 20 + (x1 + 0.5) * cellSize;
+        var py1 = 820 - (y1 + 0.5) * cellSize;
+        var px2 = 20 + (x2 + 0.5) * cellSize;
+        var py2 = 820 - (y2 + 0.5) * cellSize;
 
         ctx.lineWidth = 1;
         ctx.strokeStyle = 'blue';
