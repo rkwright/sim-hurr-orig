@@ -6,9 +6,8 @@
  */
 
 
-MAZE.MazeRat = function( maze, mask ) {
+MAZE.MazeRat = function( maze ) {
 
-    this.bSearch = true;			// true if still searching
     this.bSuccess = false;			// true if search was successful
     this.bSac = false;				// true if last cell was cul-de-sac
     this.targetX = 0;			    // coords of target
@@ -28,7 +27,7 @@ MAZE.MazeRat.prototype = {
 
     /**
      * Init the rat for the search
-     * @param maskVal
+     * @param mask
      * @param bSingleHit
      * @param mazeEvent
      * @returns {boolean}
@@ -158,14 +157,11 @@ MAZE.MazeRat.prototype = {
      * This func updates the current position within the "maze".
      */
     retraceSteps: function () {
-        var		    adjacent = false;
-        var			msx, msy;
-        var			posx, posy;
-        var			mazval, edg;
-        var 		coord;
-
-        //if (stack.size() == 0 && !last_step)
-        //	return true;
+        var     adjacent = false;
+        var		msx, msy;
+        var		posx, posy;
+        var		mazval, edg;
+        var 	coord;
 
         this.last_step = this.stack.length === 0;
 
@@ -227,8 +223,6 @@ MAZE.MazeRat.prototype = {
                 this.report( "retraceSteps", this.maze.seedX, this.maze.seedY, -1, -1, this.stack.length, this.bSac );
 
         }
-
-        return true;
     },
 
     /**
