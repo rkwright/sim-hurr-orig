@@ -24,6 +24,11 @@ var MAZE = {
                           [-1,  2, -1]]
 };
 
+/**
+ * Simple little class to hold the coordinates for the stack management
+ * @param x
+ * @param y
+ */
 MAZE.Coord = function( x, y ) {
 
     this.x = x;
@@ -45,25 +50,16 @@ MAZE.Maze = function ( col, row, seedX, seedY, mazeEvent ) {
     this.srcKnt = 0;		// count of items in src list
 
     this.neighbors = [];
-    this.queue = [];
-
     this.maxNeighbors = 0;	// just for info's sake
 
     this.row = row;         // actual number of rows in maze
     this.col = col;         // actual number of cols in maze
 
-    this.srcKnt = col * row;
-
     this.cells = new Uint8Array(this.row * this.col).fill(0);
 
-    this.seedX = this.curX = seedX;
-    this.seedY = this.curY = seedY;
+    this.seedX = seedX;
+    this.seedY = seedY;
 
-    //this.srcKnt--;
-
-    this.maxNeighbors = 0;
-
-    this.queue.push( new MAZE.Coord( this.seedX, this.seedY ));
     this.cells[seedY * this.row + seedX] = 0xff;
 
     this.mazeEvent = mazeEvent;
@@ -76,22 +72,22 @@ MAZE.Maze.prototype = {
      * that cell and checks if there are any neighbors that have NOT been
      * visited yet.  If so, it adds the to neighbors list.
      */
-    build: function ()
-    {
+    build: function () {
+
+        var coord = new MAZE.Coord( this.seedX, this.seedY );
+
         do {
 
-            if (this.srcKnt > 0)
-                this.findNeighbors(  this.curX, this.curY );
+            this.findNeighbors( coord.x, coord.y );
 
             var k = this.getRandomInt( 0, this.neighbors.length );
 
-            var c = this.neighbors.splice(k,1);
-            this.curX = c[0].x;
-            this.curY = c[0].y;
+            coord = this.neighbors.splice(k,1)[0];
 
-            //console.log("Dissolving edge for current cell: " + this.curX.toFixed(0) + " " +  this.curY.toFixed() + " k: "  + k.toFixed(2));
+            //console.log("Dissolving edge for current cell: " + coord.x.toFixed(0) + " " +
+            //      coord.y.toFixed() + " k: "  + k.toFixed(2));
 
-            this.dissolveEdge( c[0].x, c[0].y);
+            this.dissolveEdge( coord.x, coord.y) ;
         }
         while (this.neighbors.length > 0);
     },
@@ -102,22 +98,17 @@ MAZE.Maze.prototype = {
      *
      * @param x - current index into the array
      * @param y
-     *
      */
     findNeighbors: function (  x, y ) {
 
-        var	    found = false;
         var     zx,zy;
 
-        for ( var i=0; i<4; i++ )
-        {
-            // set local variables
+        for ( var i=0; i<4; i++ ) {
+
             zx = x + MAZE.XEdge[i];
             zy = y + MAZE.YEdge[i];
 
-            // if indicies in range and cell still zero then
-            // the cell is still in the "src list"
-
+            // if indicies in range and cell still zero then the cell is still in the "src list"
             if (zx >= 0 && zx < this.col && zy >= 0 && zy < this.row &&
                         this.cells[zy * this.row + zx] === 0) {
 
@@ -131,12 +122,8 @@ MAZE.Maze.prototype = {
                     this.maxNeighbors = this.neighbors.length;
 
                 this.srcKnt--;
-
-                found = true;
             }
         }
-
-        return found;
     },
 
     /**
