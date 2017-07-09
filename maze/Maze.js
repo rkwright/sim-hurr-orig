@@ -107,6 +107,7 @@ MAZE.Maze.prototype = {
             if (zx >= 0 && zx < this.col && zy >= 0 && zy < this.row
                         && this.cells[zy * this.row + zx] === 0) {
 
+                // set the upper bits to indicate that this cell has been "found"
                 this.cells[zy * this.row + zx] = 0xf0;
 
                 this.neighbors.push(new MAZE.Coord(zx,zy));

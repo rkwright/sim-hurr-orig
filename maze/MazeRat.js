@@ -220,7 +220,7 @@ MAZE.MazeRat.prototype = {
         // if this is the end, call back and report that we are exiting the initial seed point
         if (this.last_step) {
             if ( !this.bSingleHit && this.mazeEvent !== null )
-                this.report( "retraceSteps", this.maze.seedX, this.maze.seedY, -1, -1, this.stack.length, this.bSac );
+                this.mazeEvent( "retraceSteps", this, this.maze.seedX, this.maze.seedY, -1, -1, this.stack.length, this.bSac );
 
         }
     },
