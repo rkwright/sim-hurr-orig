@@ -43,11 +43,8 @@ MAZE.Coord = function( x, y ) {
  * @param row - number of rows in the maze
  * @param seedX - x-index of seed cell
  * @param seedY - y-index of seed cell
- * @param mazeEvent - callback function for maze Events
  */
-MAZE.Maze = function ( col, row, seedX, seedY, mazeEvent ) {
-
-    this.srcKnt = 0;		// count of items in src list
+MAZE.Maze = function ( col, row, seedX, seedY ) {
 
     this.neighbors = [];
     this.maxNeighbors = 0;	// just for info's sake
@@ -61,8 +58,6 @@ MAZE.Maze = function ( col, row, seedX, seedY, mazeEvent ) {
     this.seedY = seedY;
 
     this.cells[seedY * this.row + seedX] = 0xff;
-
-    this.mazeEvent = mazeEvent;
 };
 
 MAZE.Maze.prototype = {
@@ -109,8 +104,8 @@ MAZE.Maze.prototype = {
             zy = y + MAZE.YEdge[i];
 
             // if indicies in range and cell still zero then the cell is still in the "src list"
-            if (zx >= 0 && zx < this.col && zy >= 0 && zy < this.row &&
-                        this.cells[zy * this.row + zx] === 0) {
+            if (zx >= 0 && zx < this.col && zy >= 0 && zy < this.row
+                        && this.cells[zy * this.row + zx] === 0) {
 
                 this.cells[zy * this.row + zx] = 0xf0;
 
@@ -118,10 +113,7 @@ MAZE.Maze.prototype = {
 
                 //console.log("Adding to neighbors: " + zx.toFixed(0) + " " + zy.toFixed(0));
 
-                if (this.neighbors.length > this.maxNeighbors)
-                    this.maxNeighbors = this.neighbors.length;
-
-                this.srcKnt--;
+                this.maxNeighbors = Math.max( this.maxNeighbors, this.neighbors.length );
             }
         }
     },
@@ -149,12 +141,12 @@ MAZE.Maze.prototype = {
         maze.cells[y * this.row + x] = 0xff;
 
         for ( var i=0; i<4; i++ ) {
-            // set local variables
+
             zx = x + MAZE.XEdge[i];
             zy = y + MAZE.YEdge[i];
 
+            // if indicies in range and cell has been visited, push it on the local stack
             cellVal = this.cells[zy * this.row + zx] & MAZE.OppEdgeBit[i];
-             // if indicies in range
             if ( zx >= 0 && zx < this.col && zy >= 0 && zy < this.row && cellVal !== 0 ) {
 
                 edgeRay.push( i );
