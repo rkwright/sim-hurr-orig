@@ -18,7 +18,7 @@
 </body>
 </html>
 <script>
-    var	NCELLS = 4;
+    var	NCELLS = 256;
 
     var startTime = performance.now();
 
@@ -38,7 +38,13 @@
 
     var	basin = new BASIN.Basin( maze );
 
+    startTime = performance.now();
+
     basin.build();
+
+    elapsed = (performance.now() - startTime)/1000.0;
+
+    console.log("Basin built   elapsed: " +  elapsed.toFixed(3));
 
     //maze.dumpEdges(NCELLS, NCELLS);
 
@@ -74,11 +80,13 @@
      * Callback function that gets the path of the rat
      */
     function mazeEvent( label, rat,  i,  j, nexi, nexj, pathlen, bsac ) {
-        console.log(label + " i,j: " + i.toFixed(0) + " " + j.toFixed(0)
-                     + " nexi,j: " + nexi.toFixed(0) + " " + nexj.toFixed(0)
-                     + " pathlen: " + pathlen.toFixed(0) + " bsac: " + bsac );
+        //console.log(label + " i,j: " + i.toFixed(0) + " " + j.toFixed(0)
+        //            + " nexi,j: " + nexi.toFixed(0) + " " + nexj.toFixed(0)
+        //             + " pathlen: " + pathlen.toFixed(0) + " bsac: " + bsac );
 
-        if (rat.bSingleHit === false)
+        basin[i][j].chanLen =  pathlen;
+
+        if (false && rat.bSingleHit === false)
             drawPath( rat.maze, i, j, nexi, nexj);
     }
 
