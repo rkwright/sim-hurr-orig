@@ -6,22 +6,22 @@
  */
 
 var MAZE = {
-            revision: '01',
+    revision: 'r01',
 
-            // 1 << (cardinal_direction)
-            SOUTH_BIT : 1,
-            WEST_BIT  : 2,
-            NORTH_BIT : 4,
-            EAST_BIT  : 8,
+    // 1 << (cardinal_direction)
+    SOUTH_BIT : 1,
+    WEST_BIT  : 2,
+    NORTH_BIT : 4,
+    EAST_BIT  : 8,
 
-            //this.EdgeStr = ["S", "W", "N", "E"];
-            EdgeBit    : [1, 2, 4, 8],
-            OppEdgeBit : [4, 8, 1, 2],
-            XEdge      : [0, -1, 0, 1],
-            YEdge      : [-1, 0, 1, 0],
-            EdgeIndx   : [[-1,  0, -1],
-                          [ 1, -1,  3],
-                          [-1,  2, -1]]
+    //this.EdgeStr = ["S", "W", "N", "E"];
+    EdgeBit    : [1, 2, 4, 8],
+    OppEdgeBit : [4, 8, 1, 2],
+    XEdge      : [0, -1, 0, 1],
+    YEdge      : [-1, 0, 1, 0],
+    EdgeIndx   : [[-1,  0, -1],
+                  [ 1, -1,  3],
+                  [-1,  2, -1]]
 };
 
 /**
