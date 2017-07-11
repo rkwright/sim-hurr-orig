@@ -6,13 +6,17 @@
  */
 
 var BASIN = {
-            revision: 'r01',
+            revision : 'r01',
+            QNUMER   : 1.0,	 // numerator of slope f(Q) eqn.
+            QEXPON   : 0.1,    // exponent of slope f(Q) eqn
+            QINTCP   : 2.0,    // offset for slope f(Q) eqn
+            RUGOSITY : 0.5    // degree of rugosity (channel interfluve height)
 };
 
 BASIN.GeoCell = function () {
 
-    this.order     = 0;		// stream order of this cell
-    this.area      = 0;     // catchment area, in unit cells
+    this.order     = -1;	// stream order of this cell, -1 means not set
+    this.area      = 1;     // catchment area, in unit cells. Init as 1 - every basin must be its own contributor!
     this.chanLen   = 0;     // channel length below this cell
     this.exit      = 0;     // side on which stream exits cell
     this.elev      = 0;     // elevation of outlet itself
@@ -21,38 +25,109 @@ BASIN.GeoCell = function () {
 };
 
 /**
- * Initialize the parameters that control the maze-building
- * process.
- *
- * @param maze - the maze representing the catchment
+ * Constuctor
  */
-BASIN.Basin = function ( maze ) {
+BASIN.Basin = function () {
 
-    this.maze = maze;
+    this.catch = null;
 
-    this.basin = [];
+    this.rat = null;
+
+    this.cells = [];
+
+    this.firstOrder = [];
 };
 
 BASIN.Basin.prototype = {
 
-    build: function () {
+    /**
+     * Construct the catchment (maze) then walk the maze twice to
+     * get the channel and morphology parameters.
+     */
+    construct: function () {
 
-        var Coords = function(x, y) {
-            return {
-                "x" : x,
-                "y" : y
-            };
-        };
+        var	NCELLS = 256;
+
+        this.catch = new MAZE.Maze( NCELLS, NCELLS, 0, 0 );
+
+        this.catch.build();
 
         for ( var i = 0; i < this.maze.row; i++ ) {
-
-            basin[i] = [];
+            this.cells[i] = [];
 
             for ( var j = 0; j < this.maze.col; j++ ) {
-
-                basin[i][j] = new BASIN.GeoCell();
+                this.cells[i][j] = new BASIN.GeoCell();
             }
         }
+
+        this.rat = new MAZE.MazeRat( maze );
+
+        this.rat.initSolveObj(0x80, false, this.getMorphParms);
+
+        this.rat.findSolution( -1, -1 );
+
+        this.rat.retraceSteps();
+
+        this.rat.initSolveObj(0x80, true, this.getChanParms);
+
+        this.rat.findSolution( -1, -1 );
+    },
+
+    /**
+     * First pass the rat is going up to each cul-de-sac (first order basin) and
+     * then retracing its steps back down and reporting the results.
+     */
+    getMorphParms: function( label, rat,  i,  j, nexi, nexj, pathlen, bSac ) {
+        var	x0,y0;
+
+        x0 = nexj - j + 1;
+        y0 = nexi - i + 1;
+
+        this.cells[i][j].exit = MAZE.EdgIndx[y0][x0];
+
+        this.cells[nexi][nexj].area  += this.cells[i][j].area;
+
+        // if this is a cul-de-sac, then init it to be 0
+        if ( bSac )
+            this.cells[i][j].order = 0;
+
+        if ( this.cells[nexi][nexj].order === this.cells[i][j].order )
+            this.cells[nexi][nexj].order++;
+        else if ( this.cells[nexi][nexj].order === 1 )
+            this.cells[nexi][nexj].order = this.cells[i][j].order;
+
+        this.cells[i][j].chanSlope = (BASIN.QNUMER / Math.pow( this.cells[i][j].area + BASIN.QINTCP, BASIN.QEXPON));
+
+        console.log(" Morph: i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " nexti,j: " + nexi.toFixed(0) + " " + nexj.toFixed(0) +
+           " next_area: " + this.cells[nexi][nexj].area.toFixed(0) + " [i][j].order: " + this.cells[i][j].order.toFixed(0) +
+           " [nexi][nexj].order: " + this.cells[nexi][nexj].order.toFixed(0) + " chanSlope: " +  this.cells[i][j].chanSlope.toFixed(3));
+    },
+
+    /**
+     * If we are in the second pass and GOING UP the stream network (maze)
+     * then we calculate the elevation of each catchment elm as the elevation
+     * of the elm we are leaving (into which this elm flows) and the slope
+     * of the elm we are leaving.  We do this on the second pass since during
+     * the first pass we don't know the slope of each elm because we don't
+     * know the area contributing to each elm until the whole basin has been
+     * traversed.
+     */
+    getChanParms: function( label, rat,  i,  j, previ, prevj, pathlen, bSac ) {
+
+        if (previ >= 0 && prevj >= 0)
+            this.cells[i][j].m_chanElev = this.cells[previ][prevj].chanElev +
+                this.cells[previ][prevj].chanSlope;
+
+        if (bSac) {
+            // save position in Sack list
+            this.firstOrder.push( MAZE.Coord(i, j));
+
+            // chan_leng is the length of the mouse's current travels!
+            this.cells[i][j].m_chanLen = pathlen;
+        }
+
+        console.log("Chan: From: i,j: " + previ.toFixed(0) + " " + prevj.toFixed(0) +
+            " To i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " To elev: " + this.cells[i][j].m_chanElev.toFixed(1) );
     }
 };
 
