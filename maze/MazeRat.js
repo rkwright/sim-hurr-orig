@@ -5,7 +5,6 @@
  *
  */
 
-
 MAZE.MazeRat = function( maze ) {
 
     this.bSuccess = false;			// true if search was successful
