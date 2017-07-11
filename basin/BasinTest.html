@@ -19,10 +19,13 @@
 </html>
 <script>
 
+    var startTime = performance.now();
+
     var	basin = new BASIN.Basin();
 
     basin.construct();
 
+    var elapsed = (performance.now() - startTime)/1000.0;
     console.log("Basin complete! elapsed: " +  elapsed.toFixed(3)  );
 </script>
 
