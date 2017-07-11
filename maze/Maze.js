@@ -139,7 +139,7 @@ MAZE.Maze.prototype = {
         var     cellVal;
 
         // build the fence for this cell
-        maze.cells[y * this.row + x] = 0xff;
+        this.cells[y * this.row + x] = 0xff;
 
         for ( var i=0; i<4; i++ ) {
 
@@ -161,8 +161,8 @@ MAZE.Maze.prototype = {
             zx  = x + MAZE.XEdge[edg];
             zy  = y + MAZE.YEdge[edg];
 
-            maze.cells[y * this.row + x]   ^= MAZE.EdgeBit[edg];
-            maze.cells[zy * this.row + zx] ^= MAZE.OppEdgeBit[edg];
+            this.cells[y * this.row + x]   ^= MAZE.EdgeBit[edg];
+            this.cells[zy * this.row + zx] ^= MAZE.OppEdgeBit[edg];
 
             //console.log("In cell " + x.toFixed(0) + " " + y.toFixed(0) +
              //   " dissolving edge: " + this.EdgeStr[edg] + " into cell: " + zx.toFixed(0) + " " + zy.toFixed(0));
