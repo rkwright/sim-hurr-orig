@@ -88,9 +88,9 @@ BASIN.Basin.prototype = {
 
         bthis.cells[i][j].exit = MAZE.EdgeIndx[y0][x0];
 
-        // if this is a cul-de-sac, then init it to be 0
+        // if this is a cul-de-sac, then init it to be 1, i.e. first order
         if ( bSac )
-            bthis.cells[i][j].order = 0;
+            bthis.cells[i][j].order = 1;
 
         bthis.cells[i][j].chanSlope = (BASIN.QNUMER / Math.pow( bthis.cells[i][j].area + BASIN.QINTCP, BASIN.QEXPON));
 
@@ -99,8 +99,8 @@ BASIN.Basin.prototype = {
 
             if (bthis.cells[nexi][nexj].order === bthis.cells[i][j].order)
                 bthis.cells[nexi][nexj].order++;
-            else if (bthis.cells[nexi][nexj].order === 1)
-                this.cells[nexi][nexj].order = bthis.cells[i][j].order;
+            else if (bthis.cells[nexi][nexj].order === -1)
+                bthis.cells[nexi][nexj].order = bthis.cells[i][j].order;
 
             console.log(" Morph: i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " nexti,j: " + nexi.toFixed(0) + " " + nexj.toFixed(0) +
                 " next_area: " + bthis.cells[nexi][nexj].area.toFixed(0) + " [i][j].order: " + bthis.cells[i][j].order.toFixed(0) +

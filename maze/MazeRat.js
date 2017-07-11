@@ -191,7 +191,7 @@ MAZE.MazeRat.prototype = {
                     this.mazeEvent( "retraceSteps", this, this.lastX, this.lastY, msx, msy, this.stack.length, this.bSac );
 
                 // only the first cell is a real cul-de-sac, so clear the local flag
-    //			bCulDeSac = false;
+    			this.bSac = false;
 
                 // retrace line to that position
                 this.lastX = msx;
