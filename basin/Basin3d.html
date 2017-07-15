@@ -4,7 +4,7 @@
 		<!--
   			@author: rkwright@geofx.com
 		-->
-		<title>NEHE Lesson 34</title>
+		<title>Basin 3D</title>
 		<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
 
 		<!-- Set the viewport size to the screen size, so it will be displayed maximized, but unscaled. -->
@@ -29,6 +29,7 @@
         // allocate the Scene object, request orbitControls, some of 3D axes 10 units high and the stats
         var gfxScene = new GFX.Scene( {
             cameraPos : [8, 10, 30],
+            axesHeight:10,
             controls:true,
             displayStats:true
         });
@@ -56,62 +57,75 @@
                 terrain[i] = [];
 
                 for ( j = 0; j < NCELLS*2+1; j++ ) {
-                    terrain[i][j] = new THREE.Vector3(i, j, Math.random());
+                    terrain[i][j] = new THREE.Vector3(j, Math.random(), i);
                 }
             }
 
             plane = new THREE.Geometry();
 
+            var faceCount = 0;
             for ( i = 0; i < NCELLS*2; i += 2 ) {
 
                 for ( j = 0; j < NCELLS*2; j += 2 ) {
 
-                    createQuadPatch( i,j );
+                    createQuadPatch( i, j, faceCount );
+                    faceCount += 8;
                 }
             }
-
+            
             // re-compute the normals for both the faces and vertexes
             plane.computeFaceNormals();
             plane.computeVertexNormals();
+
+            plane.computeBoundingSphere();
 
             var planeMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe: true, transparent: true } );
 
             // and create the actual mesh
             planeMesh = new THREE.Mesh( plane, planeMaterial);
 
+            for ( var k=0; k<plane.vertices.length; k++ ) {
+                console.log(" x,y,z: " + plane.vertices[k].x.toFixed(3) + " " + plane.vertices[k].y.toFixed(3) + " " + plane.vertices[k].z.toFixed(3));
+            }
+
+            for ( k=0; k<plane.faces.length; k++ ) {
+                console.log(" x,y,z: " + plane.faces[k].a.toFixed(0) + " " + plane.faces[k].b.toFixed(0) + " " + plane.faces[k].c.toFixed(0));
+            }
             // and add it to the scene
             gfxScene.add(planeMesh);
         }
 
-        function createQuadPatch( i, j ) {
+        function createQuadPatch( i, j, fC ) {
+
             plane.vertices.push( terrain[i][j] );
             plane.vertices.push( terrain[i][j+1] );
             plane.vertices.push( terrain[i+1][j+1] );
             plane.vertices.push( terrain[i+1][j] );
-            plane.faces.push(new THREE.Face3(0, 1, 2));
-            plane.faces.push(new THREE.Face3(0, 2, 3));
+            plane.faces.push(new THREE.Face3(fC + 0, fC + 1, fC + 2));
+            plane.faces.push(new THREE.Face3(fC + 0, fC + 2, fC + 3));
 
             plane.vertices.push( terrain[i][j+1] );
             plane.vertices.push( terrain[i][j+2] );
             plane.vertices.push( terrain[i+1][j+2] );
             plane.vertices.push( terrain[i+1][j+1] );
-            plane.faces.push(new THREE.Face3(0, 1, 3));
-            plane.faces.push(new THREE.Face3(1, 2, 3));
+            plane.faces.push(new THREE.Face3(fC + 0, fC + 1, fC + 3));
+            plane.faces.push(new THREE.Face3(fC + 1, fC + 2, fC + 3));
 
             plane.vertices.push( terrain[i+1][j+1] );
             plane.vertices.push( terrain[i+1][j+2] );
             plane.vertices.push( terrain[i+2][j+2] );
             plane.vertices.push( terrain[i+2][j+1] );
-            plane.faces.push(new THREE.Face3(0, 1, 2));
-            plane.faces.push(new THREE.Face3(0, 2, 3));
+            plane.faces.push(new THREE.Face3(fC + 0, fC + 1, fC + 2));
+            plane.faces.push(new THREE.Face3(fC + 0, fC + 2, fC + 3));
 
             plane.vertices.push( terrain[i+1][j] );
             plane.vertices.push( terrain[i+1][j+1] );
             plane.vertices.push( terrain[i+2][j+1] );
             plane.vertices.push( terrain[i+2][j] );
-            plane.faces.push(new THREE.Face3(0, 1, 3));
-            plane.faces.push(new THREE.Face3(1, 2, 3));
+            plane.faces.push(new THREE.Face3(fC + 0, fC + 1, fC + 3));
+            plane.faces.push(new THREE.Face3(fC + 1, fC + 2, fC + 3));
         }
+
         /**
          * Animate the scene and call rendering.
          */
@@ -121,7 +135,7 @@
             requestAnimationFrame(animateScene);
 
             gfxScene.renderScene();
-        }
+        };
 
     </script>
 
