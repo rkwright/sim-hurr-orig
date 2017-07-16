@@ -21,7 +21,7 @@
 	</head>
 	<body>
     <script type="text/javascript">
-        var NCELLS = 4;
+        var NCELLS = 16;
         var plane;
         var terrain = [];
         var planeMesh;
@@ -60,70 +60,94 @@
                     terrain[i][j] = new THREE.Vector3(j, Math.random(), i);
                 }
             }
+            for ( i = 0; i < NCELLS*2+1; i++ ) {
+
+                for ( j = 0; j < NCELLS*2+1; j++ ) {
+                    console.log(" i,j: " + i.toFixed(0) + "," +  j.toFixed(0) + ": " +
+                        terrain[i][j].x.toFixed(2) + " " + terrain[i][j].y.toFixed(2) + " " + terrain[i][j].z.toFixed(2));
+                }
+            }
 
             plane = new THREE.Geometry();
 
-            var faceCount = 0;
             for ( i = 0; i < NCELLS*2; i += 2 ) {
 
                 for ( j = 0; j < NCELLS*2; j += 2 ) {
 
-                    createQuadPatch( i, j, faceCount );
-                    faceCount += 8;
+                    createQuadPatch( i, j);
                 }
             }
-            
+
             // re-compute the normals for both the faces and vertexes
             plane.computeFaceNormals();
             plane.computeVertexNormals();
 
             plane.computeBoundingSphere();
 
-            var planeMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe: true, transparent: true } );
+            var wireMaterial = new THREE.MeshBasicMaterial( { color: 0xccccff, wireframe: true, transparent: true } );
+            var colorMaterial = new THREE.MeshPhongMaterial( { color: 0x000080, side:THREE.DoubleSide } );
 
-            // and create the actual mesh
-            planeMesh = new THREE.Mesh( plane, planeMaterial);
+            planeMesh = THREE.SceneUtils.createMultiMaterialObject( plane, [ colorMaterial, wireMaterial ] );
 
+            console.log("Verticies:");
             for ( var k=0; k<plane.vertices.length; k++ ) {
-                console.log(" x,y,z: " + plane.vertices[k].x.toFixed(3) + " " + plane.vertices[k].y.toFixed(3) + " " + plane.vertices[k].z.toFixed(3));
+                console.log("k: " + k.toFixed(0) + " x,y,z: " + plane.vertices[k].x.toFixed(3) + " " + plane.vertices[k].y.toFixed(3) + " " + plane.vertices[k].z.toFixed(3));
             }
 
+            console.log("Faces:");
             for ( k=0; k<plane.faces.length; k++ ) {
-                console.log(" x,y,z: " + plane.faces[k].a.toFixed(0) + " " + plane.faces[k].b.toFixed(0) + " " + plane.faces[k].c.toFixed(0));
+                console.log("k: " + k.toFixed(0) + " x,y,z: " + plane.faces[k].a.toFixed(0) + " " + plane.faces[k].b.toFixed(0) + " " + plane.faces[k].c.toFixed(0));
             }
             // and add it to the scene
             gfxScene.add(planeMesh);
         }
 
-        function createQuadPatch( i, j, fC ) {
+        function createQuadPatch( i, j ) {
+            var vC = plane.vertices.length;
 
             plane.vertices.push( terrain[i][j] );
             plane.vertices.push( terrain[i][j+1] );
             plane.vertices.push( terrain[i+1][j+1] );
             plane.vertices.push( terrain[i+1][j] );
-            plane.faces.push(new THREE.Face3(fC + 0, fC + 1, fC + 2));
-            plane.faces.push(new THREE.Face3(fC + 0, fC + 2, fC + 3));
 
+            console.log("     i,j: " + i.toFixed(0) + "," +  j.toFixed(0) + ": " +
+                terrain[i][j].x.toFixed(2) + " " + terrain[i][j].y.toFixed(2) + " " + terrain[i][j].z.toFixed(2));
+            console.log("   i,j+1: " + i.toFixed(0) + "," +  j.toFixed(0) + ": " +
+                terrain[i][j+1].x.toFixed(2) + " " + terrain[i][j+1].y.toFixed(2) + " " + terrain[i][j+1].z.toFixed(2));
+            console.log(" i+1,j+1: " + i.toFixed(0) + "," +  j.toFixed(0) + ": " +
+                terrain[i+1][j+1].x.toFixed(2) + " " + terrain[i+1][j+1].y.toFixed(2) + " " + terrain[i+1][j+1].z.toFixed(2));
+            console.log(" i+1,j: " + i.toFixed(0) + "," +  j.toFixed(0) + ": " +
+                terrain[i+1][j].x.toFixed(2) + " " + terrain[i+1][j].y.toFixed(2) + " " + terrain[i+1][j].z.toFixed(2));
+
+            plane.faces.push(new THREE.Face3(vC + 0, vC + 1, vC + 2));
+            plane.faces.push(new THREE.Face3(vC + 0, vC + 2, vC + 3));
+
+            // second pair of triangles
+            vC = plane.vertices.length;
             plane.vertices.push( terrain[i][j+1] );
             plane.vertices.push( terrain[i][j+2] );
             plane.vertices.push( terrain[i+1][j+2] );
             plane.vertices.push( terrain[i+1][j+1] );
-            plane.faces.push(new THREE.Face3(fC + 0, fC + 1, fC + 3));
-            plane.faces.push(new THREE.Face3(fC + 1, fC + 2, fC + 3));
+            plane.faces.push(new THREE.Face3(vC + 0, vC + 1, vC + 3));
+            plane.faces.push(new THREE.Face3(vC + 1, vC + 2, vC + 3));
 
+            // third pair of triangles
+            vC = plane.vertices.length;
             plane.vertices.push( terrain[i+1][j+1] );
             plane.vertices.push( terrain[i+1][j+2] );
             plane.vertices.push( terrain[i+2][j+2] );
             plane.vertices.push( terrain[i+2][j+1] );
-            plane.faces.push(new THREE.Face3(fC + 0, fC + 1, fC + 2));
-            plane.faces.push(new THREE.Face3(fC + 0, fC + 2, fC + 3));
+            plane.faces.push(new THREE.Face3(vC + 0, vC + 1, vC + 2));
+            plane.faces.push(new THREE.Face3(vC + 0, vC + 2, vC + 3));
 
+            // fourth pair of triangles
+            vC = plane.vertices.length;
             plane.vertices.push( terrain[i+1][j] );
             plane.vertices.push( terrain[i+1][j+1] );
             plane.vertices.push( terrain[i+2][j+1] );
             plane.vertices.push( terrain[i+2][j] );
-            plane.faces.push(new THREE.Face3(fC + 0, fC + 1, fC + 3));
-            plane.faces.push(new THREE.Face3(fC + 1, fC + 2, fC + 3));
+            plane.faces.push(new THREE.Face3(vC + 0, vC + 1, vC + 3));
+            plane.faces.push(new THREE.Face3(vC + 1, vC + 2, vC + 3));
         }
 
         /**
