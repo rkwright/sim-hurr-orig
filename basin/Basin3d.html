@@ -28,7 +28,7 @@
 
         // allocate the Scene object, request orbitControls, some of 3D axes 10 units high and the stats
         var gfxScene = new GFX.Scene( {
-            cameraPos : [8, 10, 30],
+            cameraPos : [10, 20, 40],
             axesHeight:10,
             controls:true,
             displayStats:true
@@ -46,7 +46,6 @@
         function initializeDemo() {
 
             createPlane();
-
         }
 
         function createPlane() {
@@ -57,7 +56,7 @@
                 terrain[i] = [];
 
                 for ( j = 0; j < NCELLS*2+1; j++ ) {
-                    terrain[i][j] = new THREE.Vector3(j, Math.random(), i);
+                    terrain[i][j] = new THREE.Vector3(j, Math.random()*2, i);
                 }
             }
             for ( i = 0; i < NCELLS*2+1; i++ ) {
@@ -84,7 +83,7 @@
 
             plane.computeBoundingSphere();
 
-            var wireMaterial = new THREE.MeshBasicMaterial( { color: 0xccccff, wireframe: true, transparent: true } );
+            var wireMaterial = new THREE.MeshBasicMaterial( { color: 0xccccff, wireframe: true, transparent: true, opacity:1 } );
             var colorMaterial = new THREE.MeshPhongMaterial( { color: 0x000080, side:THREE.DoubleSide } );
 
             planeMesh = THREE.SceneUtils.createMultiMaterialObject( plane, [ colorMaterial, wireMaterial ] );
@@ -100,6 +99,7 @@
             }
             // and add it to the scene
             gfxScene.add(planeMesh);
+            planeMesh.position.set(-NCELLS, 0, -NCELLS)
         }
 
         function createQuadPatch( i, j ) {
