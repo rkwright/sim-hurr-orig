@@ -69,9 +69,6 @@
             plane.computeFaceNormals();
             plane.computeVertexNormals();
 
-           // plane.computeBoundingSphere();
-
-            //r: 89, g: 133, b: 39,
             var wireMaterial = new THREE.MeshBasicMaterial( { color: 0xccccff, 
             			wireframe: true, transparent: true, opacity:0.05 } );
             var colorMaterial = new THREE.MeshPhongMaterial( { color: 0x598527,
@@ -88,6 +85,7 @@
         function createQuadPatch( i, j ) {
             var vC = plane.vertices.length;
 
+            // first pair of triangles
             plane.vertices.push( terrain[i][j] );
             plane.vertices.push( terrain[i][j+1] );
             plane.vertices.push( terrain[i+1][j+1] );
