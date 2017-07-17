@@ -16,7 +16,7 @@ var BASIN = {
 BASIN.GeoCell = function () {
 
     this.order     = -1;	// stream order of this cell, -1 means not set
-    this.area      = 1;     // catchment area, in unit cells. Init as 1 - every basin must be its own contributor!
+    this.area      = 1;     //  Init as 1 - every basin must be its own contributor!
     this.chanLen   = 0;     // channel length below this cell
     this.exit      = 0;     // side on which stream exits cell
     this.elev      = 0;     // elevation of outlet itbthis
