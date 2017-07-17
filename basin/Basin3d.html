@@ -28,7 +28,7 @@
         var planeMesh;
 
         var gfxScene = new GFX.Scene( {
-            cameraPos : [10, 20, 40],
+            cameraPos : [10, 20, 20],
             axesHeight:10,
             controls:true,
             displayStats:true
@@ -50,53 +50,63 @@
 
             basin.construct();
 
+            createTerrain( NCELLS );
+
+            createPlaneGeometry( NCELLS );
+
+            createPlaneMesh();
+
             var elapsed = (performance.now() - startTime)/1000.0;
             console.log("Basin complete! elapsed: " +  elapsed.toFixed(3)  );
-
-            createPlane( basin );
         }
 
-        function createPlane( basin ) {
+        /**
+         * This creates the terrain array but sets elevation to -1 to indicate that
+         * it is uninitialized.
+         */
+        function createTerrain( nCells ) {
 
-            var i,j;
-            // first, create the two-dimensional array of Vector3 that will be vertices
-            for ( i = 0; i < NCELLS*2+1; i++ ) {
+            // first, create and populate the terrain array
+            for ( var i = 0; i < nCells*2+1; i++ ) {
                 terrain[i] = [];
-
-                for ( j = 0; j < NCELLS*2+1; j++ ) {
-                    //terrain[i][j] = new THREE.Vector3(j, Math.random()*4, i);
-                    if ( (Math.abs(i % 2) === 1) && (Math.abs(j % 2) === 1)) {
-                        if (basin.cells[i][j] === undefined)
-                            debugger;
-                        terrain[i][j] = basin.cells[i][j].chanElev;
-                    }
+                for ( var j = 0; j < nCells*2+1; j++ ) {
+                    terrain[i][j] = new THREE.Vector3(j, -1, i);
                 }
             }
+        }
+
+        /*
+         * This creates the mesh comprised of nCells by nCells quad-patches.
+         * Elevations are still all -1
+         */
+        function createPlaneGeometry( nCells ) {
 
             plane = new THREE.Geometry();
 
-            for ( i = 0; i < NCELLS*2; i += 2 ) {
-                for ( j = 0; j < NCELLS*2; j += 2 ) {
-
-                    createQuadPatch( i, j);
+            for ( var i = 0; i < nCells*2; i += 2 ) {
+                for ( var j = 0; j < nCells*2; j += 2 ) {
+                    createQuadPatch( i, j );
                 }
             }
+        }
 
-            // re-compute the normals for both the faces and vertexes
-            plane.computeFaceNormals();
-            plane.computeVertexNormals();
+        function createPlaneMesh()  {
 
-            var wireMaterial = new THREE.MeshBasicMaterial( { color: 0xccccff, 
-            			wireframe: true, transparent: true, opacity:0.05 } );
-            var colorMaterial = new THREE.MeshPhongMaterial( { color: 0x598527,
-            			side:THREE.DoubleSide } );
+            var wireMat = new THREE.MeshBasicMaterial({
+                color: 0xccccff,
+                wireframe: true, transparent: true, opacity: 0.1
+            });
+            var colorMat = new THREE.MeshPhongMaterial({
+                color: 0x598527,
+                side: THREE.DoubleSide
+            });
 
-            planeMesh = THREE.SceneUtils.createMultiMaterialObject( plane, 
-            		[ colorMaterial, wireMaterial ] );
+            planeMesh = THREE.SceneUtils.createMultiMaterialObject(plane, [colorMat, wireMat]);
 
             // and add it to the scene
             gfxScene.add(planeMesh);
             planeMesh.position.set(-NCELLS, 0, -NCELLS)
+
         }
 
         function createQuadPatch( i, j ) {
