@@ -52,6 +52,8 @@
 
             createTerrain( NCELLS );
 
+            computeElevations( basin, NCELLS );
+
             createPlaneGeometry( NCELLS );
 
             createPlaneMesh();
@@ -90,6 +92,22 @@
             }
         }
 
+        /**
+         * Walk the existing geometry and compute, for each quad-patch
+         * the elevations of the vertices.
+         */
+        function computeElevations( basin, nCells ) {
+
+            for ( var i = 0; i < nCells*2; i += 2 ) {
+                for ( var j = 0; j < nCells*2; j += 2 ) {
+                    computeCellElevations( basin.cells, i, j );
+                }
+            }
+        }
+
+        /**
+         *  Create the actual mesh from the geometry and some fakes material.
+         */
         function createPlaneMesh()  {
 
             var wireMat = new THREE.MeshBasicMaterial({
@@ -106,9 +124,19 @@
             // and add it to the scene
             gfxScene.add(planeMesh);
             planeMesh.position.set(-NCELLS, 0, -NCELLS)
-
         }
 
+        /**
+         * Compute the elevation of the 9 vertices that make up each quad-patch
+         */
+        function computeCellElevations( cells, i, j ) {
+
+            terrain[i+1][j+1].y = cells[i/2][j/2].chanElev;
+        }
+
+        /**
+         *  Create the 8 triangles that comprise each quad-patch
+         */
         function createQuadPatch( i, j ) {
             var vC = plane.vertices.length;
 
