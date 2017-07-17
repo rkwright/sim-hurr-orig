@@ -82,30 +82,36 @@ BASIN.Basin.prototype = {
      */
     getMorphParms: function( label, rat,  i,  j, nexi, nexj, pathlen, bSac ) {
         var	x0,y0;
-
+        var curC = bthis.cells[i][j];
+        var nexC = (nexi >= 0 && nexj >=  0) ? bthis.cells[nexi][nexj] : undefined;
         x0 = nexj - j + 1;
         y0 = nexi - i + 1;
 
-        bthis.cells[i][j].exit = MAZE.EdgeIndx[y0][x0];
+        curC.exit = MAZE.EdgeIndx[y0][x0];
 
         // if this is a cul-de-sac, then init it to be 1, i.e. first order
         if ( bSac )
-            bthis.cells[i][j].order = 1;
+            curC.order = 1;
 
-        bthis.cells[i][j].chanSlope = (BASIN.QNUMER / Math.pow( bthis.cells[i][j].area + BASIN.QINTCP, BASIN.QEXPON));
+        curC.chanSlope = (BASIN.QNUMER / Math.pow( curC.area + BASIN.QINTCP, BASIN.QEXPON));
 
-        if (nexi >= 0 && nexj >=  0) {
-            bthis.cells[nexi][nexj].area += bthis.cells[i][j].area;
+        if (nexC !== undefined) {
+            nexC.area += curC.area;
 
-            if (bthis.cells[nexi][nexj].order === bthis.cells[i][j].order)
-                bthis.cells[nexi][nexj].order++;
-            else if (bthis.cells[nexi][nexj].order === -1)
-                bthis.cells[nexi][nexj].order = bthis.cells[i][j].order;
+            if (nexC.order === curC.order)
+               nexC.order++;
+            else if (nexC.order === -1)
+                nexC.order = curC.order;
 
             console.log(" Morph: i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " nexti,j: " + nexi.toFixed(0) + " " + nexj.toFixed(0) +
-                " next_area: " + bthis.cells[nexi][nexj].area.toFixed(0) + " [i][j].order: " + bthis.cells[i][j].order.toFixed(0) +
-                " [nexi][nexj].order: " + bthis.cells[nexi][nexj].order.toFixed(0) + " chanSlope: " +  bthis.cells[i][j].chanSlope.toFixed(3));
+                " next_area: " + nexC.area.toFixed(0) + " order: " + curC.order.toFixed(0) +
+                " next_order: " + nexC.order.toFixed(0) + " chanSlope: " +  curC.chanSlope.toFixed(3));
         }
+        else
+            console.log(" Morph: i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " nexti,j: " + -1 + " " + -1 +
+                " next_area: " + -1 + " order: " + curC.order.toFixed(0) +
+                " next_order: " + -1 + " chanSlope: " +  curC.chanSlope.toFixed(3));
+
     },
 
     /**
@@ -119,21 +125,27 @@ BASIN.Basin.prototype = {
      */
     getChanParms: function( label, rat,  i,  j, previ, prevj, pathlen, bSac ) {
 
-        if (previ >= 0 && prevj >= 0)
-            bthis.cells[i][j].m_chanElev = bthis.cells[previ][prevj].chanElev +
-                bthis.cells[previ][prevj].chanSlope;
+        var curC = bthis.cells[i][j];
+        var prevC = (previ >= 0 && prevj >= 0) ? bthis.cells[previ][prevj] : undefined;
+
+        if (prevC !== undefined)
+            curC.m_chanElev = prevC.chanElev + prevC.chanSlope;
 
         if (bSac) {
             // save position in Sack list
             bthis.firstOrder.push( MAZE.Coord(i, j));
 
             // chan_leng is the length of the mouse's current travels!
-            bthis.cells[i][j].m_chanLen = pathlen;
+            curC.m_chanLen = pathlen;
         }
 
-        if (previ >= 0 && prevj >= 0)
+        if (prevC !== undefined)
             console.log("Chan: From: i,j: " + previ.toFixed(0) + " " + prevj.toFixed(0) +
-                " To i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " To elev: " + bthis.cells[i][j].m_chanElev.toFixed(3) );
+                " To i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " elev: " + curC.m_chanElev.toFixed(3) );
+        else
+            console.log("Chan: From: i,j: " + -1 + " " + -1 +
+                " to i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " elev: " + 0 );
+
     }
 };
 
