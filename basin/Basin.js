@@ -7,10 +7,10 @@
 
 var BASIN = {
             revision : 'r01',
-            QNUMER   : 1.0,	 // numerator of slope f(Q) eqn.
-            QEXPON   : 0.1,    // exponent of slope f(Q) eqn
-            QINTCP   : 2.0,    // offset for slope f(Q) eqn
-            RUGOSITY : 0.5    // degree of rugosity (channel interfluve height)
+            QNUMER   : 1.0,	    // numerator of slope f(Q) eqn.
+            QEXPON   : 0.1,     // exponent of slope f(Q) eqn
+            QINTCP   : 2.0,     // offset for slope f(Q) eqn
+            RUGOSITY : 0.5     // degree of rugosity (channel interfluve height)
 };
 
 BASIN.GeoCell = function () {
@@ -28,7 +28,9 @@ BASIN.GeoCell = function () {
  * Constuctor
  */
 
-BASIN.Basin = function () {
+BASIN.Basin = function ( nCells ) {
+
+    this.nCells = nCells;
 
     this.catch = null;
 
@@ -38,7 +40,7 @@ BASIN.Basin = function () {
 
     this.firstOrder = [];
 
-    this.elevScale = 1;
+    this.elevScale = 4 / nCells;
 
     bthis = this;
 };
@@ -51,10 +53,7 @@ BASIN.Basin.prototype = {
      */
     construct: function () {
 
-        var	NCELLS = 16;
-        this.elevScale = 4 / NCELLS;
-
-        this.catch = new MAZE.Maze( NCELLS, NCELLS, 0, 0 );
+        this.catch = new MAZE.Maze( this.nCells, this.nCells, 0, 0 );
 
         this.catch.build();
 
@@ -66,17 +65,25 @@ BASIN.Basin.prototype = {
             }
         }
 
-        this.rat = new MAZE.MazeRat( this.catch );
+        this.traverseStreams();
+    },
+
+    /**
+     * Construct the rat and traverse the streams (twice)
+     */
+    traverseStreams: function () {
+
+        this.rat = new MAZE.MazeRat(this.catch);
 
         this.rat.initSolveObj(0x80, false, this.getMorphParms);
 
-        this.rat.findSolution( -1, -1 );
+        this.rat.findSolution(-1, -1);
 
         this.rat.retraceSteps();
 
         this.rat.initSolveObj(0x80, true, this.getChanParms);
 
-        this.rat.findSolution( -1, -1 );
+        this.rat.findSolution(-1, -1);
     },
 
     /**
