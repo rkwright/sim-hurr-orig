@@ -38,6 +38,8 @@ BASIN.Basin = function () {
 
     this.firstOrder = [];
 
+    this.elevScale = 1;
+
     bthis = this;
 };
 
@@ -49,7 +51,8 @@ BASIN.Basin.prototype = {
      */
     construct: function () {
 
-        var	NCELLS = 4;
+        var	NCELLS = 16;
+        this.elevScale = 4 / NCELLS;
 
         this.catch = new MAZE.Maze( NCELLS, NCELLS, 0, 0 );
 
@@ -93,7 +96,7 @@ BASIN.Basin.prototype = {
         if ( bSac )
             curC.order = 1;
 
-        curC.chanSlope = (BASIN.QNUMER / Math.pow( curC.area + BASIN.QINTCP, BASIN.QEXPON));
+        curC.chanSlope = (BASIN.QNUMER / Math.pow( curC.area + BASIN.QINTCP, BASIN.QEXPON)) * bthis.elevScale;
 
         if (nexC !== undefined) {
             nexC.area += curC.area;
@@ -129,7 +132,7 @@ BASIN.Basin.prototype = {
         var prevC = (previ >= 0 && prevj >= 0) ? bthis.cells[previ][prevj] : undefined;
 
         if (prevC !== undefined)
-            curC.m_chanElev = prevC.chanElev + prevC.chanSlope;
+            curC.chanElev = prevC.chanElev + prevC.chanSlope;
 
         if (bSac) {
             // save position in Sack list
@@ -141,7 +144,7 @@ BASIN.Basin.prototype = {
 
         if (prevC !== undefined)
             console.log("Chan: From: i,j: " + previ.toFixed(0) + " " + prevj.toFixed(0) +
-                " To i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " elev: " + curC.m_chanElev.toFixed(3) );
+                " To i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " elev: " + curC.chanElev.toFixed(3) );
         else
             console.log("Chan: From: i,j: " + -1 + " " + -1 +
                 " to i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " elev: " + 0 );
