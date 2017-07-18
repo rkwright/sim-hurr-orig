@@ -25,6 +25,7 @@
         var NCELLS = 4;
         var plane;
         var terrain = [];
+        var basin;
         var planeMesh;
 
         var gfxScene = new GFX.Scene( {
@@ -43,7 +44,7 @@
          * Initialize the Demo.
          */
         function initializeDemo() {
-            var basin;
+
             var startTime = performance.now();
 
             basin = new BASIN.Basin(NCELLS);
@@ -52,11 +53,13 @@
 
             createTerrain( NCELLS );
 
-            computeElevations( basin, NCELLS );
+            computeElevations( NCELLS );
 
             createPlaneGeometry( NCELLS );
 
             createPlaneMesh();
+
+            renderStreams();
 
             var elapsed = (performance.now() - startTime)/1000.0;
             console.log("Basin complete! elapsed: " +  elapsed.toFixed(3)  );
@@ -96,11 +99,11 @@
          * Walk the existing geometry and compute, for each quad-patch
          * the elevations of the vertices.
          */
-        function computeElevations( basin, nCells ) {
+        function computeElevations( nCells ) {
 
-            for ( var i = 0; i < nCells*2; i += 2 ) {
-                for ( var j = 0; j < nCells*2; j += 2 ) {
-                    computeCellElevations( basin.cells, i, j );
+            for ( var i = 0; i < nCells; i++ ) {
+                for ( var j = 0; j < nCells; j++ ) {
+                    computeCellElevations( i, j );
                 }
             }
         }
@@ -112,7 +115,7 @@
 
             var wireMat = new THREE.MeshBasicMaterial({
                 color: 0xccccff,
-                wireframe: true, transparent: true, opacity: 0.1
+                wireframe: true, transparent: true, opacity: 0.25
             });
             var colorMat = new THREE.MeshPhongMaterial({
                 color: 0x598527,
@@ -129,9 +132,38 @@
         /**
          * Compute the elevation of the 9 vertices that make up each quad-patch
          */
-        function computeCellElevations( cells, i, j ) {
+        function computeCellElevations( i, j ) {
+            // get the cell for convenience and the terrain indices
+            var it = i * 2;
+            var jt = j * 2;
+            var bounds = basin.maze.cells[i * basin.maze.row + j];
+            var cell = basin.geos[i][j];
 
-            terrain[i+1][j+1].y = cells[i/2][j/2].chanElev;
+            // first set the center of the cell, which is already computed
+            terrain[it+1][jt+1].y = cell.chanElev;
+
+            // next, check each edge and see if this cell has a stream to the next
+            // if so, simply interpolate between the two heights
+            if ((bounds & MAZE.SOUTH_BIT) === 0 ) {
+                terrain[it][jt+1].y = (cell.chanElev + basin.geos[i +
+                        MAZE.YEdge[MAZE.SOUTH]][j+ MAZE.XEdge[MAZE.SOUTH]].chanElev) / 2;
+            }
+
+            if ((bounds & MAZE.WEST_BIT) === 0 ) {
+                terrain[it+1][jt].y = (cell.chanElev + basin.geos[i +
+                        MAZE.YEdge[MAZE.WEST]][j+ MAZE.XEdge[MAZE.WEST]].chanElev) / 2;
+            }
+
+            if ((bounds & MAZE.NORTH_BIT) === 0 ) {
+                terrain[it+2][jt+1].y = (cell.chanElev + basin.geos[i +
+                        MAZE.YEdge[MAZE.NORTH]][j+ MAZE.XEdge[MAZE.NORTH]].chanElev) / 2;
+            }
+
+            if ((bounds & MAZE.EAST_BIT) === 0 ) {
+                terrain[it+1][jt+2].y = (cell.chanElev + basin.geos[i +
+                        MAZE.YEdge[MAZE.EAST]][j+ MAZE.XEdge[MAZE.EAST]].chanElev) / 2;
+            }
+
         }
 
         /**
@@ -178,6 +210,25 @@
 
             plane.faces.push(new THREE.Face3(vC + 0, vC + 1, vC + 3));
             plane.faces.push(new THREE.Face3(vC + 1, vC + 2, vC + 3));
+        }
+
+        function renderStreams() {
+            basin.rat.initSolveObj(0x80, false, renderStream);
+
+            basin.rat.findSolution(-1, -1);
+        }
+
+        function renderStream( label, rat,  i,  j, nexi, nexj, pathlen, bsac ) {
+
+            var material = new THREE.LineBasicMaterial({ color: 0x0000ff });
+
+            var geometry = new THREE.Geometry();
+            geometry.vertices.push(new THREE.Vector3(2 * i + 1 - NCELLS, 2, 2 * j + 1 - NCELLS));
+            geometry.vertices.push(new THREE.Vector3(2 * nexi + 1-NCELLS, 2, 2 * nexj + 1 - NCELLS));
+
+            var line = new THREE.Line(geometry, material);
+
+            gfxScene.add(line);
         }
 
         /**

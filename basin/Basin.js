@@ -32,15 +32,15 @@ BASIN.Basin = function ( nCells ) {
 
     this.nCells = nCells;
 
-    this.catch = null;
+    this.maze = null;
 
     this.rat = null;
 
-    this.cells = [];
+    this.geos = [];
 
     this.firstOrder = [];
 
-    this.elevScale = 4 / nCells;
+    this.elevScale = 1 / nCells;
 
     bthis = this;
 };
@@ -53,15 +53,15 @@ BASIN.Basin.prototype = {
      */
     construct: function () {
 
-        this.catch = new MAZE.Maze( this.nCells, this.nCells, 0, 0 );
+        this.maze = new MAZE.Maze( this.nCells, this.nCells, 0, 0 );
 
-        this.catch.build();
+        this.maze.build();
 
-        for ( var i = 0; i < this.catch.row; i++ ) {
-            this.cells[i] = [];
+        for ( var i = 0; i < this.maze.row; i++ ) {
+            this.geos[i] = [];
 
-            for ( var j = 0; j < this.catch.col; j++ ) {
-                this.cells[i][j] = new BASIN.GeoCell();
+            for ( var j = 0; j < this.maze.col; j++ ) {
+                this.geos[i][j] = new BASIN.GeoCell();
             }
         }
 
@@ -73,7 +73,7 @@ BASIN.Basin.prototype = {
      */
     traverseStreams: function () {
 
-        this.rat = new MAZE.MazeRat(this.catch);
+        this.rat = new MAZE.MazeRat(this.maze);
 
         this.rat.initSolveObj(0x80, false, this.getMorphParms);
 
@@ -92,36 +92,36 @@ BASIN.Basin.prototype = {
      */
     getMorphParms: function( label, rat,  i,  j, nexi, nexj, pathlen, bSac ) {
         var	x0,y0;
-        var curC = bthis.cells[i][j];
-        var nexC = (nexi >= 0 && nexj >=  0) ? bthis.cells[nexi][nexj] : undefined;
+        var curG = bthis.geos[i][j];
+        var nexG = (nexi >= 0 && nexj >=  0) ? bthis.geos[nexi][nexj] : undefined;
         x0 = nexj - j + 1;
         y0 = nexi - i + 1;
 
-        curC.exit = MAZE.EdgeIndx[y0][x0];
+        curG.exit = MAZE.EdgeIndx[y0][x0];
 
         // if this is a cul-de-sac, then init it to be 1, i.e. first order
         if ( bSac )
-            curC.order = 1;
+            curG.order = 1;
 
-        curC.chanSlope = (BASIN.QNUMER / Math.pow( curC.area + BASIN.QINTCP, BASIN.QEXPON)) * bthis.elevScale;
+        curG.chanSlope = (BASIN.QNUMER / Math.pow( curG.area + BASIN.QINTCP, BASIN.QEXPON)) * bthis.elevScale;
 
-        if (nexC !== undefined) {
-            nexC.area += curC.area;
+        if (nexG !== undefined) {
+            nexG.area += curG.area;
 
-            if (nexC.order === curC.order)
-               nexC.order++;
-            else if (nexC.order === -1)
-                nexC.order = curC.order;
+            if (nexG.order === curG.order)
+               nexG.order++;
+            else if (nexG.order === -1)
+                nexG.order = curG.order;
 
             console.log(" Morph: i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " nexti,j: " + nexi.toFixed(0) + " " + nexj.toFixed(0) +
-                " next_area: " + nexC.area.toFixed(0) + " order: " + curC.order.toFixed(0) +
-                " next_order: " + nexC.order.toFixed(0) + " chanSlope: " +  curC.chanSlope.toFixed(3));
-        }
+                " next_area: " + nexG.area.toFixed(0) + " order: " + curG.order.toFixed(0) +
+                " next_order: " + nexG.order.toFixed(0) + " chanSlope: " +  curG.chanSlope.toFixed(3));
+
+
         else
             console.log(" Morph: i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " nexti,j: " + -1 + " " + -1 +
-                " next_area: " + -1 + " order: " + curC.order.toFixed(0) +
-                " next_order: " + -1 + " chanSlope: " +  curC.chanSlope.toFixed(3));
-
+                " next_area: " + -1 + " order: " + curG.order.toFixed(0) +
+                " next_order: " + -1 + " chanSlope: " +  curG.chanSlope.toFixed(3));
     },
 
     /**
@@ -135,23 +135,23 @@ BASIN.Basin.prototype = {
      */
     getChanParms: function( label, rat,  i,  j, previ, prevj, pathlen, bSac ) {
 
-        var curC = bthis.cells[i][j];
-        var prevC = (previ >= 0 && prevj >= 0) ? bthis.cells[previ][prevj] : undefined;
+        var curG = bthis.geos[i][j];
+        var prevG = (previ >= 0 && prevj >= 0) ? bthis.geos[previ][prevj] : undefined;
 
-        if (prevC !== undefined)
-            curC.chanElev = prevC.chanElev + prevC.chanSlope;
+        if (prevG !== undefined)
+            curG.chanElev = prevG.chanElev + prevG.chanSlope;
 
         if (bSac) {
             // save position in Sack list
             bthis.firstOrder.push( MAZE.Coord(i, j));
 
             // chan_leng is the length of the mouse's current travels!
-            curC.m_chanLen = pathlen;
+            curG.m_chanLen = pathlen;
         }
 
-        if (prevC !== undefined)
+        if (prevG !== undefined)
             console.log("Chan: From: i,j: " + previ.toFixed(0) + " " + prevj.toFixed(0) +
-                " To i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " elev: " + curC.chanElev.toFixed(3) );
+                " To i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " elev: " + curG.chanElev.toFixed(3) );
         else
             console.log("Chan: From: i,j: " + -1 + " " + -1 +
                 " to i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " elev: " + 0 );

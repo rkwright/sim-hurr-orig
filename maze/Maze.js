@@ -8,6 +8,12 @@
 var MAZE = {
     revision: 'r01',
 
+    // cardinal directions
+    SOUTH : 0,
+    WEST  : 1,
+    NORTH : 2,
+    EAST  : 3,
+
     // 1 << (cardinal_direction)
     SOUTH_BIT : 1,
     WEST_BIT  : 2,
@@ -58,6 +64,45 @@ MAZE.Maze = function ( col, row, seedX, seedY ) {
     this.seedY = seedY;
 
     this.cells[seedY * this.row + seedX] = 0xff;
+
+    this.random = [
+        0.7089998792613033,
+        0.2984042827075908,
+        0.151327677518597,
+        0.5311409004659107,
+        0.3592650838882001,
+        0.12786247721616228,
+        0.08303331111448853,
+        0.13022329844710323,
+        0.3901487586026049,
+        0.9507173128886488,
+        0.43746401482808395,
+        0.349821701435554,
+        0.7707404924385883,
+        0.032055300540311915,
+        0.20838748976454724,
+        0.9388920819931408,
+        0.0756514748990138,
+        0.606463251716048,
+        0.7744438337871995,
+        0.8881816498950352,
+        0.6959170586112238,
+        0.7078428113596047,
+        0.9319804811012935,
+        0.3097252899190752,
+        0.30846991398937096,
+        0.9158152580489112,
+        0.6421344322846634,
+        0.5149000577715059,
+        0.7896001483653874,
+        0.5242420736444318,
+        0.344417139647895,
+        0.7072985028307064
+    ];
+
+    //for ( var i=0; i<32; i++ ) {
+    //    console.log(Math.random() + ",");
+    //}
 };
 
 MAZE.Maze.prototype = {
@@ -75,7 +120,7 @@ MAZE.Maze.prototype = {
 
             this.findNeighbors( coord.x, coord.y );
 
-            var k = this.getRandomInt( 0, this.neighbors.length );
+            var k = this.getRandomInt2( 0, this.neighbors.length );
 
             coord = this.neighbors.splice(k,1)[0];
 
@@ -156,7 +201,7 @@ MAZE.Maze.prototype = {
 
         if ( edgeRay.length > 0 ) {
 
-            var n = this.getRandomInt(0, edgeRay.length);
+            var n = this.getRandomInt2(0, edgeRay.length);
             edg = edgeRay[n];
             zx  = x + MAZE.XEdge[edg];
             zy  = y + MAZE.YEdge[edg];
@@ -183,6 +228,16 @@ MAZE.Maze.prototype = {
         return Math.floor(Math.random() * (max - min)) + min;
     },
 
+    /**
+     * Return a random integer between min and max. The result may include the minimum
+     * but will NOT include the maximum.  The random value is pulled from a static list of
+     * pre-generated list of random values. This is to allow reproducible mazes.
+     */
+    getRandomInt2: function ( min, max ) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(this.random.pop() * (max - min)) + min;
+    },
     /**
      * @param col
      * @param row
