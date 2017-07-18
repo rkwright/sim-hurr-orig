@@ -141,7 +141,7 @@ MAZE.MazeRat.prototype = {
             }
 
             if (this.mazeEvent)
-                this.mazeEvent( "updateObject", this, posx, posy, msx, msy, this.mouseStack.length, this.bSac );
+                this.mazeEvent( "updateObject", this, posy, posx, msy, msx, this.mouseStack.length, this.bSac );
         }
 
         // if cul-de-sac then re-trace "steps"
@@ -188,7 +188,7 @@ MAZE.MazeRat.prototype = {
                 msy = coord.y;
 
                 if ( !this.bSingleHit && this.mazeEvent !== undefined)
-                    this.mazeEvent( "retraceSteps", this, this.lastX, this.lastY, msx, msy, this.stack.length, this.bSac );
+                    this.mazeEvent( "retraceSteps", this, this.lastY, this.lastX, msy, msx, this.stack.length, this.bSac );
 
                 // only the first cell is a real cul-de-sac, so clear the local flag
     			this.bSac = false;
@@ -219,7 +219,7 @@ MAZE.MazeRat.prototype = {
         // if this is the end, call back and report that we are exiting the initial seed point
         if (this.last_step) {
             if ( !this.bSingleHit && this.mazeEvent !== null )
-                this.mazeEvent( "retraceSteps", this, this.maze.seedX, this.maze.seedY, -1, -1, this.stack.length, this.bSac );
+                this.mazeEvent( "retraceSteps", this, this.maze.seedY, this.maze.seedX, -1, -1, this.stack.length, this.bSac );
 
         }
     },
