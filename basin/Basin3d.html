@@ -29,7 +29,7 @@
         var planeMesh;
 
         var gfxScene = new GFX.Scene( {
-            cameraPos : [10, 20, 20],
+            cameraPos : [10, 10, 10],
             axesHeight:10,
             controls:true,
             displayStats:true
@@ -54,6 +54,9 @@
             createTerrain( NCELLS );
 
             computeElevations( NCELLS );
+
+            dumpTerrain( NCELLS );
+            dumpCells( NCELLS );
 
             createPlaneGeometry( NCELLS );
 
@@ -229,6 +232,27 @@
             var line = new THREE.Line(geometry, material);
 
             gfxScene.add(line);
+        }
+
+        function dumpTerrain ( nCells ) {
+
+            for ( var i = 0; i < nCells * 2 + 1; i++ ) {
+
+                    console.log(i.toFixed(0) + " : " + terrain[i][0].y.toFixed(3) + " " +  terrain[i][1].y.toFixed(3) + " " +
+                        terrain[i][2].y.toFixed(3) + " " + terrain[i][3].y.toFixed(3) + " " + terrain[i][4].y.toFixed(3) + " " +
+                        terrain[i][5].y.toFixed(3) + " " + terrain[i][6].y.toFixed(3) + " " + terrain[i][7].y.toFixed(3) + " " +
+                        terrain[i][8].y.toFixed(3) );
+            }
+
+        }
+
+        function dumpCells( nCells ) {
+
+            for (var i = 0; i < nCells; i++ ) {
+
+                console.log(i.toFixed(0) + " : " + basin.geos[i][0].chanElev.toFixed(3) + " " + basin.geos[i][1].chanElev.toFixed(3) + " " +
+                    basin.geos[i][2].chanElev.toFixed(3) + " " + basin.geos[i][3].chanElev.toFixed(3) );
+            }
         }
 
         /**

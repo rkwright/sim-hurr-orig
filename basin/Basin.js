@@ -109,15 +109,14 @@ BASIN.Basin.prototype = {
             nexG.area += curG.area;
 
             if (nexG.order === curG.order)
-               nexG.order++;
+                nexG.order++;
             else if (nexG.order === -1)
                 nexG.order = curG.order;
 
             console.log(" Morph: i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " nexti,j: " + nexi.toFixed(0) + " " + nexj.toFixed(0) +
                 " next_area: " + nexG.area.toFixed(0) + " order: " + curG.order.toFixed(0) +
-                " next_order: " + nexG.order.toFixed(0) + " chanSlope: " +  curG.chanSlope.toFixed(3));
-
-
+                " next_order: " + nexG.order.toFixed(0) + " chanSlope: " + curG.chanSlope.toFixed(3));
+        }
         else
             console.log(" Morph: i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " nexti,j: " + -1 + " " + -1 +
                 " next_area: " + -1 + " order: " + curG.order.toFixed(0) +
