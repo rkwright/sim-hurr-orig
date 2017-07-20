@@ -22,7 +22,7 @@
 	</head>
 	<body style="margin:0;padding:0;border:0">
     <script type="text/javascript">
-        var NCELLS = 4;
+        var NCELLS = 32;
         var plane;
         var terrain = [];
         var basin;
@@ -137,36 +137,171 @@
          */
         function computeCellElevations( i, j ) {
             // get the cell for convenience and the terrain indices
-            var it = i * 2;
-            var jt = j * 2;
             var bounds = basin.maze.cells[i * basin.maze.row + j];
             var cell = basin.geos[i][j];
-
+            var it = i * 2 + 1;
+            var jt = j * 2 + 1;
             // first set the center of the cell, which is already computed
-            terrain[it+1][jt+1].y = cell.chanElev;
+            terrain[it][jt].y = cell.chanElev;
 
             // next, check each edge and see if this cell has a stream to the next
             // if so, simply interpolate between the two heights
+            computeStreamElev( bounds, cell, i, j, it, jt );
+
+            // now check the other interpolated points
+            computeElevBounds( i, j );
+        }
+
+        /**
+         * Compute the interpolated elevation of any streams entering or leaving the cell
+         */
+        function computeStreamElev ( bounds, cell, i, j ) {
+            var it = i * 2;
+            var jt = j * 2;
+
             if ((bounds & MAZE.SOUTH_BIT) === 0 ) {
                 terrain[it][jt+1].y = (cell.chanElev + basin.geos[i +
-                        MAZE.YEdge[MAZE.SOUTH]][j+ MAZE.XEdge[MAZE.SOUTH]].chanElev) / 2;
+                MAZE.YEdge[MAZE.SOUTH]][j+ MAZE.XEdge[MAZE.SOUTH]].chanElev) / 2;
             }
 
             if ((bounds & MAZE.WEST_BIT) === 0 ) {
                 terrain[it+1][jt].y = (cell.chanElev + basin.geos[i +
-                        MAZE.YEdge[MAZE.WEST]][j+ MAZE.XEdge[MAZE.WEST]].chanElev) / 2;
+                MAZE.YEdge[MAZE.WEST]][j+ MAZE.XEdge[MAZE.WEST]].chanElev) / 2;
             }
 
             if ((bounds & MAZE.NORTH_BIT) === 0 ) {
                 terrain[it+2][jt+1].y = (cell.chanElev + basin.geos[i +
-                        MAZE.YEdge[MAZE.NORTH]][j+ MAZE.XEdge[MAZE.NORTH]].chanElev) / 2;
+                MAZE.YEdge[MAZE.NORTH]][j+ MAZE.XEdge[MAZE.NORTH]].chanElev) / 2;
             }
 
             if ((bounds & MAZE.EAST_BIT) === 0 ) {
                 terrain[it+1][jt+2].y = (cell.chanElev + basin.geos[i +
-                        MAZE.YEdge[MAZE.EAST]][j+ MAZE.XEdge[MAZE.EAST]].chanElev) / 2;
+                MAZE.YEdge[MAZE.EAST]][j+ MAZE.XEdge[MAZE.EAST]].chanElev) / 2;
+            }
+        }
+
+        /**
+         *  Compute the interpolated elevation of each of the 8 points around the periphery of
+         *  the cell.  Some, e.g. if there is a stream entering or exiting, will already be computed
+         *  so they won't be -1 and can be skipped
+         */
+        function computeElevBounds ( i, j ) {
+            var offset =
+                [
+                    { i : -1, j: 0 },   // south
+                    { i : -1, j: -1 },
+                    { i : 0, j: -1 },   // west
+                    { i : 1, j: -1 },
+                    { i : 1, j: 0 },    // north
+                    { i : 1, j: 1 },
+                    { i : 0, j: 1 },    // east
+                    { i : -1, j: 1 }
+                ];
+
+            try {
+
+
+            var heights = [];
+            var it,jt;
+            var rowLim = basin.maze.row - 1;
+            var colLim = basin.maze.col - 1;
+            var tRowLim = terrain.length;
+            var tColLim = terrain[0].length;
+
+            for ( var n=0; n<8; n++ ) {
+                it = i * 2 + offset[n].i + 1;
+                jt = j * 2 + offset[n].j + 1;
+
+                if (it >= 0 && it < tRowLim && jt >= 0 && jt < tColLim && terrain[it][jt].y < 0) {
+
+                    switch (n) {
+                        case 0:     // south
+                            if (i !== 0) {
+                                heights.push(basin.geos[i - 1][j].chanElev);
+                            }
+                            break;
+                        case 1:     // southwest
+                            if (i !== 0 && j !== 0) {
+                                heights.push(basin.geos[i - 1][j - 1].chanElev);
+                            }
+                            if (j !== 0) {
+                                heights.push(basin.geos[i][j - 1].chanElev);
+                            }
+                            if (i !== 0) {
+                                heights.push(basin.geos[i - 1][j].chanElev);
+                            }
+                            break;
+                        case 2:     // west
+                            if (j !== 0) {
+                                heights.push(basin.geos[i][j - 1].chanElev);
+                            }
+                            break;
+                        case 3:     // northwest
+                            if (j !== 0) {
+                                heights.push(basin.geos[i - 1][j].chanElev);
+                            }
+                            if (i !== rowLim && j !== 0) {
+                                heights.push(basin.geos[i + 1][j - 1].chanElev);
+                            }
+                            if (i !== rowLim) {
+                                heights.push(basin.geos[i + 1][j].chanElev);
+                            }
+                            break;
+                        case 4:     // north
+                            if (i !== rowLim) {
+                                heights.push(basin.geos[i + 1][j].chanElev);
+                            }
+                            break;
+                        case 5:     // northeast
+                            if (i !== rowLim) {
+                                heights.push(basin.geos[i + 1][j].chanElev);
+                            }
+                            if (j !== colLim) {
+                                heights.push(basin.geos[i][j + 1].chanElev);
+                            }
+                            if (i !== rowLim && j !== colLim) {
+                                heights.push(basin.geos[i + 1][j + 1].chanElev);
+                            }
+                            break;
+                        case 6:     // east
+                            // if we're not on the eastern rim of the catchment
+                            if (j !== colLim) {
+                                heights.push(basin.geos[i][j + 1].chanElev);
+                            }
+                            break;
+                        case 7:     // southeast
+                            if (i !== rowLim) {
+                                heights.push(basin.geos[i + 1][j].chanElev);
+                            }
+                            if (j !== colLim) {
+                                heights.push(basin.geos[i][j + 1].chanElev);
+                            }
+                            if (i !== 0 && j !== colLim) {
+                                heights.push(basin.geos[i - 1][j + 1].chanElev);
+                            }
+                            break;
+                    }
+
+                    heights.push(basin.geos[i][j].chanElev);
+
+                    terrain[it][jt].y = interfluveHeight(heights);
+                }
+            }
+            }
+            catch ( err ) {
+                console.log("Bummer");
+            }
+        }
+
+        function interfluveHeight ( heights ) {
+            var n = heights.length;
+            var h = 0;
+
+            while (heights.length > 0) {
+                h += heights.pop();
             }
 
+            return h / n * 2;
         }
 
         /**
