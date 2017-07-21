@@ -22,7 +22,7 @@
 	</head>
 	<body style="margin:0;padding:0;border:0">
     <script type="text/javascript">
-        var NCELLS = 32;
+        var NCELLS = 16;
         var plane;
         var terrain = [];
         var basin;
@@ -96,6 +96,9 @@
                     createQuadPatch( i, j );
                 }
             }
+
+            plane.computeFaceNormals();
+            plane.computeVertexNormals();
         }
 
         /**
@@ -118,18 +121,19 @@
 
             var wireMat = new THREE.MeshBasicMaterial({
                 color: 0xccccff,
-                wireframe: true, transparent: true, opacity: 0.25
+                wireframe: true, transparent: true, opacity: 0.05
             });
-            var colorMat = new THREE.MeshPhongMaterial({
+            var colorMat = new THREE.MeshLambertMaterial({
                 color: 0x598527,
                 side: THREE.DoubleSide
             });
 
-            planeMesh = THREE.SceneUtils.createMultiMaterialObject(plane, [colorMat, wireMat]);
+            //planeMesh = THREE.SceneUtils.createMultiMaterialObject(plane,[colorMat, wireMat]);
+            planeMesh = new THREE.Mesh(plane,colorMat);
 
             // and add it to the scene
             gfxScene.add(planeMesh);
-            planeMesh.position.set(-NCELLS, 0, -NCELLS)
+            planeMesh.position.set(-NCELLS, 0, -NCELLS);
         }
 
         /**

@@ -40,7 +40,7 @@ BASIN.Basin = function ( nCells ) {
 
     this.firstOrder = [];
 
-    this.elevScale = 1 / nCells * 2;
+    this.elevScale = 5 / nCells ;
 
     bthis = this;
 };
