@@ -27,9 +27,10 @@
         var terrain = [];
         var basin;
         var planeMesh;
+        var scale3D = 5 / NCELLS;
 
         var gfxScene = new GFX.Scene( {
-            cameraPos : [10, 10, 10],
+            cameraPos : [-10, 10, -10],
             axesHeight:10,
             controls:true,
             displayStats:true
@@ -55,14 +56,14 @@
 
             computeElevations( NCELLS );
 
-            dumpTerrain( NCELLS );
-            dumpCells( NCELLS );
+            //dumpTerrain( NCELLS );
+            //dumpCells( NCELLS );
 
             createPlaneGeometry( NCELLS );
 
             createPlaneMesh();
 
-            renderStreams();
+            //renderStreams();
 
             var elapsed = (performance.now() - startTime)/1000.0;
             console.log("Basin complete! elapsed: " +  elapsed.toFixed(3)  );
@@ -78,7 +79,7 @@
             for ( var i = 0; i < nCells*2+1; i++ ) {
                 terrain[i] = [];
                 for ( var j = 0; j < nCells*2+1; j++ ) {
-                    terrain[i][j] = new THREE.Vector3(i, -1, j);
+                    terrain[i][j] = new THREE.Vector3(i * scale3D, -1, j * scale3D);
                 }
             }
         }
@@ -124,8 +125,8 @@
                 wireframe: true, transparent: true, opacity: 0.05
             });
             var colorMat = new THREE.MeshLambertMaterial({
-                color: 0x598527,
-                side: THREE.DoubleSide
+                color: 0x598527//,
+                //side: THREE.DoubleSide
             });
 
             //planeMesh = THREE.SceneUtils.createMultiMaterialObject(plane,[colorMat, wireMat]);
@@ -133,7 +134,8 @@
 
             // and add it to the scene
             gfxScene.add(planeMesh);
-            planeMesh.position.set(-NCELLS, 0, -NCELLS);
+            //planeMesh.rotateY(Math.PI/2)
+            planeMesh.position.set(-NCELLS * scale3D, 0, -NCELLS * scale3D);
         }
 
         /**
