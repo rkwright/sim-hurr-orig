@@ -57,6 +57,8 @@ BASIN.Basin.prototype = {
 
         this.maze.build();
 
+        this.maze.dissolveExit( MAZE.WEST);
+
         for ( var i = 0; i < this.maze.row; i++ ) {
             this.geos[i] = [];
 
@@ -77,13 +79,13 @@ BASIN.Basin.prototype = {
 
         this.rat.initSolveObj(0x80, false, this.getMorphParms);
 
-        this.rat.findSolution(-1, -1);
+        this.rat.findSolution(-1, 0);
 
         this.rat.retraceSteps();
 
         this.rat.initSolveObj(0x80, true, this.getChanParms);
 
-        this.rat.findSolution(-1, -1);
+        this.rat.findSolution(-1, 0);
     },
 
     /**

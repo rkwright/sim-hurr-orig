@@ -22,7 +22,7 @@
 	</head>
 	<body style="margin:0;padding:0;border:0">
     <script type="text/javascript">
-        var NCELLS = 4;
+        var NCELLS = 32;
         var plane;
         var terrain = [];
         var basin;
@@ -158,25 +158,30 @@
         function computeStreamElev ( bounds, cell, i, j ) {
             var it = i * 2 + 1 ;
             var jt = j * 2 + 1;
+            var eI, eJ;
 
             if ((bounds & MAZE.SOUTH_BIT) === 0 ) {
-                terrain[it-1][jt].y = (cell.chanElev + basin.geos[i +
-                MAZE.YEdge[MAZE.SOUTH]][j+ MAZE.XEdge[MAZE.SOUTH]].chanElev) / 2;
+                eI = Math.max(i + MAZE.YEdge[MAZE.SOUTH], 0);
+                eJ = Math.max(j + MAZE.XEdge[MAZE.SOUTH], 0);
+                terrain[it-1][jt].y = (cell.chanElev + basin.geos[eI][eJ].chanElev) / 2;
             }
 
             if ((bounds & MAZE.WEST_BIT) === 0 ) {
-                terrain[it][jt-1].y = (cell.chanElev + basin.geos[i +
-                MAZE.YEdge[MAZE.WEST]][j+ MAZE.XEdge[MAZE.WEST]].chanElev) / 2;
+                eI = Math.max(i + MAZE.YEdge[MAZE.WEST], 0);
+                eJ = Math.max(j + MAZE.XEdge[MAZE.WEST], 0);
+                terrain[it][jt-1].y = (cell.chanElev + basin.geos[eI][eJ].chanElev) / 2;
             }
 
             if ((bounds & MAZE.NORTH_BIT) === 0 ) {
-                terrain[it+1][jt].y = (cell.chanElev + basin.geos[i +
-                MAZE.YEdge[MAZE.NORTH]][j+ MAZE.XEdge[MAZE.NORTH]].chanElev) / 2;
+                eI = Math.max(i + MAZE.YEdge[MAZE.NORTH], 0);
+                eJ = Math.max(j + MAZE.XEdge[MAZE.NORTH], 0);
+                terrain[it+1][jt].y = (cell.chanElev + basin.geos[eI][eJ].chanElev) / 2;
             }
 
             if ((bounds & MAZE.EAST_BIT) === 0 ) {
-                terrain[it][jt+1].y = (cell.chanElev + basin.geos[i +
-                MAZE.YEdge[MAZE.EAST]][j+ MAZE.XEdge[MAZE.EAST]].chanElev) / 2;
+                eI = Math.max(i + MAZE.YEdge[MAZE.EAST], 0);
+                eJ = Math.max(j + MAZE.XEdge[MAZE.EAST], 0);
+                terrain[it][jt+1].y = (cell.chanElev + basin.geos[eI][eJ].chanElev) / 2;
             }
         }
 

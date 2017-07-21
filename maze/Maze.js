@@ -120,7 +120,7 @@ MAZE.Maze.prototype = {
 
             this.findNeighbors( coord.x, coord.y );
 
-            var k = this.getRandomInt2( 0, this.neighbors.length );
+            var k = this.getRandomInt( 0, this.neighbors.length );
 
             coord = this.neighbors.splice(k,1)[0];
 
@@ -201,7 +201,7 @@ MAZE.Maze.prototype = {
 
         if ( edgeRay.length > 0 ) {
 
-            var n = this.getRandomInt2(0, edgeRay.length);
+            var n = this.getRandomInt(0, edgeRay.length);
             edg = edgeRay[n];
             zx  = x + MAZE.XEdge[edg];
             zy  = y + MAZE.YEdge[edg];
@@ -212,6 +212,14 @@ MAZE.Maze.prototype = {
             //console.log("In cell " + x.toFixed(0) + " " + y.toFixed(0) +
              //   " dissolving edge: " + this.EdgeStr[edg] + " into cell: " + zx.toFixed(0) + " " + zy.toFixed(0));
         }
+    },
+
+    /**
+     * Dissolve the specified edge of the seed cell to form an exit
+     * @param edg
+     */
+    dissolveExit: function ( edg ) {
+        this.cells[this.seedY * this.row + this.seedX]   ^= MAZE.EdgeBit[edg];
     },
 
     /**
