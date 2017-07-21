@@ -7,7 +7,7 @@
 
 var BASIN = {
             revision : 'r01',
-            QNUMER   : 8.0,	    // numerator of slope f(Q) eqn.
+            QNUMER   : 1.0,	    // numerator of slope f(Q) eqn.
             QEXPON   : 0.1,     // exponent of slope f(Q) eqn
             QINTCP   : 2.0,     // offset for slope f(Q) eqn
             RUGOSITY : 0.5     // degree of rugosity (channel interfluve height)
@@ -40,7 +40,7 @@ BASIN.Basin = function ( nCells ) {
 
     this.firstOrder = [];
 
-    this.elevScale = 1 / nCells;
+    this.elevScale = 1 / nCells * 2;
 
     bthis = this;
 };
