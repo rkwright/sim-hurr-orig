@@ -65,6 +65,8 @@
 
             //renderStreams();
 
+            renderSides();
+
             var elapsed = (performance.now() - startTime)/1000.0;
             console.log("Basin complete! elapsed: " +  elapsed.toFixed(3)  );
         }
@@ -125,8 +127,8 @@
                 wireframe: true, transparent: true, opacity: 0.05
             });
             var colorMat = new THREE.MeshLambertMaterial({
-                color: 0x598527//,
-                //side: THREE.DoubleSide
+                color: 0x598527,
+                side: THREE.DoubleSide
             });
 
             //planeMesh = THREE.SceneUtils.createMultiMaterialObject(plane,[colorMat, wireMat]);
@@ -419,6 +421,33 @@
             gfxScene.renderScene();
         }
 
+        function renderSides() {
+
+            var maxZ = terrain[0][basin.maze.row*2-1].z * scale3D;
+            var maxX = terrain[basin.maze.row*2-1][0].x * scale3D;
+            var maxYX = terrain[basin.maze.row*2-1][0].y * basin.elevScale;
+            var maxYZ = terrain[0][basin.maze.row*2-1].y * basin.elevScale;
+            var maxYXZ = terrain[basin.maze.row*2-1][basin.maze.row*2-1].y * basin.elevScale;
+            var nCS = -NCELLS/2 * scale3D;
+
+            var shape = new THREE.Shape();
+
+            /*
+            shape.moveTo(nCS, 0);
+            shape.lineTo(maxX, 0);
+            shape.lineTo(maxX, maxYX);
+            shape.lineTo(nCS, 0);
+            */
+
+            shape.moveTo(0, 0);
+            shape.lineTo(10, 0);
+            shape.lineTo(10, 10);
+            shape.lineTo(0, 0);
+
+            var material = new THREE.MeshBasicMaterial( { color : 0xff0000 } );
+            var shapeMesh = new THREE.Mesh(new THREE.ShapeGeometry(shape), material);
+            gfxScene.add(shapeMesh);
+        }
     </script>
 
 	</body>
