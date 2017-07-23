@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!--
+  			@author: rkwright@geofx.com
+		-->
+		<title>Basin 3D</title>
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+
+		<!-- Set the viewport size to the screen size, so it will be displayed maximized, but unscaled. -->
+		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1"/>
+
+		<!-- Include several libraries from THREE.js and the Scene class  -->
+		<script src="../three-js/three.js" type="text/javascript"></script>
+		<script src="../three-js/Detector.js" type="text/javascript"></script>
+		<script src="../three-js/OrbitControls-Touch-Ortho.js" type="text/javascript"></script>
+		<script src="../three-js/stats.js" type="text/javascript"></script>
+        <script src="../gfx/gfx-scene.js" type="text/javascript"></script>
+        <script src="../maze/Maze.js"></script>
+        <script src="../maze/MazeRat.js"></script>
+        <script src="Basin.js"></script>
+		<script src="Basin3D.js"></script>
+	</head>
+	<body style="margin:0;padding:0;border:0">
+    <script type="text/javascript">
+        var NCELLS = 16;
+        var basin3D;
+
+        var gfxScene = new GFX.Scene( {
+            cameraPos : [-10, 10, -10],
+            axesHeight:10,
+            controls:true,
+            displayStats:true
+        });
+
+        initializeDemo();
+
+        animateScene();
+
+        /**
+         * Initialize the Demo.
+         */
+        function initializeDemo() {
+
+            var startTime = performance.now();
+
+            basin3D = new BASIN.Basin3D(NCELLS);
+
+            var elapsed = (performance.now() - startTime)/1000.0;
+            console.log("Basin complete! elapsed: " +  elapsed.toFixed(3)  );
+        }
+
+
+        /**
+         * Animate the scene and call rendering.
+         */
+        function animateScene() {
+
+            requestAnimationFrame(animateScene);
+
+            gfxScene.renderScene();
+        }
+
+    </script>
+
+	</body>
+</html>
