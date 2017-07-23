@@ -150,116 +150,109 @@ BASIN.Basin3D.prototype = {
     computeElevBounds: function ( bounds, i, j ) {
         var offset =
             [
-                {i: -1, j: 0},   // south
+                {i: -1, j:  0},   // south
                 {i: -1, j: -1},
-                {i: 0, j: -1},   // west
-                {i: 1, j: -1},
-                {i: 1, j: 0},   // north
-                {i: 1, j: 1},
-                {i: 0, j: 1},   // east
-                {i: -1, j: 1}
+                {i:  0, j: -1},   // west
+                {i:  1, j: -1},
+                {i:  1, j:  0},   // north
+                {i:  1, j:  1},
+                {i:  0, j:  1},   // east
+                {i: -1, j:  1}
             ];
 
-        try {
+        var slopes = [];
+        var it, jt;
+        var rowLim = this.basin.maze.row - 1;
+        var colLim = this.basin.maze.col - 1;
+        var tRowLim = this.terrain.length;
+        var tColLim = this.terrain[0].length;
+        var geos = this.basin.geos;
+        var base = geos[i][j].chanElev;
 
+        for (var n = 0; n < 8; n++) {
+            it = i * 2 + offset[n].i + 1;
+            jt = j * 2 + offset[n].j + 1;
 
-            var slopes = [];
-            var it, jt;
-            var rowLim = this.basin.maze.row - 1;
-            var colLim = this.basin.maze.col - 1;
-            var tRowLim = this.terrain.length;
-            var tColLim = this.terrain[0].length;
-            var base = this.basin.geos[i][j].chanElev;
+            // if the current point is a stream, then obviously it's not an interfluve
+            var bStream = ((bounds & MAZE.SOUTH_BIT) === 0 && n === 0 ) ||
+                ((bounds & MAZE.WEST_BIT) === 0 && n === 2 ) ||
+                ((bounds & MAZE.NORTH_BIT) === 0 && n === 4 ) ||
+                ((bounds & MAZE.EAST_BIT) === 0 && n === 6 );
 
-            for (var n = 0; n < 8; n++) {
-                it = i * 2 + offset[n].i + 1;
-                jt = j * 2 + offset[n].j + 1;
+            if (it >= 0 && it < tRowLim && jt >= 0 && jt < tColLim && !bStream) {
 
-                // if the current point is a stream, then obviously it's not an interfluve
-                var bStream = ((bounds & MAZE.SOUTH_BIT) === 0 && n === 0 ) ||
-                    ((bounds & MAZE.WEST_BIT) === 0 && n === 2 ) ||
-                    ((bounds & MAZE.NORTH_BIT) === 0 && n === 4 ) ||
-                    ((bounds & MAZE.EAST_BIT) === 0 && n === 6 );
-
-                if (it >= 0 && it < tRowLim && jt >= 0 && jt < tColLim && !bStream) {
-
-                    switch (n) {
-                        case 0:     // south
-                            if (i !== 0) {
-                                slopes.push(this.basin.geos[i - 1][j].chanSlope);
-                            }
-                            break;
-                        case 1:     // southwest
-                            if (i !== 0 && j !== 0) {
-                                slopes.push(this.basin.geos[i - 1][j - 1].chanSlope);
-                            }
-                            if (j !== 0) {
-                                slopes.push(this.basin.geos[i][j - 1].chanSlope);
-                            }
-                            if (i !== 0) {
-                                slopes.push(this.basin.geos[i - 1][j].chanSlope);
-                            }
-                            break;
-                        case 2:     // west
-                            if (j !== 0) {
-                                slopes.push(this.basin.geos[i][j - 1].chanSlope);
-                            }
-                            break;
-                        case 3:     // northwest
-                            if (i !== 0) {
-                                slopes.push(this.basin.geos[i - 1][j].chanSlope);
-                            }
-                            if (i !== rowLim && j !== 0) {
-                                slopes.push(this.basin.geos[i + 1][j - 1].chanSlope);
-                            }
-                            if (i !== rowLim) {
-                                slopes.push(this.basin.geos[i + 1][j].chanSlope);
-                            }
-                            break;
-                        case 4:     // north
-                            if (i !== rowLim) {
-                                slopes.push(this.basin.geos[i + 1][j].chanSlope);
-                            }
-                            break;
-                        case 5:     // northeast
-                            if (i !== rowLim) {
-                                slopes.push(this.basin.geos[i + 1][j].chanSlope);
-                            }
-                            if (j !== colLim) {
-                                slopes.push(this.basin.geos[i][j + 1].chanSlope);
-                            }
-                            if (i !== rowLim && j !== colLim) {
-                                slopes.push(this.basin.geos[i + 1][j + 1].chanSlope);
-                            }
-                            break;
-                        case 6:     // east
-                            if (j !== colLim) {
-                                slopes.push(this.basin.geos[i][j + 1].chanSlope);
-                            }
-                            break;
-                        case 7:     // southeast
-                            if (i !== rowLim) {
-                                slopes.push(this.basin.geos[i + 1][j].chanSlope);
-                            }
-                            if (j !== colLim) {
-                                slopes.push(this.basin.geos[i][j + 1].chanSlope);
-                            }
-                            if (i !== 0 && j !== colLim) {
-                                slopes.push(this.basin.geos[i - 1][j + 1].chanSlope);
-                            }
-                            break;
-                    }
-
-                    slopes.push(this.basin.geos[i][j].chanSlope);
-
-                    this.terrain[it][jt].y = Math.max(this.terrain[it][jt].y, this.interfluveHeight(slopes, base));
-                    if (this.terrain[it][jt].y < 0)
-                        debugger;
+                switch (n) {
+                    case 0:     // south
+                        if (i !== 0) {
+                            slopes.push(this.basin.geos[i - 1][j].chanSlope);
+                        }
+                        break;
+                    case 1:     // southwest
+                        if (i !== 0 && j !== 0) {
+                            slopes.push(geos[i - 1][j - 1].chanSlope);
+                        }
+                        if (j !== 0) {
+                            slopes.push(geos[i][j - 1].chanSlope);
+                        }
+                        if (i !== 0) {
+                            slopes.push(geos[i - 1][j].chanSlope);
+                        }
+                        break;
+                    case 2:     // west
+                        if (j !== 0) {
+                            slopes.push(geos[i][j - 1].chanSlope);
+                        }
+                        break;
+                    case 3:     // northwest
+                        if (i !== 0) {
+                            slopes.push(geos[i - 1][j].chanSlope);
+                        }
+                        if (i !== rowLim && j !== 0) {
+                            slopes.push(geos[i + 1][j - 1].chanSlope);
+                        }
+                        if (i !== rowLim) {
+                            slopes.push(geos[i + 1][j].chanSlope);
+                        }
+                        break;
+                    case 4:     // north
+                        if (i !== rowLim) {
+                            slopes.push(geos[i + 1][j].chanSlope);
+                        }
+                        break;
+                    case 5:     // northeast
+                        if (i !== rowLim) {
+                            slopes.push(geos[i + 1][j].chanSlope);
+                        }
+                        if (j !== colLim) {
+                            slopes.push(geos[i][j + 1].chanSlope);
+                        }
+                        if (i !== rowLim && j !== colLim) {
+                            slopes.push(geos[i + 1][j + 1].chanSlope);
+                        }
+                        break;
+                    case 6:     // east
+                        if (j !== colLim) {
+                            slopes.push(geos[i][j + 1].chanSlope);
+                        }
+                        break;
+                    case 7:     // southeast
+                        if (i !== rowLim) {
+                            slopes.push(geos[i + 1][j].chanSlope);
+                        }
+                        if (j !== colLim) {
+                            slopes.push(geos[i][j + 1].chanSlope);
+                        }
+                        if (i !== 0 && j !== colLim) {
+                            slopes.push(geos[i - 1][j + 1].chanSlope);
+                        }
+                        break;
                 }
+
+                slopes.push(geos[i][j].chanSlope);
+
+                this.terrain[it][jt].y = Math.max(this.terrain[it][jt].y, this.interfluveHeight(slopes, base));
+
             }
-        }
-        catch (err) {
-            console.log("Bummer");
         }
     },
 
