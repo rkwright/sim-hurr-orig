@@ -131,8 +131,9 @@
                 side: THREE.DoubleSide
             });
 
+            var vertexMat = new THREE.MeshLambertMaterial({ vertexColors:THREE.VertexColors, side:THREE.DoubleSide });
             //planeMesh = THREE.SceneUtils.createMultiMaterialObject(plane,[colorMat, wireMat]);
-            planeMesh = new THREE.Mesh(plane,colorMat);
+            planeMesh = new THREE.Mesh(plane,vertexMat);
 
             // and add it to the scene
             gfxScene.add(planeMesh);
@@ -330,6 +331,7 @@
          */
         function createQuadPatch( i, j ) {
             var vC = plane.vertices.length;
+            var face;
 
             // first pair of triangles
             plane.vertices.push( terrain[i][j] );
@@ -337,8 +339,17 @@
             plane.vertices.push( terrain[i+1][j+1] );
             plane.vertices.push( terrain[i+1][j] );
 
-            plane.faces.push(new THREE.Face3(vC + 0, vC + 1, vC + 2));
-            plane.faces.push(new THREE.Face3(vC + 0, vC + 2, vC + 3));
+            face = new THREE.Face3(vC + 0, vC + 1, vC + 2);
+            face.vertexColors[0] = new THREE.Color(0x598527);
+            face.vertexColors[1] = new THREE.Color(0x598527);
+            face.vertexColors[2] = new THREE.Color(0x598527);
+            plane.faces.push(face);
+
+            face = new THREE.Face3(vC + 0, vC + 2, vC + 3);
+            face.vertexColors[0] = new THREE.Color(0x598527);
+            face.vertexColors[1] = new THREE.Color(0x598527);
+            face.vertexColors[2] = new THREE.Color(0x598527);
+            plane.faces.push(face);
 
             // second pair of triangles
             vC = plane.vertices.length;
@@ -347,8 +358,17 @@
             plane.vertices.push( terrain[i+1][j+2] );
             plane.vertices.push( terrain[i+1][j+1] );
 
-            plane.faces.push(new THREE.Face3(vC + 0, vC + 1, vC + 3));
-            plane.faces.push(new THREE.Face3(vC + 1, vC + 2, vC + 3));
+            face = new THREE.Face3(vC + 0, vC + 1, vC + 3);
+            face.vertexColors[0] = new THREE.Color(0x598527);
+            face.vertexColors[1] = new THREE.Color(0x598527);
+            face.vertexColors[2] = new THREE.Color(0x598527);
+            plane.faces.push( face );
+
+            face = new THREE.Face3(vC + 1, vC + 2, vC + 3);
+            face.vertexColors[0] = new THREE.Color(0x598527);
+            face.vertexColors[1] = new THREE.Color(0x598527);
+            face.vertexColors[2] = new THREE.Color(0x598527);
+            plane.faces.push( face );
 
             // third pair of triangles
             vC = plane.vertices.length;
@@ -357,8 +377,17 @@
             plane.vertices.push( terrain[i+2][j+2] );
             plane.vertices.push( terrain[i+2][j+1] );
 
-            plane.faces.push(new THREE.Face3(vC + 0, vC + 1, vC + 2));
-            plane.faces.push(new THREE.Face3(vC + 0, vC + 2, vC + 3));
+            face = new THREE.Face3(vC + 0, vC + 1, vC + 2);
+            face.vertexColors[0] = new THREE.Color(0x598527);
+            face.vertexColors[1] = new THREE.Color(0x598527);
+            face.vertexColors[2] = new THREE.Color(0x598527);
+            plane.faces.push( face );
+
+            face = new THREE.Face3(vC + 0, vC + 2, vC + 3);
+            face.vertexColors[0] = new THREE.Color(0x598527);
+            face.vertexColors[1] = new THREE.Color(0x598527);
+            face.vertexColors[2] = new THREE.Color(0x598527);
+            plane.faces.push( face );
 
             // fourth pair of triangles
             vC = plane.vertices.length;
@@ -367,8 +396,17 @@
             plane.vertices.push( terrain[i+2][j+1] );
             plane.vertices.push( terrain[i+2][j] );
 
-            plane.faces.push(new THREE.Face3(vC + 0, vC + 1, vC + 3));
-            plane.faces.push(new THREE.Face3(vC + 1, vC + 2, vC + 3));
+            face = new THREE.Face3(vC + 0, vC + 1, vC + 3);
+            face.vertexColors[0] = new THREE.Color(0x598527);
+            face.vertexColors[1] = new THREE.Color(0x598527);
+            face.vertexColors[2] = new THREE.Color(0x598527);
+            plane.faces.push(face);
+
+            face = new THREE.Face3(vC + 1, vC + 2, vC + 3);
+            face.vertexColors[0] = new THREE.Color(0x598527);
+            face.vertexColors[1] = new THREE.Color(0x598527);
+            face.vertexColors[2] = new THREE.Color(0x598527);
+            plane.faces.push(face);
         }
 
         function renderStreams() {
