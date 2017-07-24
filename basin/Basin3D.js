@@ -439,30 +439,38 @@ BASIN3D.Basin3D.prototype = {
      */
     renderSides: function() {
 
-        var maxZ = this.terrain[0][this.basin.maze.row * 2 - 1].z * this.scale3D;
-        var maxX = this.terrain[this.basin.maze.row * 2 - 1][0].x * this.scale3D;
-        var maxYX = this.terrain[this.basin.maze.row * 2 - 1][0].y * this.basin.elevScale;
-        var maxYZ = this.terrain[0][this.basin.maze.row * 2 - 1].y * this.basin.elevScale;
-        var maxYXZ = this.terrain[this.basin.maze.row * 2 - 1][this.basin.maze.row * 2 - 1].y * this.basin.elevScale;
-        var nCS = -this.nCells / 2 * this.scale3D;
+        var maxRow = this.basin.maze.row * 2;
+        var maxZ = this.terrain[0][this.basin.maze.row * 2 - 1].z; // * this.scale3D;
+        var minX = this.terrain[0][0].x; // * this.scale3D;
+        var maxX = this.terrain[this.basin.maze.row * 2][0].x; // * this.scale3D;
+        var maxYX = this.terrain[this.basin.maze.row * 2][0].y ; //* this.basin.elevScale;
+        var maxYZ = this.terrain[0][this.basin.maze.row * 2 - 1].y;  //* this.basin.elevScale;
+        var maxYXZ = this.terrain[this.basin.maze.row * 2 - 1][this.basin.maze.row * 2 - 1].y ;  //* this.basin.elevScale;
+        var nCS = this.nCells * this.scale3D;
 
         var shape = new THREE.Shape();
 
-        /*
-        shape.moveTo(nCS, 0);
-        shape.lineTo(maxX, 0);
-        shape.lineTo(maxX, maxYX);
-        shape.lineTo(nCS, 0);
-        */
+        shape.moveTo(minX - nCS, 0);
+        shape.lineTo(maxX - nCS, 0);
+        shape.lineTo(maxX - nCS, maxYX);
 
+        for ( var i=maxRow; i>=0; i-- ) {
+            var x = this.terrain[i][0].x;
+            var y = this.terrain[i][0].y;
+            shape.lineTo(x - nCS, y);
+        }
+
+        /*
         shape.moveTo(0, 0);
         shape.lineTo(10, 0);
         shape.lineTo(10, 10);
         shape.lineTo(0, 0);
+        */
 
-        var material = new THREE.MeshBasicMaterial({color: 0xff0000});
+        var material = new THREE.MeshBasicMaterial({color: 0x222222, side:THREE.DoubleSide});
         var shapeMesh = new THREE.Mesh(new THREE.ShapeGeometry(shape), material);
         gfxScene.add(shapeMesh);
+        shapeMesh.position.set(0, 0, -nCS);
     }
 
     /*
