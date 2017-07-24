@@ -1,4 +1,8 @@
-BASIN.Basin3D = function ( nCells ) {
+BASIN3D = {
+
+};
+
+BASIN3D.Basin3D = function ( nCells ) {
 
     this.nCells = nCells;
     this.plane = null;
@@ -7,6 +11,17 @@ BASIN.Basin3D = function ( nCells ) {
     this.planeMesh = null;
     this.scale3D = 5 / nCells;
 
+    this.surfaceCover = [
+        { name: "grass"    , rgb: 0xE6DF73, ht : 0 },
+        { name: "chapparal", rgb: 0xC4BF6E, ht : 10 },
+        { name: "hardwood" , rgb: 0x598527, ht : 20 },
+        { name: "conifer"  , rgb: 0x258260, ht : 30 },
+        { name: "tundra"   , rgb: 0xB9D39C, ht : 40 },
+        { name: "rock"     , rgb: 0xC4CCCC, ht : 50 },
+        { name: "snow"     , rgb: 0xF8FBFC, ht : 60 }
+    ];
+
+    this.maxElev = 0;
 
     this.basin = new BASIN.Basin(nCells);
 
@@ -15,6 +30,10 @@ BASIN.Basin3D = function ( nCells ) {
     this.createTerrain();
 
     this.computeElevations();
+
+    this.getMaxElev();
+
+    this.deltaHt = (this.maxElev + 0.1) / this.surfaceCover.length;
 
         //dumpTerrain( NCELLS );
         //dumpCells( NCELLS );
@@ -26,9 +45,10 @@ BASIN.Basin3D = function ( nCells ) {
         //renderStreams();
 
     this.renderSides();
+
 };
 
-BASIN.Basin3D.prototype = {
+BASIN3D.Basin3D.prototype = {
 
     /**
      * This creates the terrain array but sets elevation to -1 to indicate that
@@ -270,89 +290,137 @@ BASIN.Basin3D.prototype = {
         return h * 2 + base;
     },
 
+    getMaxElev: function () {
+        for ( var i = 0; i < this.nCells * 2; i += 2 ) {
+            for ( var j = 0; j < this.nCells * 2; j += 2 ) {
+                this.maxElev = Math.max( this.terrain[i][j].y, this.maxElev);
+            }
+        }
+    },
+
+    /**
+     * Compute the index into the surface cover array to get the rgb value
+     */
+    getSurfColor: function ( terrainHt ) {
+        try {
+
+            var index = Math.floor(terrainHt / this.deltaHt);
+            return this.surfaceCover[index].rgb;
+        } catch(err) {
+            debugger;
+        }
+    },
+
+    /**
+     * This creates the new vertices and associated faces.
+     * @param i
+     * @param j
+     * @param offV
+     * @param indexF
+     */
+    computeQuadFaces: function ( i, j, offV, indexF ) {
+
+        var vC = this.plane.vertices.length;
+        var face;
+
+        for ( var n=0; n<4; n++ )
+            this.plane.vertices.push(this.terrain[i + offV[n].i][j + offV[n].j]);
+
+        face = new THREE.Face3(vC + indexF[0].a, vC + indexF[0].b, vC + indexF[0].c);
+        var ia = i + offV[indexF[0].a].i;
+        var ja = j + offV[indexF[0].a].j;
+        face.vertexColors[0] = new THREE.Color(this.getSurfColor(this.terrain[ia][ja].y));
+        var ib = i + offV[indexF[0].b].i;
+        var jb = j + offV[indexF[0].b].j;
+        face.vertexColors[1] = new THREE.Color(this.getSurfColor(this.terrain[ib][jb].y));
+        var ic = i + offV[indexF[0].c].i;
+        var jc = j + offV[indexF[0].c].j;
+        face.vertexColors[2] = new THREE.Color(this.getSurfColor(this.terrain[ic][jc].y));
+        this.plane.faces.push(face);
+
+        face = new THREE.Face3(vC + indexF[1].a, vC + indexF[1].b, vC + indexF[1].c);
+        ia = i + offV[indexF[1].a].i;
+        ja = j + offV[indexF[1].a].j;
+        face.vertexColors[0] = new THREE.Color(this.getSurfColor(this.terrain[ia][ja].y));
+        ib = i + offV[indexF[1].b].i;
+        jb = j + offV[indexF[1].b].j;
+        face.vertexColors[1] = new THREE.Color(this.getSurfColor(this.terrain[ib][jb].y));
+        ic = i + offV[indexF[1].c].i;
+        jc = j + offV[indexF[1].c].j;
+        face.vertexColors[2] = new THREE.Color(this.getSurfColor(this.terrain[ic][jc].y));
+        this.plane.faces.push(face);
+    },
+
     /**
      *  Create the 8 triangles that comprise each quad-patch
      */
     createQuadPatch: function ( i, j ) {
-        var vC = this.plane.vertices.length;
-        var face;
 
         // first pair of triangles
-        this.plane.vertices.push(this.terrain[i][j]);
-        this.plane.vertices.push(this.terrain[i][j + 1]);
-        this.plane.vertices.push(this.terrain[i + 1][j + 1]);
-        this.plane.vertices.push(this.terrain[i + 1][j]);
+        var offV1 = [
+            { i:0, j:0 },
+            { i:0, j:1 },
+            { i:1, j:1 },
+            { i:1, j:0 }
+        ];
 
-        face = new THREE.Face3(vC, vC + 1, vC + 2);
-        face.vertexColors[0] = new THREE.Color(0x598527);
-        face.vertexColors[1] = new THREE.Color(0x598527);
-        face.vertexColors[2] = new THREE.Color(0x598527);
-        this.plane.faces.push(face);
+        var indexF1 = [
+            { a:0, b:1, c:2 },
+            { a:0, b:2, c:3 }
+        ];
 
-        face = new THREE.Face3(vC, vC + 2, vC + 3);
-        face.vertexColors[0] = new THREE.Color(0x598527);
-        face.vertexColors[1] = new THREE.Color(0x598527);
-        face.vertexColors[2] = new THREE.Color(0x598527);
-        this.plane.faces.push(face);
+        this.computeQuadFaces( i, j, offV1, indexF1);
 
         // second pair of triangles
-        vC = this.plane.vertices.length;
-        this.plane.vertices.push(this.terrain[i][j + 1]);
-        this.plane.vertices.push(this.terrain[i][j + 2]);
-        this.plane.vertices.push(this.terrain[i + 1][j + 2]);
-        this.plane.vertices.push(this.terrain[i + 1][j + 1]);
+        var offV2 = [
+            { i:0, j:1 },
+            { i:0, j:2 },
+            { i:1, j:2 },
+            { i:1, j:1 }
+        ];
 
-        face = new THREE.Face3(vC, vC + 1, vC + 3);
-        face.vertexColors[0] = new THREE.Color(0x598527);
-        face.vertexColors[1] = new THREE.Color(0x598527);
-        face.vertexColors[2] = new THREE.Color(0x598527);
-        this.plane.faces.push(face);
+        var indexF2 = [
+            { a:0, b:1, c:3 },
+            { a:1, b:2, c:3 }
+        ];
 
-        face = new THREE.Face3(vC + 1, vC + 2, vC + 3);
-        face.vertexColors[0] = new THREE.Color(0x598527);
-        face.vertexColors[1] = new THREE.Color(0x598527);
-        face.vertexColors[2] = new THREE.Color(0x598527);
-        this.plane.faces.push(face);
+        this.computeQuadFaces( i, j, offV2, indexF2);
 
         // third pair of triangles
-        vC = this.plane.vertices.length;
-        this.plane.vertices.push(this.terrain[i + 1][j + 1]);
-        this.plane.vertices.push(this.terrain[i + 1][j + 2]);
-        this.plane.vertices.push(this.terrain[i + 2][j + 2]);
-        this.plane.vertices.push(this.terrain[i + 2][j + 1]);
+        var offV3 = [
+            { i:1, j:1 },
+            { i:1, j:2 },
+            { i:2, j:2 },
+            { i:2, j:1 }
+        ];
 
-        face = new THREE.Face3(vC, vC + 1, vC + 2);
-        face.vertexColors[0] = new THREE.Color(0x598527);
-        face.vertexColors[1] = new THREE.Color(0x598527);
-        face.vertexColors[2] = new THREE.Color(0x598527);
-        this.plane.faces.push(face);
+        var indexF3 = [
+            { a:0, b:1, c:2 },
+            { a:0, b:2, c:3 }
+        ];
 
-        face = new THREE.Face3(vC, vC + 2, vC + 3);
-        face.vertexColors[0] = new THREE.Color(0x598527);
-        face.vertexColors[1] = new THREE.Color(0x598527);
-        face.vertexColors[2] = new THREE.Color(0x598527);
-        this.plane.faces.push(face);
+        this.computeQuadFaces( i, j, offV3, indexF3);
 
         // fourth pair of triangles
-        vC = this.plane.vertices.length;
-        this.plane.vertices.push(this.terrain[i + 1][j]);
-        this.plane.vertices.push(this.terrain[i + 1][j + 1]);
-        this.plane.vertices.push(this.terrain[i + 2][j + 1]);
-        this.plane.vertices.push(this.terrain[i + 2][j]);
+        var offV4 = [
+            { i:1, j:0 },
+            { i:1, j:1 },
+            { i:2, j:1 },
+            { i:2, j:0 }
+        ];
 
-        face = new THREE.Face3(vC, vC + 1, vC + 3);
-        face.vertexColors[0] = new THREE.Color(0x598527);
-        face.vertexColors[1] = new THREE.Color(0x598527);
-        face.vertexColors[2] = new THREE.Color(0x598527);
-        this.plane.faces.push(face);
+        var indexF4 = [
+            { a:0, b:1, c:3 },
+            { a:1, b:2, c:3 }
+        ];
 
-        face = new THREE.Face3(vC + 1, vC + 2, vC + 3);
-        face.vertexColors[0] = new THREE.Color(0x598527);
-        face.vertexColors[1] = new THREE.Color(0x598527);
-        face.vertexColors[2] = new THREE.Color(0x598527);
-        this.plane.faces.push(face);
+        this.computeQuadFaces( i, j, offV4, indexF4);
+
     },
 
+    /**
+     *
+     */
     renderSides: function() {
 
         var maxZ = this.terrain[0][this.basin.maze.row * 2 - 1].z * this.scale3D;
@@ -421,6 +489,21 @@ BASIN.Basin3D.prototype = {
                 this.basin.geos[i][2].chanElev.toFixed(3) + " " + this.basin.geos[i][3].chanElev.toFixed(3));
         }
     },
+
+    for ( var i=0; i<BASIN.SurfaceCover.length; i++) {
+        var rgb = decimalToHexString(BASIN.SurfaceCover[i].r) +
+            decimalToHexString(BASIN.SurfaceCover[i].g) +
+            decimalToHexString(BASIN.SurfaceCover[i].b);
+        console.log(BASIN.SurfaceCover[i].name + " " + rgb);
+    }
+    function decimalToHexString(number) {
+        if (number < 0) {
+            number = 0xFFFFFFFF + number + 1;
+        }
+
+        return number.toString(16).toUpperCase();
+    }
+
     */
 
 };

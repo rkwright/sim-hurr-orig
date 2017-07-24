@@ -23,7 +23,7 @@
 	</head>
 	<body style="margin:0;padding:0;border:0">
     <script type="text/javascript">
-        var NCELLS =128
+        var NCELLS = 64;
         var basin3D;
 
         var gfxScene = new GFX.Scene( {
@@ -37,6 +37,25 @@
 
         animateScene();
 
+        function findIndex( values, key, first,  last ) {
+            if (values[first] <= key && values[first+1] >= key) { // stopping condition
+
+                return first;
+            }
+
+            var imid = first + (last - first) / 2;
+
+            if (first === last || imid === first) {
+                return -1;
+            }
+            if (values[imid] > key) {
+                return findIndex(values, key, first, imid);
+            }
+            else if (values[imid] <= key) {
+                return findIndex( values, key, imid, last);
+            }
+        }
+
         /**
          * Initialize the Demo.
          */
@@ -44,12 +63,11 @@
 
             var startTime = performance.now();
 
-            basin3D = new BASIN.Basin3D(NCELLS);
+            basin3D = new BASIN3D.Basin3D(NCELLS);
 
             var elapsed = (performance.now() - startTime)/1000.0;
             console.log("Basin complete! elapsed: " +  elapsed.toFixed(3)  );
         }
-
 
         /**
          * Animate the scene and call rendering.
