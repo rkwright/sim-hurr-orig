@@ -8,25 +8,23 @@
 
         var BASIN = {
             QNUMER   : 1.0,	    // numerator of slope f(Q) eqn.
-            QEXPON   : 0.1,     // exponent of slope f(Q) eqn
-            QINTCP   : 2.0,     // offset for slope f(Q) eqn
+            QEXPON   : 0.4,     // exponent of slope f(Q) eqn
+            QINTCP   : 1.0,     // offset for slope f(Q) eqn
             RUGOSITY : 0.5     // degree of rugosity (channel interfluve height)
         };
 
         var     slopeData;
+        var     expSlider;
+        var     expAmount;
 
-        function populateSlopeData() {
-            slopeData.addRows([
-            [ 1, calcSlope(1) ],
-            [ 2, calcSlope(2)],
-            [ 4, calcSlope(4)],
-            [ 8, calcSlope(8)],
-            [ 16, calcSlope(16)],
-            [ 32, calcSlope(32)],
-            [ 64, calcSlope(64)],
-            [ 128, calcSlope(128)],
-            [ 256, calcSlope(256)]
-            ]);
+        function onload() {
+            expSlider = document.getElementById("expSlider");
+            expAmount = document.getElementById("expAmount");
+            expSlider.onchange = expSliderChange;
+        }
+
+        function expSliderChange() {
+            expAmount.innerHTML = this.value;
         }
 
         /**
@@ -43,7 +41,17 @@
             slopeData.addColumn('number', 'Area');
             slopeData.addColumn('number', 'Slope');
 
-            populateSlopeData();
+            slopeData.addRows([
+                [ 1, calcSlope(1) ],
+                [ 2, calcSlope(2)],
+                [ 4, calcSlope(4)],
+                [ 8, calcSlope(8)],
+                [ 16, calcSlope(16)],
+                [ 32, calcSlope(32)],
+                [ 64, calcSlope(64)],
+                [ 128, calcSlope(128)],
+                [ 256, calcSlope(256)]
+            ]);
 
             var linearOptions = {
                 title: 'Channel Slope vs. Area',
@@ -80,9 +88,16 @@
             var logChart = new google.visualization.LineChart(document.getElementById('log_div'));
             logChart.draw(slopeData, logOptions);
         }
+
     </script>
 </head>
-<body>
+<body onload="onload()">
+
+    <div>
+        <label for="expSlider">Exponent</label>
+        <input id="expSlider" type="range" min="0.0" max="1.0" step="0.01" value="0.5">
+        <div id="expAmount"></div>
+    </div>
     <table style="width: 900px; height: 500px">
         <tr>
             <th>Linear Scale</th>
