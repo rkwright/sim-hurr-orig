@@ -437,21 +437,27 @@ BASIN3D.Basin3D.prototype = {
     /**
      *
      */
-    renderSides: function() {
+    createSouthSide: function ( material, minZ, maxZ, maxYZ,  maxRow, nCS ) {
 
-        var maxRow = this.basin.maze.row * 2;
-        var minZ = this.terrain[0][0].z; // * this.scale3D;
-        var maxZ = this.terrain[0][maxRow].z; // * this.scale3D;
-        var minX = this.terrain[0][0].x; // * this.scale3D;
-        var maxX = this.terrain[maxRow][0].x; // * this.scale3D;
-        var maxYX = this.terrain[maxRow][0].y ; //* this.basin.elevScale;
-        var maxYZ = this.terrain[0][maxRow].y;  //* this.basin.elevScale;
-        var maxYXZ = this.terrain[maxRow][maxRow].y ;  //* this.basin.elevScale;
-        var nCS = this.nCells * this.scale3D;
+        var shapeS = new THREE.Shape();
 
-        var material = new THREE.MeshBasicMaterial({color: 0x222222, side:THREE.DoubleSide});
+        shapeS.moveTo(minZ - nCS, 0);
+        shapeS.lineTo(maxZ - nCS, 0);
+        shapeS.lineTo(maxZ - nCS, maxYZ);
 
-        // do the west side
+        for ( i=maxRow; i>=0; i-- ) {
+            x = this.terrain[0][i].z;
+            y = this.terrain[0][i].y;
+            shapeS.lineTo(x - nCS, y);
+        }
+
+        var shapeSMesh = new THREE.Mesh(new THREE.ShapeGeometry(shapeS), material);
+        gfxScene.add(shapeSMesh);
+        shapeSMesh.rotateY( -Math.PI / 2 );
+        shapeSMesh.position.set(-nCS, 0, 0);
+    },
+
+    createWestSide: function ( material, minX, maxX, maxYX,  maxRow, nCS ) {
         var shapeW = new THREE.Shape();
 
         shapeW.moveTo(minX - nCS, 0);
@@ -467,26 +473,83 @@ BASIN3D.Basin3D.prototype = {
         var shapeWMesh = new THREE.Mesh(new THREE.ShapeGeometry(shapeW), material);
         gfxScene.add(shapeWMesh);
         shapeWMesh.position.set(0, 0, -nCS);
+    },
 
-        // do the south side
-        var materialS = new THREE.MeshBasicMaterial({color: 0x222222, side:THREE.DoubleSide});
+    createNorthSide: function ( material, minZ, maxZ, maxYXZ,  maxRow, nCS ) {
+        var shapeN = new THREE.Shape();
 
-        var shapeS = new THREE.Shape();
-
-        shapeS.moveTo(minZ - nCS, 0);
-        shapeS.lineTo(maxZ - nCS, 0);
-        shapeS.lineTo(maxZ - nCS, maxYZ);
+        shapeN.moveTo(minZ - nCS, 0);
+        shapeN.lineTo(maxZ - nCS, 0);
+        shapeN.lineTo(maxZ - nCS, maxYXZ);
 
         for ( i=maxRow; i>=0; i-- ) {
-            x = this.terrain[0][i].z;
-            y = this.terrain[0][i].y;
-            shapeS.lineTo(x - nCS, y);
+            x = this.terrain[maxRow][i].z;
+            y = this.terrain[maxRow][i].y;
+            shapeN.lineTo(x - nCS, y);
         }
 
-        var shapeSMesh = new THREE.Mesh(new THREE.ShapeGeometry(shapeS), materialS);
-        gfxScene.add(shapeSMesh);
-        shapeSMesh.rotateY( -Math.PI / 2 );
-        shapeSMesh.position.set(-nCS, 0, 0);
+        var shapeNMesh = new THREE.Mesh(new THREE.ShapeGeometry(shapeN), material);
+        gfxScene.add(shapeNMesh);
+        shapeNMesh.rotateY( -Math.PI / 2 );
+        shapeNMesh.position.set(nCS, 0, 0);
+    },
+
+    createEastSide: function ( material, minX, maxX, maxYXZ,  maxRow, nCS ) {
+
+        var shapeE = new THREE.Shape();
+
+        shapeE.moveTo(minX - nCS, 0);
+        shapeE.lineTo(maxX - nCS, 0);
+        shapeE.lineTo(maxX - nCS, maxYXZ);
+
+        for ( i=maxRow; i>=0; i-- ) {
+            x = this.terrain[i][maxRow].x;
+            y = this.terrain[i][maxRow].y;
+            shapeE.lineTo(x - nCS, y);
+        }
+
+        var shapeEMesh = new THREE.Mesh(new THREE.ShapeGeometry(shapeE), material);
+        gfxScene.add(shapeEMesh);
+        shapeEMesh.position.set( 0, 0, nCS );
+    },
+
+    createBottom: function ( material, minX, maxX, minZ, maxZ,  maxRow, nCS ) {
+        var shapeB = new THREE.Shape();
+
+        shapeB.moveTo(minX - nCS, minZ - nCS);
+        shapeB.lineTo(maxX - nCS, minZ - nCS);
+        shapeB.lineTo(maxX - nCS, maxZ - nCS);
+        shapeB.lineTo(minX - nCS, maxZ - nCS);
+        shapeB.lineTo(minX - nCS, minZ - nCS);
+
+        var shapeBMesh = new THREE.Mesh(new THREE.ShapeGeometry(shapeB), material);
+        gfxScene.add(shapeBMesh);
+        shapeBMesh.rotateX( -Math.PI / 2 );
+    },
+
+    renderSides: function() {
+
+        var maxRow = this.basin.maze.row * 2;
+        var minZ = this.terrain[0][0].z;
+        var maxZ = this.terrain[0][maxRow].z;
+        var minX = this.terrain[0][0].x;
+        var maxX = this.terrain[maxRow][0].x;
+        var maxYX = this.terrain[maxRow][0].y;
+        var maxYZ = this.terrain[0][maxRow].y;
+        var maxYXZ = this.terrain[maxRow][maxRow].y ;
+        var nCS = this.nCells * this.scale3D;
+
+        var material = new THREE.MeshBasicMaterial({color: 0x222222, side:THREE.DoubleSide});
+
+        this.createSouthSide( material, minZ, maxZ, maxYZ, maxRow, nCS);
+
+        this.createWestSide( material, minX, maxX, maxYX, maxRow, nCS);
+
+        this.createNorthSide( material, minZ, maxZ, maxYXZ, maxRow, nCS);
+
+        this.createEastSide( material, minX, maxX, maxYXZ, maxRow, nCS);
+
+        this.createBottom( material, minX, maxX, minZ, maxZ, maxRow, nCS);
     }
 
     /*
