@@ -1,0 +1,97 @@
+<html>
+<head>
+    <title>Channel Slope vs. Area</title>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(drawChart);
+
+        var BASIN = {
+            QNUMER   : 1.0,	    // numerator of slope f(Q) eqn.
+            QEXPON   : 0.1,     // exponent of slope f(Q) eqn
+            QINTCP   : 2.0,     // offset for slope f(Q) eqn
+            RUGOSITY : 0.5     // degree of rugosity (channel interfluve height)
+        };
+
+        var     slopeData;
+
+        function populateSlopeData() {
+            slopeData.addRows([
+            [ 1, calcSlope(1) ],
+            [ 2, calcSlope(2)],
+            [ 4, calcSlope(4)],
+            [ 8, calcSlope(8)],
+            [ 16, calcSlope(16)],
+            [ 32, calcSlope(32)],
+            [ 64, calcSlope(64)],
+            [ 128, calcSlope(128)],
+            [ 256, calcSlope(256)]
+            ]);
+        }
+
+        /**
+         * @returns {number}
+         */
+        function calcSlope( area ) {
+            var val = (BASIN.QNUMER / Math.pow( area + BASIN.QINTCP, BASIN.QEXPON))
+            console.log("Val = " + val.toFixed(3));
+            return val;
+        }
+
+        function drawChart() {
+            slopeData = new google.visualization.DataTable();
+            slopeData.addColumn('number', 'Area');
+            slopeData.addColumn('number', 'Slope');
+
+            populateSlopeData();
+
+            var linearOptions = {
+                title: 'Channel Slope vs. Area',
+                legend: 'none',
+                width: 450,
+                height: 500,
+                hAxis: {
+                    title: 'Area',
+                    ticks: [0, 64, 128, 192, 256]
+                },
+                vAxis: {
+                    title: 'Slope'
+                }
+            };
+
+            var logOptions = {
+                title: 'Channel Slope vs. Area',
+                legend: 'none',
+                width: 450,
+                height: 500,
+                hAxis: {
+                    title: 'Area',
+                    scaleType: 'log',
+                    ticks: [0, 16, 32, 64, 128, 256]
+                },
+                vAxis: {
+                    title: 'Slope'
+
+                }
+            };
+
+            var linearChart = new google.visualization.LineChart(document.getElementById('linear_div'));
+            linearChart.draw(slopeData, linearOptions);
+            var logChart = new google.visualization.LineChart(document.getElementById('log_div'));
+            logChart.draw(slopeData, logOptions);
+        }
+    </script>
+</head>
+<body>
+    <table style="width: 900px; height: 500px">
+        <tr>
+            <th>Linear Scale</th>
+            <th>Log Scale</th>
+        </tr>
+        <tr>
+            <td><div id="linear_div"></div></td>
+            <td><div id="log_div"></div></td>
+        </tr>
+    </table>
+</body>
+</html>
