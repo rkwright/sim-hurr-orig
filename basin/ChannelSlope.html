@@ -8,39 +8,61 @@
 
         var BASIN = {
             QNUMER   : 1.0,	    // numerator of slope f(Q) eqn.
-            QEXPON   : 0.4,     // exponent of slope f(Q) eqn
+            QEXPON   : 0.1,     // exponent of slope f(Q) eqn
             QINTCP   : 1.0,     // offset for slope f(Q) eqn
             RUGOSITY : 0.5     // degree of rugosity (channel interfluve height)
         };
 
         var     slopeData;
         var     expSlider;
-        var     expAmount;
+        var     numAmount;
+        var     intcpAmount;
+        var     qNumer = BASIN.QNUMER;
+        var     qExpon = BASIN.QEXPON;
+        var     qIntcp = BASIN.QINTCP;
+        var     linearChart;
+        var     logChart;
+        var     linearOptions;
+        var     logOptions;
+        var     linearDiv;
+        var     logDiv;
 
-        function onload() {
-            expSlider = document.getElementById("expSlider");
-            expAmount = document.getElementById("expAmount");
-            expSlider.onchange = expSliderChange;
-        }
+
+
+            function onload() {
+                expSlider = document.getElementById("expSlider");
+                expSlider.onchange = expSliderChange;
+                expAmount = document.getElementById("expAmount");
+                numSlider = document.getElementById("numSlider");
+                numSlider.onchange = numSliderChange;
+                numAmount = document.getElementById("numAmount");
+                intcpSlider = document.getElementById("intcpSlider");
+                intcpSlider.onchange = intcpSliderChange;
+                intcpAmount = document.getElementById("intcpAmount");
+           }
 
         function expSliderChange() {
             expAmount.innerHTML = this.value;
+            qExpon = parseFloat(this.value);
+            updateSlopeData();
         }
 
-        /**
-         * @returns {number}
-         */
-        function calcSlope( area ) {
-            var val = (BASIN.QNUMER / Math.pow( area + BASIN.QINTCP, BASIN.QEXPON))
-            console.log("Val = " + val.toFixed(3));
-            return val;
+        function numSliderChange() {
+            numAmount.innerHTML = this.value;
+            qNumer = parseFloat(this.value);
+            updateSlopeData();
         }
 
-        function drawChart() {
+        function intcpSliderChange() {
+            intcpAmount.innerHTML = this.value;
+            qIntcp = parseFloat(this.value);
+            updateSlopeData();
+        }
+
+        function updateSlopeData() {
             slopeData = new google.visualization.DataTable();
             slopeData.addColumn('number', 'Area');
             slopeData.addColumn('number', 'Slope');
-
             slopeData.addRows([
                 [ 1, calcSlope(1) ],
                 [ 2, calcSlope(2)],
@@ -53,7 +75,27 @@
                 [ 256, calcSlope(256)]
             ]);
 
-            var linearOptions = {
+            linearChart.clearChart();
+            logChart.clearChart();
+            linearChart.draw(slopeData, linearOptions);
+            logChart.draw(slopeData, logOptions);
+        }
+
+        /**
+         * @returns {number}
+         */
+        function calcSlope( area ) {
+            var val = (BASIN.QNUMER / Math.pow( area + BASIN.QINTCP, BASIN.QEXPON))
+            console.log("Val = " + val.toFixed(3));
+            return val;
+        }
+
+        function drawChart() {
+            //slopeData = new google.visualization.DataTable();
+            //slopeData.addColumn('number', 'Area');
+            //slopeData.addColumn('number', 'Slope');
+
+            linearOptions = {
                 title: 'Channel Slope vs. Area',
                 legend: 'none',
                 width: 450,
@@ -67,7 +109,7 @@
                 }
             };
 
-            var logOptions = {
+            logOptions = {
                 title: 'Channel Slope vs. Area',
                 legend: 'none',
                 width: 450,
@@ -83,10 +125,10 @@
                 }
             };
 
-            var linearChart = new google.visualization.LineChart(document.getElementById('linear_div'));
-            linearChart.draw(slopeData, linearOptions);
-            var logChart = new google.visualization.LineChart(document.getElementById('log_div'));
-            logChart.draw(slopeData, logOptions);
+            linearChart = new google.visualization.LineChart(document.getElementById('linear_div'));
+            logChart = new google.visualization.LineChart(document.getElementById('log_div'));
+
+            updateSlopeData();
         }
 
     </script>
@@ -96,7 +138,13 @@
     <div>
         <label for="expSlider">Exponent</label>
         <input id="expSlider" type="range" min="0.0" max="1.0" step="0.01" value="0.5">
-        <div id="expAmount"></div>
+        <div id="expAmount">0.5</div>
+        <label for="numSlider">Numerator</label>
+        <input id="numSlider" type="range" min="0.1" max="2.0" step="0.1" value="1.0">
+        <div id="numAmount">1.0</div>
+        <label for="intcpSlider">Numerator</label>
+        <input id="intcpSlider" type="range" min="0.1" max="2.0" step="0.1" value="1.0">
+        <div id="intcpAmount">1.0</div>
     </div>
     <table style="width: 900px; height: 500px">
         <tr>
