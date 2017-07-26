@@ -191,7 +191,12 @@ BASIN3D.Basin3D.prototype = {
      * Check the 8 points of the compass and add any streams found.
      *
      */
-    addChannelSlopes: function ( n, i, j, rowLim, colLim, geos, slopes ) {
+    addChannelSlopes: function ( n, i, j ) {
+
+        var rowLim = this.basin.maze.row - 1;
+        var colLim = this.basin.maze.col - 1;
+        var geos   = this.basin.geos;
+        var slopes = [];
 
         switch (n) {
             case 0:     // south
@@ -261,6 +266,8 @@ BASIN3D.Basin3D.prototype = {
         }
 
         slopes.push(geos[i][j].chanSlope);
+
+        return slopes;
     },
 
     /**
@@ -291,14 +298,10 @@ BASIN3D.Basin3D.prototype = {
                 {i: -1, j:  1}
             ];
 
-        var slopes = [];
         var it, jt;
-        var rowLim = this.basin.maze.row - 1;
-        var colLim = this.basin.maze.col - 1;
         var tRowLim = this.terrain.length;
         var tColLim = this.terrain[0].length;
-        var geos = this.basin.geos;
-        var base = geos[i][j].chanElev;
+        var base = this.basin.geos[i][j].chanElev;
 
         for (var n = 0; n < 8; n++) {
             it = i * 2 + offset[n].i + 1;
@@ -309,7 +312,7 @@ BASIN3D.Basin3D.prototype = {
 
             if (it >= 0 && it < tRowLim && jt >= 0 && jt < tColLim && !bStream) {
 
-                this.addChannelSlopes( n, i, j, rowLim, colLim, geos, slopes );
+                var slopes = this.addChannelSlopes( n, i, j );
 
                 this.terrain[it][jt].y = Math.max(this.terrain[it][jt].y, this.interfluveHeight(slopes, base));
 
@@ -335,14 +338,11 @@ BASIN3D.Basin3D.prototype = {
      * Compute the index into the surface cover array to get the rgb value
      */
     getSurfColor: function (  i, j ) {
-        try {
 
-            var terrainHt = this.terrain[i][j].y;
-            var index = Math.floor(terrainHt / this.deltaHt);
-            return new THREE.Color( this.surfaceCover[index].rgb );
-        } catch(err) {
-            debugger;
-        }
+        var terrainHt = this.terrain[i][j].y;
+        var index = Math.floor(terrainHt / this.deltaHt);
+
+        return new THREE.Color( this.surfaceCover[index].rgb );
     },
 
     /**
@@ -464,9 +464,9 @@ BASIN3D.Basin3D.prototype = {
         shapeS.lineTo(lim.maxZ - lim.nCS, 0);
         shapeS.lineTo(lim.maxZ - lim.nCS, lim.maxYZ);
 
-        for ( i=lim.maxRow; i>=0; i-- ) {
-            x = this.terrain[0][i].z;
-            y = this.terrain[0][i].y;
+        for ( var i=lim.maxRow; i>=0; i-- ) {
+            var x = this.terrain[0][i].z;
+            var y = this.terrain[0][i].y;
             shapeS.lineTo(x - lim.nCS, y);
         }
 
@@ -503,9 +503,9 @@ BASIN3D.Basin3D.prototype = {
         shapeN.lineTo(lim.maxZ - lim.nCS, 0);
         shapeN.lineTo(lim.maxZ - lim.nCS, lim.maxYXZ);
 
-        for ( i=lim.maxRow; i>=0; i-- ) {
-            x = this.terrain[lim.maxRow][i].z;
-            y = this.terrain[lim.maxRow][i].y;
+        for ( var i=lim.maxRow; i>=0; i-- ) {
+            var x = this.terrain[lim.maxRow][i].z;
+            var y = this.terrain[lim.maxRow][i].y;
             shapeN.lineTo(x - lim.nCS, y);
         }
 
@@ -523,9 +523,9 @@ BASIN3D.Basin3D.prototype = {
         shapeE.lineTo(lim.maxX - lim.nCS, 0);
         shapeE.lineTo(lim.maxX - lim.nCS, lim.maxYXZ);
 
-        for ( i=lim.maxRow; i>=0; i-- ) {
-            x = this.terrain[i][lim.maxRow].x;
-            y = this.terrain[i][lim.maxRow].y;
+        for ( var i=lim.maxRow; i>=0; i-- ) {
+            var x = this.terrain[i][lim.maxRow].x;
+            var y = this.terrain[i][lim.maxRow].y;
             shapeE.lineTo(x - lim.nCS, y);
         }
 
