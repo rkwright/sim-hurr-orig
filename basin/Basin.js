@@ -115,14 +115,14 @@ BASIN.Basin.prototype = {
             else if (nexG.order === -1)
                 nexG.order = curG.order;
 
-            //console.log(" Morph: i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " nexti,j: " + nexi.toFixed(0) + " " + nexj.toFixed(0) +
-            //    " next_area: " + nexG.area.toFixed(0) + " order: " + curG.order.toFixed(0) +
-            //    " next_order: " + nexG.order.toFixed(0) + " chanSlope: " + curG.chanSlope.toFixed(3));
+            console.log(" Morph: i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " nexti,j: " + nexi.toFixed(0) + " " + nexj.toFixed(0) +
+                " next_area: " + nexG.area.toFixed(0) + " order: " + curG.order.toFixed(0) +
+                " next_order: " + nexG.order.toFixed(0) + " chanSlope: " + curG.chanSlope.toFixed(3) + " pathLen: " + pathlen.toFixed(1));
         }
-        //else
-            //console.log(" Morph: i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " nexti,j: " + -1 + " " + -1 +
-            //    " next_area: " + -1 + " order: " + curG.order.toFixed(0) +
-            //    " next_order: " + -1 + " chanSlope: " +  curG.chanSlope.toFixed(3));
+        else
+            console.log(" Morph: i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " nexti,j: " + -1 + " " + -1 +
+                " next_area: " + -1 + " order: " + curG.order.toFixed(0) +
+                " next_order: " + -1 + " chanSlope: " +  curG.chanSlope.toFixed(3)  + " pathLen: " + pathlen.toFixed(1));
     },
 
     /**
@@ -144,21 +144,18 @@ BASIN.Basin.prototype = {
 
         if (bSac) {
             // save position in Sack list
-            bthis.firstOrder.push( MAZE.Coord(i, j));
-
-            // chan_leng is the length of the mouse's current travels!
-            curG.m_chanLen = pathlen;
+            bthis.firstOrder.push(MAZE.Coord(i, j));
         }
 
-        /*
+        // chan_leng is the length of the mouse's current travels!
+        curG.chanLen = pathlen;
+
         if (prevG !== undefined)
             console.log("Chan: From: i,j: " + previ.toFixed(0) + " " + prevj.toFixed(0) +
-                " To i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " elev: " + curG.chanElev.toFixed(3) );
+                " To i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " elev: " + curG.chanElev.toFixed(3)  + " pathLen: " + pathlen.toFixed(1) );
         else
             console.log("Chan: From: i,j: " + -1 + " " + -1 +
-                " to i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " elev: " + 0 );
-        */
-
+                " to i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " elev: " + 0  + " pathLen: " + pathlen.toFixed(1) );
     }
 };
 
