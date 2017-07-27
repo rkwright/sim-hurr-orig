@@ -34,8 +34,8 @@ BASIN3D.Basin3D = function ( nCells ) {
 
     this.deltaHt = (this.limits.maxElev + 0.1) / this.surfaceCover.length;
 
-        //dumpTerrain( NCELLS );
-        //dumpCells( NCELLS );
+    this.dumpTerrain();
+    this.dumpCells();
 
     this.createPlaneGeometry();
 
@@ -565,7 +565,7 @@ BASIN3D.Basin3D.prototype = {
         this.createEastSide( material );
 
         this.createBottom( material );
-    }
+    },
 
     /*
     renderStreams: function () {
@@ -586,6 +586,7 @@ BASIN3D.Basin3D.prototype = {
 
         gfxScene.add(line);
     },
+    */
 
     dumpTerrain: function () {
 
@@ -602,26 +603,12 @@ BASIN3D.Basin3D.prototype = {
     dumpCells: function () {
 
         for (var i = 0; i < this.nCells; i++) {
-
-            console.log(i.toFixed(0) + " : " + this.basin.geos[i][0].chanElev.toFixed(3) + " " + this.basin.geos[i][1].chanElev.toFixed(3) + " " +
-                this.basin.geos[i][2].chanElev.toFixed(3) + " " + this.basin.geos[i][3].chanElev.toFixed(3));
+            for (var j = 0; j < this.nCells; j++) {
+                var cell = this.basin.geos[i][j];
+                console.log("i,j: " + i.toFixed(0) + "," + j.toFixed(0) + " area: " + cell.area.toFixed(0) + " order: " + cell.order.toFixed(0) +
+                    " chanLen: " + cell.chanLen.toFixed(3) + " chanElev: " +
+                    cell.chanElev.toFixed(3) + " elev: " + cell.elev.toFixed(3) + " chanSlope: " + cell.chanSlope.toFixed(3) + " exit: " + cell.exit.toFixed(0));
+            }
         }
-    },
-
-    for ( var i=0; i<BASIN.SurfaceCover.length; i++) {
-        var rgb = decimalToHexString(BASIN.SurfaceCover[i].r) +
-            decimalToHexString(BASIN.SurfaceCover[i].g) +
-            decimalToHexString(BASIN.SurfaceCover[i].b);
-        console.log(BASIN.SurfaceCover[i].name + " " + rgb);
     }
-    function decimalToHexString(number) {
-        if (number < 0) {
-            number = 0xFFFFFFFF + number + 1;
-        }
-
-        return number.toString(16).toUpperCase();
-    }
-
-    */
-
 };
