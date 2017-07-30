@@ -54,9 +54,6 @@ BASIN3D.Basin3D = function ( nCells ) {
 
     this.renderStreams();
 
-    this.streamNet.position.set( -this.nCells * this.scale3D, 0, -this.nCells * this.scale3D);
-    gfxScene.add(this.streamNet);
-
     this.renderSides();
 
 };
@@ -594,6 +591,10 @@ BASIN3D.Basin3D.prototype = {
         this.basin.rat.initSolveObj(0x80, false, this.renderStream);
 
         this.basin.rat.findSolution(-1, -1);
+
+        this.streamNet.position.set( -this.nCells * this.scale3D, 0, -this.nCells * this.scale3D);
+        gfxScene.add(this.streamNet);
+
     },
 
     renderStream: function (label, rat, i, j, nexi, nexj, pathlen, bsac) {
