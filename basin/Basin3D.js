@@ -334,11 +334,20 @@ BASIN3D.Basin3D.prototype = {
     interfluveHeight: function ( slopes, base  ) {
         var h = 0;
 
+        //while (slopes.length > 0) {
+        //    h = Math.max(h, slopes.pop());
+        //}
+
+        //while (slopes.length > 0) {
+        //    h = Math.min(h, slopes.pop());
+        //}
+
+        var n = slopes.length;
         while (slopes.length > 0) {
-            h = Math.max(h, slopes.pop());
+            h += slopes.pop();
         }
 
-        return h * 2 + base;
+        return h / n + base;
     },
 
     /**

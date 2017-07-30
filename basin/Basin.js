@@ -8,7 +8,7 @@
 var BASIN = {
             revision : 'r02',
             QNUMER   : 1.0,	    // numerator of slope f(Q) eqn.
-            QEXPON   : -0.2,     // exponent of slope f(Q) eqn
+            QEXPON   : -0.10,     // exponent of slope f(Q) eqn
             QINTCP   : 2.0,     // offset for slope f(Q) eqn
             RUGOSITY : 0.5     // degree of rugosity (channel interfluve height)
 };
