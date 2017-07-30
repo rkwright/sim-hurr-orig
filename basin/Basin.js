@@ -6,9 +6,9 @@
  */
 
 var BASIN = {
-            revision : 'r01',
+            revision : 'r02',
             QNUMER   : 1.0,	    // numerator of slope f(Q) eqn.
-            QEXPON   : 0.1,     // exponent of slope f(Q) eqn
+            QEXPON   : -0.2,     // exponent of slope f(Q) eqn
             QINTCP   : 2.0,     // offset for slope f(Q) eqn
             RUGOSITY : 0.5     // degree of rugosity (channel interfluve height)
 };
@@ -40,7 +40,9 @@ BASIN.Basin = function ( nCells ) {
 
     this.firstOrder = [];
 
-    this.elevScale = 2 / nCells;
+    this.elevScale = 0.5 / nCells;
+
+    this.basinArea = NCELLS * NCELLS;
 
     bthis = this;
 };
@@ -105,7 +107,8 @@ BASIN.Basin.prototype = {
         if ( bSac )
             curG.order = 1;
 
-        curG.chanSlope = (BASIN.QNUMER / Math.pow( curG.area + BASIN.QINTCP, BASIN.QEXPON)) * bthis.elevScale;
+        //curG.chanSlope = (BASIN.QNUMER / Math.pow( curG.area + BASIN.QINTCP, BASIN.QEXPON)) * bthis.elevScale;
+        curG.chanSlope = 1 / Math.pow( bthis.basinArea / curG.area, BASIN.QEXPON) * bthis.elevScale;
 
         if (nexG !== undefined) {
             nexG.area += curG.area;
@@ -115,13 +118,13 @@ BASIN.Basin.prototype = {
             else if (nexG.order === -1)
                 nexG.order = curG.order;
 
-            console.log(" Morph: i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " nexti,j: " + nexi.toFixed(0) + " " + nexj.toFixed(0) +
-                " next_area: " + nexG.area.toFixed(0) + " order: " + curG.order.toFixed(0) +
+            console.log(label + " i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " nexti,j: " + nexi.toFixed(0) + " " + nexj.toFixed(0) +
+                " area: " + curG.area + " next_area: " + nexG.area.toFixed(0) + " order: " + curG.order.toFixed(0) +
                 " next_order: " + nexG.order.toFixed(0) + " chanSlope: " + curG.chanSlope.toFixed(3) + " pathLen: " + pathlen.toFixed(1));
         }
         else
-            console.log(" Morph: i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " nexti,j: " + -1 + " " + -1 +
-                " next_area: " + -1 + " order: " + curG.order.toFixed(0) +
+            console.log(label + " i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " nexti,j: " + -1 + " " + -1 +
+                " area: " + curG.area + " next_area: " + -1 + " order: " + curG.order.toFixed(0) +
                 " next_order: " + -1 + " chanSlope: " +  curG.chanSlope.toFixed(3)  + " pathLen: " + pathlen.toFixed(1));
     },
 
@@ -151,10 +154,10 @@ BASIN.Basin.prototype = {
         curG.chanLen = pathlen;
 
         if (prevG !== undefined)
-            console.log("Chan: From: i,j: " + previ.toFixed(0) + " " + prevj.toFixed(0) +
+            console.log(label + " From: i,j: " + previ.toFixed(0) + " " + prevj.toFixed(0) +
                 " To i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " elev: " + curG.chanElev.toFixed(3)  + " pathLen: " + pathlen.toFixed(1) );
         else
-            console.log("Chan: From: i,j: " + -1 + " " + -1 +
+            console.log(label + " From: i,j: " + -1 + " " + -1 +
                 " to i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " elev: " + 0  + " pathLen: " + pathlen.toFixed(1) );
     }
 };

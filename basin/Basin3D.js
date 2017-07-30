@@ -1,5 +1,12 @@
-BASIN3D = {
+/*
+ * @author rkwright / www.geofx.com
+ *
+ * Copyright 2017, All rights reserved.
+ *
+ */
 
+BASIN3D = {
+    revision : 'r02',
 };
 
 BASIN3D.Basin3D = function ( nCells ) {
@@ -607,7 +614,7 @@ BASIN3D.Basin3D.prototype = {
                 var cell = this.basin.geos[i][j];
                 console.log("i,j: " + i.toFixed(0) + "," + j.toFixed(0) + " area: " + cell.area.toFixed(0) + " order: " + cell.order.toFixed(0) +
                     " chanLen: " + cell.chanLen.toFixed(3) + " chanElev: " +
-                    cell.chanElev.toFixed(3) + " elev: " + cell.elev.toFixed(3) + " chanSlope: " + cell.chanSlope.toFixed(3) + " exit: " + cell.exit.toFixed(0));
+                    cell.chanElev.toFixed(3) + " chanSlope: " + cell.chanSlope.toFixed(3) + " exit: " + cell.exit.toFixed(0));
             }
         }
     }
