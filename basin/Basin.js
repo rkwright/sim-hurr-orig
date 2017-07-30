@@ -19,7 +19,6 @@ BASIN.GeoCell = function () {
     this.area      = 1;     //  Init as 1 - every basin must be its own contributor!
     this.chanLen   = 0;     // channel length below this cell
     this.exit      = 0;     // side on which stream exits cell
-    this.elev      = 0;     // elevation of outlet itbthis
     this.chanElev  = 0;     // elev of channel, in maze units
     this.chanSlope = 0;		// slope of chanel, in maze units
 };

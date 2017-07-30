@@ -6,7 +6,7 @@
  */
 
 BASIN3D = {
-    revision : 'r02',
+    revision : 'r02'
 };
 
 BASIN3D.Basin3D = function ( nCells ) {
@@ -18,6 +18,10 @@ BASIN3D.Basin3D = function ( nCells ) {
     this.planeMesh = null;
     this.scale3D = 5 / nCells;
     this.limits = {};
+    this.streamMat =  new THREE.LineBasicMaterial({color: 0x0000ff});
+    this.streamNet = new THREE.Group();
+
+    this3D = this;
 
     this.surfaceCover = [
         { name: "grass"    , rgb: 0xE6DF73, ht : 0 },
@@ -48,7 +52,10 @@ BASIN3D.Basin3D = function ( nCells ) {
 
     this.createPlaneMesh();
 
-        //renderStreams();
+    this.renderStreams();
+
+    this.streamNet.position.set( -this.nCells * this.scale3D, 0, -this.nCells * this.scale3D);
+    gfxScene.add(this.streamNet);
 
     this.renderSides();
 
@@ -578,31 +585,29 @@ BASIN3D.Basin3D.prototype = {
 
         this.createNorthSide( material );
 
-        this.createEastSide( material );
+        //this.createEastSide( material );
 
-        this.createBottom( material );
+       // this.createBottom( material );
     },
 
-    /*
     renderStreams: function () {
-        this.basin.rat.initSolveObj(0x80, false, renderStream);
+        this.basin.rat.initSolveObj(0x80, false, this.renderStream);
 
         this.basin.rat.findSolution(-1, -1);
     },
 
     renderStream: function (label, rat, i, j, nexi, nexj, pathlen, bsac) {
 
-        var material = new THREE.LineBasicMaterial({color: 0x0000ff});
-
         var geometry = new THREE.Geometry();
-        geometry.vertices.push(new THREE.Vector3(2 * i + 1 - NCELLS, 3, 2 * j + 1 - NCELLS));
-        geometry.vertices.push(new THREE.Vector3(2 * nexi + 1 - NCELLS, 3, 2 * nexj + 1 - NCELLS));
+        geometry.vertices.push( this3D.terrain[i * 2 + 1 ][j * 2 + 1] );
+        geometry.vertices.push( this3D.terrain[nexi * 2 + 1 ][nexj * 2 + 1] );
 
-        var line = new THREE.Line(geometry, material);
+        var line = new THREE.Line(geometry, this3D.streamMat);
 
-        gfxScene.add(line);
+        this3D.streamNet.add(line);
+        //gfxScene.add(line);
     },
-    */
+
 
     dumpTerrain: function () {
 
