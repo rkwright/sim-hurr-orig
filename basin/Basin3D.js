@@ -6,7 +6,8 @@
  */
 
 BASIN3D = {
-    revision : 'r02'
+    revision : 'r02',
+    MIN_ORDER : 3
 };
 
 BASIN3D.Basin3D = function ( nCells ) {
@@ -18,8 +19,9 @@ BASIN3D.Basin3D = function ( nCells ) {
     this.planeMesh = null;
     this.scale3D = 5 / nCells;
     this.limits = {};
-    this.streamMat =  new THREE.LineBasicMaterial({color: 0x0000ff});
+    this.streamMat =  new THREE.MeshLambertMaterial({color: 0x0000ff});
     this.streamNet = new THREE.Group();
+    this.cylinderUtil = new GFX.CylinderUtil();
 
     this3D = this;
 
@@ -144,6 +146,8 @@ BASIN3D.Basin3D.prototype = {
         }
 
         this.limits.maxElev = maxElev;
+        this.limits.maxOrder = maxOrder;
+        this.limits.maxLen = maxLen;
         this.limits.maxRow  = maxRow;
         this.limits.minZ    = this.terrain[0][0].z;
         this.limits.maxZ    = this.terrain[0][this.limits.maxRow].z;
@@ -597,6 +601,9 @@ BASIN3D.Basin3D.prototype = {
         this.createBottom( material );
     },
 
+    /**
+     * Use the basin's rat to retace the stream net and render all the streams
+     */
     renderStreams: function () {
         this.basin.rat.initSolveObj(0x80, false, this.renderStream);
 
@@ -607,20 +614,30 @@ BASIN3D.Basin3D.prototype = {
 
     },
 
+    /**
+     * Render each stream section as we are called
+     */
     renderStream: function (label, rat, i, j, nexi, nexj, pathlen, bsac) {
-        cylinderUtil = new GFX.CylinderUtil();
 
-        if (i >= 0 && j >= 0 && nexi >= 0 && nexj >= 0) {
-            var stream = cylinderUtil.createCylinder(
-                this3D.terrain[i * 2 + 1][j * 2 + 1],
-                this3D.terrain[nexi * 2 + 1][nexj * 2 + 1],
-                //new THREE.Vector3( 1,2,3),
-                //new THREE.Vector3( 3,2,1),
-                0.02,
+        var cell = this3D.basin.geos[i][j];
+        var curPt = this3D.terrain[i * 2 + 1][j * 2 + 1];
+        var nexPt;
+
+        // have to handle the final cell specially as there is no "next" cell
+        if ( nexi >= 0 && nexj >= 0 )
+            nexPt = this3D.terrain[nexi * 2 + 1][nexj * 2 + 1];
+        else
+            nexPt = new THREE.Vector3(curPt.x, curPt.y, -curPt.z);
+
+        if (cell.order > (this3D.limits.maxOrder - BASIN3D.MIN_ORDER) ) {
+            var stream = this3D.cylinderUtil.createCylinder(
+                curPt,
+                nexPt,
+                0.01,
                 4,
                 this3D.streamMat);
 
-            this3D.streamNet.add( stream );
+            this3D.streamNet.add(stream);
         }
     },
 
