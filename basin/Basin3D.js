@@ -45,8 +45,8 @@ BASIN3D.Basin3D = function ( nCells ) {
 
     this.deltaHt = (this.limits.maxElev + 0.1) / this.surfaceCover.length;
 
-    this.dumpTerrain();
-    this.dumpCells();
+    //this.dumpTerrain();
+    //this.dumpCells();
 
     this.createPlaneGeometry();
 
@@ -125,16 +125,26 @@ BASIN3D.Basin3D.prototype = {
      */
     getMaxElev: function () {
 
-        var maxRow = this.nCells * 2;
-        var maxElev = -1;
-        for ( var i = 0; i < maxRow + 1; i++ ) {
+        var maxRow   = this.nCells * 2;
+        var maxElev  = -1;
+       for ( var i = 0; i < maxRow + 1; i++ ) {
             for ( var j = 0; j < maxRow + 1; j++ ) {
                 maxElev = Math.max( this.terrain[i][j].y, maxElev);
             }
         }
 
+        var maxOrder = -1;
+        var maxLen   = 0;
+        var geos = this.basin.geos;
+        for ( i = 0; i < this.nCells; i++ ) {
+            for ( j = 0; j < this.nCells; j++ ) {
+                maxOrder = Math.max( geos[i][j].order, maxOrder);
+                maxLen   = Math.max( geos[i][j].chanLen, maxLen);
+            }
+        }
+
         this.limits.maxElev = maxElev;
-        this.limits.maxRow  = this.basin.maze.row * 2;
+        this.limits.maxRow  = maxRow;
         this.limits.minZ    = this.terrain[0][0].z;
         this.limits.maxZ    = this.terrain[0][this.limits.maxRow].z;
         this.limits.minX    = this.terrain[0][0].x;
@@ -582,9 +592,9 @@ BASIN3D.Basin3D.prototype = {
 
         this.createNorthSide( material );
 
-        //this.createEastSide( material );
+        this.createEastSide( material );
 
-       // this.createBottom( material );
+        this.createBottom( material );
     },
 
     renderStreams: function () {
@@ -598,15 +608,20 @@ BASIN3D.Basin3D.prototype = {
     },
 
     renderStream: function (label, rat, i, j, nexi, nexj, pathlen, bsac) {
+        cylinderUtil = new GFX.CylinderUtil();
 
-        var geometry = new THREE.Geometry();
-        geometry.vertices.push( this3D.terrain[i * 2 + 1 ][j * 2 + 1] );
-        geometry.vertices.push( this3D.terrain[nexi * 2 + 1 ][nexj * 2 + 1] );
+        if (i >= 0 && j >= 0 && nexi >= 0 && nexj >= 0) {
+            var stream = cylinderUtil.createCylinder(
+                this3D.terrain[i * 2 + 1][j * 2 + 1],
+                this3D.terrain[nexi * 2 + 1][nexj * 2 + 1],
+                //new THREE.Vector3( 1,2,3),
+                //new THREE.Vector3( 3,2,1),
+                0.02,
+                4,
+                this3D.streamMat);
 
-        var line = new THREE.Line(geometry, this3D.streamMat);
-
-        this3D.streamNet.add(line);
-        //gfxScene.add(line);
+            this3D.streamNet.add( stream );
+        }
     },
 
 
