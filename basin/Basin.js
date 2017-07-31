@@ -114,7 +114,7 @@ BASIN.Basin.prototype = {
 
             if (nexG.order === curG.order)
                 nexG.order++;
-            else if (nexG.order === -1)
+            else if (nexG.order < curG.order)
                 nexG.order = curG.order;
 
             //console.log(label + " i,j: " + i.toFixed(0) + " " + j.toFixed(0) + " nexti,j: " + nexi.toFixed(0) + " " + nexj.toFixed(0) +
