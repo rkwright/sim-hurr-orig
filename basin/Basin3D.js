@@ -19,20 +19,20 @@ BASIN3D.Basin3D = function ( nCells ) {
     this.planeMesh = null;
     this.scale3D = 5 / nCells;
     this.limits = {};
-    this.streamMat =  new THREE.MeshLambertMaterial({color: 0x0000ff});
+    this.streamMat =  new THREE.MeshLambertMaterial({color: 0x79a1d1});
     this.streamNet = new THREE.Group();
     this.cylinderUtil = new GFX.CylinderUtil();
 
     this3D = this;
 
     this.surfaceCover = [
-        { name: "grass"    , rgb: 0xE6DF73, ht : 0 },
-        { name: "chapparal", rgb: 0xC4BF6E, ht : 10 },
-        { name: "hardwood" , rgb: 0x598527, ht : 20 },
-        { name: "conifer"  , rgb: 0x258260, ht : 30 },
-        { name: "tundra"   , rgb: 0xB9D39C, ht : 40 },
-        { name: "rock"     , rgb: 0xC4CCCC, ht : 50 },
-        { name: "snow"     , rgb: 0xF8FBFC, ht : 60 }
+        { name: "grass"    , rgb: 0xE6DF73 },
+        { name: "chapparal", rgb: 0xC4BF6E },
+        { name: "hardwood" , rgb: 0x598527 },
+        { name: "conifer"  , rgb: 0x258260 },
+        { name: "tundra"   , rgb: 0xB9D39C },
+        { name: "rock"     , rgb: 0xC4CCCC },
+        { name: "snow"     , rgb: 0xF8FBFC }
     ];
 
     this.basin = new BASIN.Basin(nCells);
@@ -112,7 +112,7 @@ BASIN3D.Basin3D.prototype = {
      */
     createPlaneMesh: function() {
 
-        var vertexMat = new THREE.MeshLambertMaterial({vertexColors: THREE.VertexColors, side: THREE.DoubleSide});
+        var vertexMat = new THREE.MeshLambertMaterial({ vertexColors: THREE.VertexColors });
 
         this.planeMesh = new THREE.Mesh(this.plane, vertexMat);
 
@@ -352,20 +352,20 @@ BASIN3D.Basin3D.prototype = {
     interfluveHeight: function ( slopes, base  ) {
         var h = 0;
 
-        //while (slopes.length > 0) {
-        //    h = Math.max(h, slopes.pop());
-        //}
+        while (slopes.length > 0) {
+            h = Math.max(h, slopes.pop());
+        }
 
         //while (slopes.length > 0) {
         //    h = Math.min(h, slopes.pop());
         //}
 
-        var n = slopes.length;
-        while (slopes.length > 0) {
-            h += slopes.pop();
-        }
+        //var n = slopes.length;
+        //while (slopes.length > 0) {
+        //    h += slopes.pop();
+        //}
 
-        return h / n + base;
+        return h  + base;
     },
 
     /**
@@ -588,21 +588,17 @@ BASIN3D.Basin3D.prototype = {
      */
     renderSides: function() {
 
-        var material = new THREE.MeshBasicMaterial({color: 0x222222, side:THREE.DoubleSide});
+        var material = new THREE.MeshBasicMaterial({color: 0x333333, side:THREE.DoubleSide});
 
         this.createSouthSide( material );
-
         this.createWestSide( material );
-
         this.createNorthSide( material );
-
         this.createEastSide( material );
-
         this.createBottom( material );
     },
 
     /**
-     * Use the basin's rat to retace the stream net and render all the streams
+     * Use the basin's rat to retrace the stream net and render all the streams
      */
     renderStreams: function () {
         this.basin.rat.initSolveObj(0x80, false, this.renderStream);
@@ -639,9 +635,9 @@ BASIN3D.Basin3D.prototype = {
 
             this3D.streamNet.add(stream);
         }
-    },
+    }
 
-
+    /*
     dumpTerrain: function () {
 
         for (var i = 0; i < this.nCells * 2 + 1; i++) {
@@ -665,4 +661,5 @@ BASIN3D.Basin3D.prototype = {
             }
         }
     }
+    */
 };
