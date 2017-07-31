@@ -202,8 +202,7 @@ MAZE.MazeRat.prototype = {
                 msy -= posy;
 
                 // are we next to the "target"??
-                adjacent = ( msx === 0 || msy === 0 )
-                                    && ( Math.abs(msy) === 1 || Math.abs(msx) === 1 );
+                adjacent = ( msx === 0 || msy === 0 ) && ( Math.abs(msy) === 1 || Math.abs(msx) === 1 );
 
                 if ( adjacent && !this.last_step )  {
                     // see if the way is open..
