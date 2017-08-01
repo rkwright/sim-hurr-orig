@@ -382,7 +382,7 @@ BASIN3D.Basin3D.prototype = {
 
         var index = Math.floor(base / this.deltaBase);
 
-        return h / n * this.surfaceCover[index].fluveScale  + base;
+        return h / n * this.surfaceCover[index].fluveScale * (0.75 + (Math.random()/2))  + base;
     },
 
     /**
