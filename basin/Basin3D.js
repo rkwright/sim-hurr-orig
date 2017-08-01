@@ -161,7 +161,7 @@ BASIN3D.Basin3D.prototype = {
         }
 
         this.limits.maxElev = maxElev;
-        this.limits.maxOrder = maxOrder;
+        this.limits.minOrder = maxOrder - BASIN3D.MIN_ORDER;
         this.limits.maxLen = maxLen;
         this.limits.maxRow  = maxRow;
         this.limits.minZ    = this.terrain[0][0].z;
@@ -632,6 +632,7 @@ BASIN3D.Basin3D.prototype = {
      */
     renderStream: function (label, rat, i, j, nexi, nexj, pathlen, bsac) {
 
+        var streamWidth = [0, 0.01, 0.015, 0.02];
         var cell = this3D.basin.geos[i][j];
         var curPt = this3D.terrain[i * 2 + 1][j * 2 + 1];
         var nexPt;
@@ -642,12 +643,14 @@ BASIN3D.Basin3D.prototype = {
         else
             nexPt = new THREE.Vector3(curPt.x, curPt.y, -curPt.z);
 
-        if (cell.order > (this3D.limits.maxOrder - BASIN3D.MIN_ORDER) ) {
+        var order = cell.order - this3D.limits.minOrder;
+        if (order > 0 ) {
+            console.log("order = " + order.toFixed(0));
             var stream = this3D.cylinderUtil.createCylinder(
                 curPt,
                 nexPt,
-                0.01,
-                4,
+                streamWidth[order],
+                8,
                 this3D.streamMat);
 
             this3D.streamNet.add(stream);
