@@ -18,6 +18,7 @@ BASIN3D.Basin3D = function ( nCells ) {
     this.basin = null;
     this.planeMesh = null;
     this.scale3D = 5 / nCells;
+    this.deltaBase = 0;
     this.limits = {};
     this.streamMat =  new THREE.MeshLambertMaterial({color: 0x79a1d1});
     this.streamNet = new THREE.Group();
@@ -26,13 +27,13 @@ BASIN3D.Basin3D = function ( nCells ) {
     this3D = this;
 
     this.surfaceCover = [
-        { name: "grass"    , rgb: 0xE6DF73 },
-        { name: "chapparal", rgb: 0xC4BF6E },
-        { name: "hardwood" , rgb: 0x598527 },
-        { name: "conifer"  , rgb: 0x258260 },
-        { name: "tundra"   , rgb: 0xB9D39C },
-        { name: "rock"     , rgb: 0xC4CCCC },
-        { name: "snow"     , rgb: 0xF8FBFC }
+        { name: "grass"    , rgb: 0xE6DF73, fluveScale: 0.25 },
+        { name: "chapparal", rgb: 0xC4BF6E, fluveScale: 0.50 },
+        { name: "hardwood" , rgb: 0x7ea74f, fluveScale: 0.75 },
+        { name: "conifer"  , rgb: 0x469f4e, fluveScale: 1.00 },
+        { name: "tundra"   , rgb: 0xB9D39C, fluveScale: 1.25 },
+        { name: "rock"     , rgb: 0xAAA4AA, fluveScale: 1.50 },
+        { name: "snow"     , rgb: 0xF8FBFC, fluveScale: 2.00 }
     ];
 
     this.basin = new BASIN.Basin(nCells);
@@ -45,7 +46,7 @@ BASIN3D.Basin3D = function ( nCells ) {
 
     this.getMaxElev();
 
-    this.deltaHt = (this.limits.maxElev + 0.1) / this.surfaceCover.length;
+    this.deltaSC = (this.limits.maxElev + 0.1) / this.surfaceCover.length;
 
     //this.dumpTerrain();
     //this.dumpCells();
@@ -100,11 +101,25 @@ BASIN3D.Basin3D.prototype = {
      */
     computeElevations: function () {
 
+        this.getDeltaBase();
+
         for ( var i = 0; i < this.nCells; i++ ) {
             for ( var j = 0; j < this.nCells; j++ ) {
                 this.computeCellElevations(i, j);
             }
         }
+    },
+
+    getDeltaBase: function() {
+
+        var maxBase = -1;
+        for ( var i = 0; i < this.nCells; i++ ) {
+            for ( var j = 0; j < this.nCells; j++ ) {
+                maxBase = Math.max(this.basin.geos[i][j].chanElev, maxBase );
+            }
+        }
+
+        this.deltaBase = (maxBase + 0.1) / this.surfaceCover.length;
     },
 
     /**
@@ -129,7 +144,7 @@ BASIN3D.Basin3D.prototype = {
 
         var maxRow   = this.nCells * 2;
         var maxElev  = -1;
-       for ( var i = 0; i < maxRow + 1; i++ ) {
+        for ( var i = 0; i < maxRow + 1; i++ ) {
             for ( var j = 0; j < maxRow + 1; j++ ) {
                 maxElev = Math.max( this.terrain[i][j].y, maxElev);
             }
@@ -352,20 +367,22 @@ BASIN3D.Basin3D.prototype = {
     interfluveHeight: function ( slopes, base  ) {
         var h = 0;
 
-        while (slopes.length > 0) {
-            h = Math.max(h, slopes.pop());
-        }
+        //while (slopes.length > 0) {
+        //    h = Math.max(h, slopes.pop());
+        //}
 
         //while (slopes.length > 0) {
         //    h = Math.min(h, slopes.pop());
         //}
 
-        //var n = slopes.length;
-        //while (slopes.length > 0) {
-        //    h += slopes.pop();
-        //}
+        var n = slopes.length;
+        while (slopes.length > 0) {
+            h += slopes.pop();
+        }
 
-        return h  + base;
+        var index = Math.floor(base / this.deltaBase);
+
+        return h / n * this.surfaceCover[index].fluveScale  + base;
     },
 
     /**
@@ -374,7 +391,7 @@ BASIN3D.Basin3D.prototype = {
     getSurfColor: function (  i, j ) {
 
         var terrainHt = this.terrain[i][j].y;
-        var index = Math.floor(terrainHt / this.deltaHt);
+        var index = Math.floor(terrainHt / this.deltaSC);
 
         return new THREE.Color( this.surfaceCover[index].rgb );
     },
