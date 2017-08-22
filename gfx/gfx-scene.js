@@ -14,7 +14,6 @@ GFX.Scene = function ( parameters ) {
 	this.scene = null;
 	this.renderer = null;
     this.containerID = null;
-    this.container = undefined;
     this.shadowMapEnabled = false;
     this.alphaBuffer = false;
 
@@ -35,7 +34,6 @@ GFX.Scene = function ( parameters ) {
     this.far = 1000;
 	this.cameraPos = [0,20,40];
     this.orthoSize = 1;
-    this.cameraInfo = undefined;
 
 	this.controls = false;
 	this.orbitControls = [];
@@ -102,6 +100,7 @@ GFX.setParameters= function( object, values ) {
             else {
                 object[ key ] = newValue;
             }
+
         }
     }
 };
@@ -155,17 +154,18 @@ GFX.Scene.prototype = {
 		}
 	
 		// if the caller supplied the container elm ID try to find it
+		var container;
 		if (this.containerID !== null && typeof this.containerID !== 'undefined')
-			this.container = document.getElementById(this.containerID);
+			container = document.getElementById(this.containerID);
 		
 		// couldn't find it, so create it ourselves
-		if (this.container === null || typeof this.container === 'undefined') {
-			this.container = document.createElement( 'div' );
-			document.body.appendChild( this.container );
+		if (container === null || typeof container === 'undefined') {
+			container = document.createElement( 'div' );
+			document.body.appendChild( container );
 		}
 		else {
-			this.canvasWidth = this.container.clientWidth;
-			this.canvasHeight = this.container.clientHeight;
+			this.canvasWidth = container.clientWidth;
+			this.canvasHeight = container.clientHeight;
 		}
 	
 		// allocate the THREE.js renderer
@@ -186,12 +186,17 @@ GFX.Scene.prototype = {
 		this.renderer.setSize(this.canvasWidth, this.canvasHeight);
 	
 		// Get the DIV element from the HTML document by its ID and append the renderer's DOM object
-		this.container.appendChild(this.renderer.domElement);
+		container.appendChild(this.renderer.domElement);
 
 		// if the user hasn't set defaultLights to false, then set them up
 		if (this.defaultLights === true)
 		    this.setDefaultLights();
 
+		// request the orbitControls be created and enabled
+		// add the controls
+		//if (this.controls === true && this.renderer !== null)
+		//    this.setDefaultControls();
+		
 		if ( this.axesHeight !== 0 )
 			this.drawAxes(this.axesHeight);
 		
@@ -199,7 +204,7 @@ GFX.Scene.prototype = {
 			this.addFloor(this.floorRepeat);
 
         // set up the stats window(s) if requested
-		this.setupStats( this.container );
+		this.setupStats( container );
 	},
 
 	add: function ( obj ) {
@@ -267,7 +272,7 @@ GFX.Scene.prototype = {
             if (jsonObj.perspective !== undefined)
                 perspective = jsonObj.perspective;
 
-            cameraPos   = jsonObj.cameraPos || this.cameraPos;
+            cameraPos   = jsonObj.cameraPos || this.camerPos;
             fov         = jsonObj.fov || this.fov;
             near        = jsonObj.near || this.near;
             far         = jsonObj.far || this.far;
@@ -297,22 +302,15 @@ GFX.Scene.prototype = {
 
         this.scene.add(camera);
 
+        if (this.controls === true && this.renderer !== null) {
+            this.orbitControls[this.cameras.length-1] = new THREE.OrbitControls(camera, this.renderer.domElement);
+        }
+
         // set the "default" camera if not already done
         if (this.camera === undefined)
             this.camera = camera;
 
-        this.addControls( camera );
-        //this.updateCameraInfo();
-
         return camera;
-    },
-
-    // set up the camera info string
-    updateCameraInfo: function () {
-
-        this.cameraInfoStr = this.camera.isPerspectiveCamera ? "P" : "O";
-        this.cameraInfoStr += " - x: " + this.camera.position.x.toFixed(1) + " y: " + this.camera.position.y.toFixed(1) +
-                    " z: "+ this.camera.position.z.toFixed(1) + "&nbsp;&nbsp;";
     },
 
     getCamera: function ( index ){
@@ -336,13 +334,6 @@ GFX.Scene.prototype = {
         if (camera !== null && typeof camera !== 'undefined') {
             this.orbitControls.push( new THREE.OrbitControls(camera, this.renderer.domElement) );
         }
-
-        if (this.cameraInfo !== undefined) {
-            this.cameraInfo = document.createElement( 'div' );
-            this.cameraInfo.style.cssText = 'position:fixed;bottom:0;right:0;opacity:0.9;z-index:10000;color:cyan;\
-                      font-size:12px;font-family:Helvetica,Arial,sans-serif';
-            this.container.appendChild( this.cameraInfo );
-        }
     },
 
     updateControls: function () {
@@ -350,8 +341,6 @@ GFX.Scene.prototype = {
         for ( var i=0; i<this.orbitControls.length; i++ ) {
             this.orbitControls[i].update();
         }
-
-        this.updateCameraInfo();
     },
 
     /**
@@ -550,10 +539,6 @@ GFX.Scene.prototype = {
             this.msStats.update();
         if (this.mbStats !== null && typeof this.mbStats !== 'undefined')
             this.mbStats.update();
-
-        if (this.cameraInfo !== undefined) {
-            this.cameraInfo.innerHTML = this.cameraInfoStr;
-        }
     },
 
 	addFog: function( values ) {

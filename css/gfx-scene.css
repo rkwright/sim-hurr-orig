@@ -13,7 +13,8 @@
 	font-family: Monospace;
 	color: white;
 
-     /* we want the whole screen so turn off padding and margins */
-	 padding:0;
-	 margin:0;
+    /* we want the whole screen so turn off padding and margins */
+    padding:0;
+    margin:0;
+
 }
