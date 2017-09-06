@@ -17,7 +17,7 @@
 </body>
 </html>
 <script>
-    var	NCELLS = 4;
+    var	NCELLS = 32;
 
     var startTime = performance.now();
 
@@ -69,12 +69,12 @@
      * Callback function that gets the path of the rat
      */
     function mazeEvent( label, rat,  i,  j, nexi, nexj, pathlen, bsac ) {
-        console.log(label + " i,j: " + i.toFixed(0) + " " + j.toFixed(0)
-                     + " nexi,j: " + nexi.toFixed(0) + " " + nexj.toFixed(0)
-                     + " pathlen: " + pathlen.toFixed(0) + " bsac: " + bsac );
+        //console.log(label + " i,j: " + i.toFixed(0) + " " + j.toFixed(0)
+        //             + " nexi,j: " + nexi.toFixed(0) + " " + nexj.toFixed(0)
+        //             + " pathlen: " + pathlen.toFixed(0) + " bsac: " + bsac );
 
         if (rat.bSingleHit === false)
-            drawPath( rat.maze, i, j, nexi, nexj);
+            drawPath( rat.maze, j, i, nexj, nexi);
     }
 
     function drawMaze( maze ) {
