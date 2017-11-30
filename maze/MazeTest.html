@@ -17,7 +17,7 @@
 </body>
 </html>
 <script>
-    var	NCELLS = 4;
+    var	NCELLS = 16;
 
     var startTime = performance.now();
 
@@ -141,10 +141,10 @@
         var c = document.getElementById("myCanvas");
         var ctx = c.getContext("2d");
 
-        var px1 = 20 + (x1 + 0.5) * cellSize;
-        var py1 = 820 - (y1 + 0.5) * cellSize;
-        var px2 = 20 + (x2 + 0.5) * cellSize;
-        var py2 = 820 - (y2 + 0.5) * cellSize;
+        var px1 = 20 + (y1 + 0.5) * cellSize;
+        var py1 = 820 - (x1 + 0.5) * cellSize;
+        var px2 = 20 + (y2 + 0.5) * cellSize;
+        var py2 = 820 - (x2 + 0.5) * cellSize;
 
         ctx.lineWidth = 1;
         ctx.strokeStyle = 'blue';
