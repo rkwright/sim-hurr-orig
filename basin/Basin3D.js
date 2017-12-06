@@ -82,7 +82,6 @@ BASIN3D.Basin3D.prototype = {
      * Elevations are still all -1
      */
     createPlaneGeometry: function () {
-
         this.plane = new THREE.Geometry();
 
         for ( var i = 0; i < this.nCells * 2; i += 2 ) {
@@ -624,7 +623,6 @@ BASIN3D.Basin3D.prototype = {
 
         this.streamNet.position.set( -this.nCells * this.scale3D, 0, -this.nCells * this.scale3D);
         gfxScene.add(this.streamNet);
-
     },
 
     /**
@@ -645,7 +643,7 @@ BASIN3D.Basin3D.prototype = {
 
         var order = cell.order - this3D.limits.minOrder;
         if (order > 0 ) {
-            console.log("order = " + order.toFixed(0));
+
             var stream = this3D.cylinderUtil.createCylinder(
                 curPt,
                 nexPt,
