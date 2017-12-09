@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hurricane Demo</title>
+</head>
+<body>
+
+<script>
+    var HTTP_OK = 200;
+    
+    function loadJSON(callback) {
+
+        var xobj = new XMLHttpRequest();
+        xobj.overrideMimeType("application/json");
+        xobj.open('GET', "colors.json", true);
+        xobj.onreadystatechange = function () {
+            if (xobj.readyState === xobj.HEADERS_RECEIVED) {
+                console.log(xobj.getAllResponseHeaders());
+            }
+            if (xobj.readyState === xobj.DONE && xobj.status === HTTP_OK) {
+                // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+                callback(xobj.responseText);
+            }
+        };
+        xobj.send(null);
+    }
+
+    function init() {
+        loadJSON(function(response) {
+            // Parse JSON string into object
+            var actual_JSON = JSON.parse(response);
+            console.log("Complete: " + actual_JSON);
+        });
+    }
+
+    init();
+</script>
+
+</body>
+</html>
