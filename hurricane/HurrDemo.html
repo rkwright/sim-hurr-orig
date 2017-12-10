@@ -8,17 +8,17 @@
 
 <script>
     var HTTP_OK = 200;
-    
+
     function loadJSON(callback) {
 
         var xobj = new XMLHttpRequest();
         xobj.overrideMimeType("application/json");
-        xobj.open('GET', "colors.json", true);
+        xobj.open('GET', "hurrdata.json", true);
         xobj.onreadystatechange = function () {
-            if (xobj.readyState === xobj.HEADERS_RECEIVED) {
+            if (xobj.readyState === XMLHttpRequest.HEADERS_RECEIVED) {
                 console.log(xobj.getAllResponseHeaders());
             }
-            if (xobj.readyState === xobj.DONE && xobj.status === HTTP_OK) {
+            if (xobj.readyState === XMLHttpRequest.DONE && xobj.status === HTTP_OK) {
                 // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
                 callback(xobj.responseText);
             }
