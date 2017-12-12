@@ -41,7 +41,7 @@ BASIN.Basin = function ( nCells ) {
 
     this.elevScale = 0.5 / nCells;
 
-    this.basinArea = NCELLS * NCELLS;
+    this.basinArea = nCells * nCells;
 
     bthis = this;
 };

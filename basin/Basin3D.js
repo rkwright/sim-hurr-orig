@@ -36,32 +36,59 @@ BASIN3D.Basin3D = function ( nCells ) {
         { name: "snow"     , rgb: 0xF8FBFC, fluveScale: 2.00 }
     ];
 
-    this.basin = new BASIN.Basin(nCells);
-
-    this.basin.construct();
-
-    this.createTerrain();
-
-    this.computeElevations();
-
-    this.getMaxElev();
-
-    this.deltaSC = (this.limits.maxElev + 0.1) / this.surfaceCover.length;
-
-    //this.dumpTerrain();
-    //this.dumpCells();
-
-    this.createPlaneGeometry();
-
-    this.createPlaneMesh();
-
-    this.renderStreams();
-
-    this.renderSides();
+    this.buildBasin( nCells );
 
 };
 
 BASIN3D.Basin3D.prototype = {
+
+    buildBasin: function( nCells ) {
+        this.nCells = nCells;
+        this.plane = null;
+        this.terrain = [];
+        this.basin = null;
+        this.planeMesh = null;
+        this.scale3D = 5 / nCells;
+        this.deltaBase = 0;
+        this.limits = {};
+        this.streamMat =  new THREE.MeshLambertMaterial({color: 0x79a1d1});
+        this.streamNet = new THREE.Group();
+        this.cylinderUtil = new GFX.CylinderUtil();
+
+        this3D = this;
+
+        this.basin = new BASIN.Basin(nCells);
+
+        this.basin.construct();
+
+        this.createTerrain();
+
+        this.computeElevations();
+
+        this.getMaxElev();
+
+        this.deltaSC = (this.limits.maxElev + 0.1) / this.surfaceCover.length;
+
+        //this.dumpTerrain();
+        //this.dumpCells();
+
+        this.createPlaneGeometry();
+
+        this.createPlaneMesh();
+
+        this.renderStreams();
+
+        this.renderSides();
+    },
+
+    deleteBasin: function() {
+        gfxScene.remove( this.planeMesh );
+
+        while (this.streamNet.children.length > 0) {
+            gfxScene.remove(this.streamNet.children[0]);
+            this.streamNet.remove(this.streamNet.children[0]);
+        }
+    },
 
     /**
      * This creates the terrain array but sets elevation to -1 to indicate that
@@ -653,7 +680,7 @@ BASIN3D.Basin3D.prototype = {
 
             this3D.streamNet.add(stream);
         }
-    }
+    },
 
     /*
     dumpTerrain: function () {
