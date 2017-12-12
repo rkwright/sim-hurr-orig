@@ -65,6 +65,7 @@ MAZE.Maze = function ( col, row, seedX, seedY ) {
 
     this.cells[seedY * this.row + seedX] = 0xff;
 
+    /*
     this.random = [
         0.7089998792613033,
         0.2984042827075908,
@@ -100,9 +101,9 @@ MAZE.Maze = function ( col, row, seedX, seedY ) {
         0.7072985028307064
     ];
 
-    //for ( var i=0; i<32; i++ ) {
-    //    console.log(Math.random() + ",");
-    //}
+    for ( var i=0; i<32; i++ ) {
+        console.log(Math.random() + ",");
+    } */
 };
 
 MAZE.Maze.prototype = {
