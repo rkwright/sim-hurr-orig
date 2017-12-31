@@ -18,10 +18,42 @@ var StormData = {
  * @constructor
  */
 StormData.StormData = function () {
-
+    this.stormFile = undefined;
+    this.jsonData  = undefined;
 };
 
 StormData.prototype = {
+
+    loadJSON: function(callback) {
+
+    var xobj = new XMLHttpRequest();
+    xobj.overrideMimeType("application/json");
+    xobj.open('GET', this.stormFile, true);
+    xobj.onreadystatechange = function () {
+        if (xobj.readyState === XMLHttpRequest.HEADERS_RECEIVED) {
+            console.log(xobj.getAllResponseHeaders());
+        }
+        if (xobj.readyState === XMLHttpRequest.DONE && xobj.status === HTTP_OK) {
+            // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+            callback(xobj.responseText);
+        }
+    };
+    xobj.send(null);
+},
+
+    /**
+     * Load the data from the specified JSON file, then parse the
+     * resuling payload
+     * @param stormFile
+     */
+    loadData: function( stormFile ) {
+
+        this.stormFile = stormFile;
+        loadJSON(function(response) {
+            // Parse JSON string into object
+            this.jsonData = JSON.parse(response);
+        });
+    }
 
 /**
  * Load the data for a single storm from a file
