@@ -1,7 +1,8 @@
 /*
  * Storm parameters for the hurricane modelling
  *
- * Original Fortran (!) code by Michael Drayton.
+ * These are the time-node state parameters that are read from the storm file.
+ * They are effectively the inputs for each time step.
  *
  * @author rkwright / www.geofx.com
  *
@@ -14,7 +15,6 @@ var StormParm = {
 };
 
 /**
- * Pseudo constructor
  * @constructor
  */
 StormParm.StormParm = function () {

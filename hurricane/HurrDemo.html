@@ -11,46 +11,21 @@
     <script src="../three-js/three.js"></script>
     <script src="../three-js/Detector.js"></script>
     <script src="../three-js/stats.js"></script>
-    <script src="../gfx/OrbitControls-Touch-Ortho.js"></script>
     <script src="../three-js/dat.gui.min.js"></script>
+    <script src="../gfx/OrbitControls-Touch-Ortho.js"></script>
+    <script src="../gfx/HttpStatus.js"></script>
     <script src="../gfx/gfx-scene.js"></script>
     <script src="Julian.js"></script>
     <script src="Carto.js"></script>
     <script src="MetParm.js"></script>
     <script src="StormParm.js"></script>
+    <script src="StormData.js"></script>
     <script src="HurrModel.js"></script>
 </head>
 <body>
 
 <script>
-    var HTTP_OK = 200;
 
-    function loadJSON(callback) {
-
-        var xobj = new XMLHttpRequest();
-        xobj.overrideMimeType("application/json");
-        xobj.open('GET', "hurdat2-1851-2016-041117.json", true);
-        xobj.onreadystatechange = function () {
-            if (xobj.readyState === XMLHttpRequest.HEADERS_RECEIVED) {
-                console.log(xobj.getAllResponseHeaders());
-            }
-            if (xobj.readyState === XMLHttpRequest.DONE && xobj.status === HTTP_OK) {
-                // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
-                callback(xobj.responseText);
-            }
-        };
-        xobj.send(null);
-    }
-
-    function init() {
-        loadJSON(function(response) {
-            // Parse JSON string into object
-            var actual_JSON = JSON.parse(response);
-            console.log("Complete: " + actual_JSON);
-        });
-    }
-
-    init();
 </script>
 
 </body>
