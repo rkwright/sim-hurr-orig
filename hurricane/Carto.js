@@ -13,43 +13,11 @@
 var Carto = {
     revision: 'r01',
     METERPERDEG: 111195.0,  // based on circumference at equator, https://solarsystem.nasa.gov/planets/earth/facts
-    EARTH_DIAMETER: 12742.0 // per NASA
-};
+    EARTH_DIAMETER: 12742.0,// per NASA
 
-/**
- * Simple pseudo sub-class
- * @param dist
- * @param theta
- * @constructor
- */
-Carto.PolarCoord = function( dist, theta ) {
-
-    this.dist = dist;
-    this.theta = theta;
-};
-
-/**
- * Simple 2D coord - use three.js?
- * @param x
- * @param y
- * @constructor
- */
-Carto.Coord2 = function (x, y) {
-    this.x = x;
-    this.y = y;
-};
-
-/**
- * Simple 3D coord - use three.js?
- * @param x
- * @param y
- * @param z
- * @constructor
- */
-Carto.Coord3 = function (x, y, z) {
-    this.x = x;
-    this.y = y;
-    this.z = z;
+    radius_major:6378137.0,         // Equatorial Radius, WGS84
+    radius_minor:6356752.314245179, // defined as constant
+    f:298.257223563                 // 1/f=(a-b)/a , a=r_major, b=r_minor
 };
 
 /**
@@ -60,8 +28,16 @@ Carto.Carto = function () {
 
 };
 
-Carto.prototype = {
+Carto.Carto.prototype = {
 
+    /**
+     * transform from lat/lon to 3D x,y,z in meters relative to the centre of the earth.
+     * Assumes Earth is a perfect sphere, but close enough for most uses.
+     * @param lat
+     * @param lon
+     * @param elev
+     * @returns {Vector3|*}
+     */
     transform: function (lat, lon, elev ) {
         var radius = Carto.EARTH_DIAMETER;
 
@@ -69,11 +45,11 @@ Carto.prototype = {
         // latitude-longitude-to-xyz-position-on-earth-threejs
         var phi   = Math.PI/2 - lat;
         var theta = Math.PI + lon;
-        x = -(radius * Math.sin(phi) * Math.cos(theta));
-        z = (radius * Math.sin(phi) * Math.sin(theta));
-        y = (radius * Math.cos(phi));
+        var x = -(radius * Math.sin(phi) * Math.cos(theta));
+        var z = (radius * Math.sin(phi) * Math.sin(theta));
+        var y = (radius * Math.cos(phi));
 
-        return new Carto.Coord3(x,y,z);
+        return new THREE.Vector3(x,y,z);
     },
 
     /**
@@ -90,7 +66,7 @@ Carto.prototype = {
      *                  theta - angle CW from north (in radians)
      */
     cartesianToPolarNorth: function ( x0, y0, x1, y1 ) {
-        var polar = new HurrModel.PolarCoord(0,0);
+        var polar = new THREE.Spherical(0,0,0);
 
         polar.dist  = this.degreesToMeters( x0, y0, x1, y1 );
         polar.theta = this.findHeading( x0, y0, x1, y1 );
@@ -98,7 +74,7 @@ Carto.prototype = {
         return polar;
     },
     /**
-     * Given two coordinates in degrees, find the headingfrom the first to the
+     * Given two coordinates in degrees, find the heading from the first to the
      * second by the shortest great circle distance
      * location
      *
@@ -115,42 +91,51 @@ Carto.prototype = {
         var	heading;
         var	headingDeg;
 
-        lon1Deg = WrapLimit( lon1Deg, -180.0, 180.0, 360.0 );
-        lat1Deg = WrapLimit( lat1Deg, -90.0, 90.0, 180.0 );
-        lon2Deg = WrapLimit( lon2Deg, -180.0, 180.0, 360.0 );
-        lat2Deg = WrapLimit( lat2Deg, -90.0, 90.0, 180.0 );
+        lon1Deg = Math.wrapAng( lon1Deg, -180.0, 180.0, 360.0 );
+        lat1Deg = Math.wrapAng( lat1Deg, -90.0, 90.0, 180.0 );
+        lon2Deg = Math.wrapAng( lon2Deg, -180.0, 180.0, 360.0 );
+        lat2Deg = Math.wrapAng( lat2Deg, -90.0, 90.0, 180.0 );
 
         // convert it all to radians
-        lat2    = toRadians(lat2Deg);
-        lon2    = toRadians(lon2Deg);
-        lat1    = toRadians(lat1Deg);
-        lon1    = toRadians(lon1Deg);
+        lat2    = Math.toRad(lat2Deg);
+        lon2    = Math.toRad(lon2Deg);
+        lat1    = Math.toRad(lat1Deg);
+        lon1    = Math.toRad(lon1Deg);
 
-        heading = fmod( Math.atan2( Math.sin(lon1 - lon2) * Math.cos(lat2),
+        heading = Math.fmod( Math.atan2( Math.sin(lon1 - lon2) * Math.cos(lat2),
             Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon1 - lon2)), Math.PI*2);
 
-        headingDeg = toDegrees( heading );
+        headingDeg = Math.toDeg( heading );
 
         return headingDeg;
     },
 
+    /**
+     * Return the distance in meters between two points in lat/lon.
+     *
+     * @param lon1Deg
+     * @param lat1Deg
+     * @param lon2Deg
+     * @param lat2Deg
+     * @returns {*}
+     */
     degreesToMeters: function ( lon1Deg, lat1Deg, lon2Deg, lat2Deg ) {
         if ( lat1Deg === lat2Deg && lon1Deg === lon2Deg )
             return 0.0;
 
-        lon1Deg = WrapLimit( lon1Deg, -180.0, 180.0, 360.0 );
-        lat1Deg = WrapLimit( lat1Deg, -90.0, 90.0, 180.0 );
-        lon2Deg = WrapLimit( lon2Deg, -180.0, 180.0, 360.0 );
-        lat2Deg = WrapLimit( lat2Deg, -90.0, 90.0, 180.0 );
+        lon1Deg = Math.wrapAng( lon1Deg, -180.0, 180.0, 360.0 );
+        lat1Deg = Math.wrapAng( lat1Deg, -90.0, 90.0, 180.0 );
+        lon2Deg = Math.wrapAng( lon2Deg, -180.0, 180.0, 360.0 );
+        lat2Deg = Math.wrapAng( lat2Deg, -90.0, 90.0, 180.0 );
 
-        var	lat1 = toRadians( lat1Deg );
-        var	lon1 = toRadians( lon1Deg );
-        var	lat2 = toRadians( lat2Deg );
-        var	lon2 = toRadians( lon2Deg );
+        var	lat1 = Math.toRad( lat1Deg );
+        var	lon1 = Math.toRad( lon1Deg );
+        var	lat2 = Math.toRad( lat2Deg );
+        var	lon2 = Math.toRad( lon2Deg );
 
         var	distRad = Math.acos(Math.sin(lat1) * Math.sin(lat2) + Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon1-lon2));
 
-        return DEG_TO_METERS( toDegrees(distRad) );
+        return this.degToMeters( Math.toDeg(distRad) );
     },
 
     /**
@@ -168,28 +153,30 @@ Carto.prototype = {
         var	dLon;
         var	distRad;
 
-        lonDeg = WrapLimit( lonDeg, -180.0, 180.0, 360.0 );
-        latDeg = WrapLimit( latDeg, -90.0, 90.0, 180.0 );
+        lonDeg = Math.wrapAng( lonDeg, -180.0, 180.0, 360.0 );
+        latDeg = Math.wrapAng( latDeg, -90.0, 90.0, 180.0 );
 
         // convert it all to radians
-        lat = toRadians(latDeg);
-        lon = toRadians(lonDeg);
+        lat = Math.toRad(latDeg);
+        lon = Math.toRad(lonDeg);
 
         // note that this is calculated as a function of a nautical circumference where the ratio of
         // nautical mile to statute mile is (5280.0/6076.1149), which is based on the average of the
         // major and minor axes of WGS80
-        distRad = toRadians( METERS_TO_DEG(dist) );
-        heading = toRadians(heading);
+        distRad = Math.toRad( this.metersToDeg(dist) );
+        heading = Math.toRad(heading);
 
-        newLat = asin( sin(lat) * cos(distRad) + cos(lat) * sin(distRad) * cos(heading) );
-        dLon   = atan2( sin(heading) * sin(distRad) * cos(lat), cos(distRad) - sin(lat) * sin(newLat) );
-        newLon = fmod( lon - dLon + PI, TWO_PI ) - PI;
+        newLat = Math.asin( Math.sin(lat) * Math.cos(distRad) + Math.cos(lat) * Math.sin(distRad) * Math.cos(heading) );
+        dLon   = Math.atan2( Math.sin(heading) * Math.sin(distRad) * Math.cos(lat), Math.cos(distRad) - Math.sin(lat) * Math.sin(newLat) );
+        newLon = Math.fmod( lon - dLon + Math.PI, Math.TWO_PI ) - Math.PI;
 
-        newLatDeg = toDegrees(newLat);
-        newLonDeg = toDegrees(newLon);
+        var newLatDeg = Math.toDeg(newLat);
+        var newLonDeg = Math.toDeg(newLon);
 
-        newLonDeg = WrapLimit( newLonDeg, -180.0, 180.0, 360.0 );
-        newLatDeg = WrapLimit( newLatDeg, -90.0, 90.0, 180.0 );
+        newLonDeg = Math.wrapAng( newLonDeg, -180.0, 180.0, 360.0 );
+        newLatDeg = Math.wrapAng( newLatDeg, -90.0, 90.0, 180.0 );
+
+        return new THREE.Vector2( newLatDeg, newLonDeg );
 
         /*
             // just a check to make sure we got the right value
@@ -199,30 +186,10 @@ Carto.prototype = {
         */
     },
 
+
     /**
-     * Simple utils
+     * These methods assume a perfectly spherical earth
      */
-    toDegrees: function (angle) {
-        return angle * (180 / Math.PI);
-    },
-
-    toRadians: function (angle) {
-        return angle * (Math.PI / 180);
-    },
-
-    clamp: function (cv, lo, hi) {
-        return ((cv > hi) ? hi : ((cv < lo) ? lo : cv));
-    },
-
-    hypot: function (x, y) {
-        return Math.sqrt(x * x + y * y);
-    },
-
-    roundInt: function (a) {
-
-        return (a < 0) ? Math.round(a - 0.5) : Math.round(a + 0.5);
-    },
-
     metersToDeg: function (m) {
         return m / Carto.METERPERDEG;
     },
@@ -239,8 +206,78 @@ Carto.prototype = {
     // AZIM2MATHD(azim) ((450.0)-azim)
     azimuthToDegrees: function ( azim ) {
         return 450.0 - azimuth;
-    }
+    },
 
 
+    /*
+     * The following functions take args in degrees and return in meters (or vice versa)
+     * From: http://wiki.openstreetmap.org/wiki/Mercator
+     */
+
+     // lat lon to mercator
+     latlonToMerc: function(lon,lat)
+        {
+            //lat, lon in rad
+            var x = Carto.radius_major * Math.toRad(lon);
+
+            if (lat > 89.5) lat = 89.5;
+            if (lat < -89.5) lat = -89.5;
+
+
+            var temp = Carto.radius_minor / Carto.radius_major;
+            var es = 1.0 - Math.sqr(temp);
+            var eccent = Math.sqrt(es);
+
+            var phi = Math.toRad(lat);
+
+            var sinphi = Math.sin(phi);
+
+            var con = eccent * sinphi;
+            var com = 0.5 * eccent;
+            var con2 = Math.pow( (1.0 - con) / (1.0 + con), com);
+            var ts = Math.tan(0.5 * (Math.PI * 0.5 - phi)) / con2;
+            var y = 0 - Carto.radius_major * Math.log(ts);
+
+           return { 'x' : x, 'y': y };
+        },
+
+        mercToLatLon: function(x,y) //mercator to lat lon
+        {
+            var lon = Math.toDeg((x / Carto.radius_major));
+
+            var temp = Carto.radius_minor / Carto.radius_major;
+            var e = Math.sqrt(1.0 - (temp * temp));
+            var lat = Math.toDeg( this.pj_phi2( Math.exp( 0 - (y / Carto.radius_major)), e));
+
+            return { 'lon' : lon, 'lat' : lat };
+        },
+
+        pj_phi2:function(ts, e)
+        {
+            var N_ITER = 15;
+            var HALFPI = Math.PI/2;
+
+
+            var TOL = 0.0000000001;
+            var Phi, con, dphi;
+            var i;
+            var eccnth = 0.5 * e;
+            Phi = HALFPI - 2. * Math.atan (ts);
+            i = N_ITER;
+            do
+            {
+                con = e * Math.sin (Phi);
+                dphi = HALFPI - 2. * Math.atan (ts * Math.pow((1.0 - con) / (1.0 + con), eccnth)) - Phi;
+                Phi += dphi;
+
+            }
+            while ( Math.abs(dphi)> TOL && --i);
+
+            return Phi;
+        }
+
+    //usage
+    // var merc = this.latlonToMerc(47.6035525, 9.770602);         // output mercator.x, mercator.y
+    // var latlon = this.mercToLatLon(5299424.36041, 1085840.05328);  // output latlon.lat, latlon.lon
 
 };
