@@ -13,6 +13,7 @@
     <script src="../three-js/stats.js"></script>
     <script src="../three-js/dat.gui.min.js"></script>
     <script src="../gfx/OrbitControls-Touch-Ortho.js"></script>
+    <script src="../gfx/math-ext.js"></script>
     <script src="../gfx/HttpStatus.js"></script>
     <script src="../gfx/gfx-scene.js"></script>
     <script src="Julian.js"></script>
@@ -25,7 +26,88 @@
 <body>
 
 <script>
+    var hurrModel = undefined;
+    var stormData = undefined;
+    var curStorm  = undefined;
 
+    // allocate the Scene object, request orbitControls, some of 3D axes 10 units high and the stats
+    var gfxScene = new GFX.Scene( {
+        cameraPos : [4, 3, 4],
+        axesHeight:10,
+        controls:true,
+        displayStats:true});
+
+
+    // then initialize our demo's stuff
+    initializeDemo();
+
+    // Start the animation
+    animateScene();
+
+    /**
+     * Initialize the Demo.
+     */
+    function initializeDemo() {
+
+        createGlobe();
+
+        hurrModel = new HurrModel.HurrModel({
+
+            renderFunc: renderFunc
+        });
+
+        hurrModel.initArrays();
+        hurrModel.initialise();
+
+        loadStorms();
+    }
+
+    function loadStorms() {
+
+        stormData = new StormData.StormData();
+        stormData.loadData( "hurrdata.json" );
+        curStorm = stormData.getJSON();
+    }
+
+    function createGlobe () {
+        var globe = new THREE.SphereGeometry(2, 32, 32);
+
+        var textureLoader = new THREE.TextureLoader();
+        var mat = new THREE.MeshPhongMaterial({ color: '#ffffff' });
+        textureLoader.load( "images/8081-earthmap4k.jpg", function( texture ) {
+            mat.map = texture;
+            mat.needsUpdate = true;
+
+            var mesh = new THREE.Mesh(globe, mat);
+            gfxScene.add(mesh);
+        } );
+
+
+    }
+    /**
+     * Called by the hurricane model to have the sample data rendered
+     * In this case, the wind arrows and eye are already in existence
+     * so we just update the location of the eye and set the direction
+     * and scale of the arrows
+     */
+    function renderFunc ( eyex, eyeY, sampleData ) {
+
+    }
+
+    /**
+     * Animate the scene and call rendering.
+     */
+    function animateScene() {
+
+        // Tell the browser to call this function when page is visible
+        requestAnimationFrame(animateScene);
+
+        // tell the hurricane model to update itself and call back to render when it can
+        //hurrModel.timeStep();
+
+        // Map the 3D scene down to the 2D screen (render the frame)
+        gfxScene.renderScene();
+    }
 </script>
 
 </body>

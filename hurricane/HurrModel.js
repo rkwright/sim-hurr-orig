@@ -37,7 +37,9 @@ var HurrModel = {
  * Initialize the parameters that control hurricane sim
  * @constructor
  */
-HurrModel.HurrModel = function () {
+HurrModel.HurrModel = function ( objParm ) {
+
+    this.renderFunc = objParm.renderFunc;
 
     this.metData = undefined;
 
@@ -65,12 +67,10 @@ HurrModel.HurrModel = function () {
     this.rateOfIncrease = 0;			// rate of increase of in RMAX over land (km/hr)
     this.translationalSpeed = 0;	// speed that eye is moving (m/s)
 
-    this.nTimeSteps = 0;
+    //this.nTimeSteps = 0;
     this.dTimeStep = 0;
 
     this.modelType = HurrModel.enModelType[0];
-
-    this.dataNodeStep = 0;			//
 
     this.xMinPlan = 0;
     this.xMaxPlan = 0;
@@ -83,19 +83,19 @@ HurrModel.HurrModel.prototype = {
     /**
      *
      */
-    initialise: function () {
+    initialise: function ( curStorm ) {
 
-        this.initialiseFromStormData();
+        this.initialiseFromStormData( curStorm );
 
         this.nCurStep = 0;
         this.curTime = 0.0;
 
-        this.centreOnScreen = true;
+        //this.centreOnScreen = true;
         this.onLand = false;   // a safe assumption...
 
         // we need the positions in metres
-        this.yVelNow = 0.0;
-        this.xVelNow = 0.0;
+        //this.yVelNow = 0.0;
+        //this.xVelNow = 0.0;
         this.maxVelocity = 1.0;
         this.maxLandVelocity = 0.0;
 
@@ -114,7 +114,7 @@ HurrModel.HurrModel.prototype = {
         this.peripheralPressurePascals = this.peripheralPressure * 100.0;
 
         this.deltPressure = this.peripheralPressurePascals - this.centralPressurePascals;
-        this.centreFilled = this.deltPressure > HurrModel.MIN_PRESSURE_DIFFERENCE;
+        //this.centreFilled = this.deltPressure > HurrModel.MIN_PRESSURE_DIFFERENCE;
 
         // set limits on RMax ( in metres )
         this.rMaxMax = 200000.0;    // 200 km
@@ -124,7 +124,7 @@ HurrModel.HurrModel.prototype = {
         this.radiusToMaxWindMetres = Math.max(this.radiusToMaxWind * 1000.0, this.rMaxMax, this.rMaxMin);
 
         // hardcode the inflow angle (why?)
-        this.inflowAngle = this.carto.toRadians(HurrModel.INFLOW_ANGLE);
+        this.inflowAngle = Math.toRad(HurrModel.INFLOW_ANGLE);
 
         //-----filling rate over land - convert to Pascals/sec
         this.fillingRatePascals = this.fillingRate / 36.0;
@@ -133,9 +133,9 @@ HurrModel.HurrModel.prototype = {
         this.rateOfIncreaseMetres = this.rateOfIncrease / 3.6;
 
         // convert to the cyclone azimuth to radians
-        this.cycloneAzimuthRadians = this.carto.toRadians(this.cycloneAzimuth);
-        this.TSSinAzimuth = this.translationalSpeed * Math.sin(this.cycloneAzimuthRadians) * this.dTimeStep;
-        this.TSCosAzimuth = this.translationalSpeed * Math.cos(this.cycloneAzimuthRadians) * this.dTimeStep;
+        this.cycloneAzimuthRadians = Math.toRad(this.cycloneAzimuth);
+        //this.TSSinAzimuth = this.translationalSpeed * Math.sin(this.cycloneAzimuthRadians) * this.dTimeStep;
+        //this.TSCosAzimuth = this.translationalSpeed * Math.cos(this.cycloneAzimuthRadians) * this.dTimeStep;
 
         // convert inflow-angle to radians
         this.alpha = -this.inflowAngle - Math.PI / 2;		// was positive alpha...
@@ -185,16 +185,16 @@ HurrModel.HurrModel.prototype = {
         }
 
         // finally allocate the array of sample positions. This is a fixed array of radial positions, each
-        // element of the array is the X/Y position of the sample point
+        // element of the array is the X/Y position of the sample point relative to the eye
         this.samplePos = [];  //(double ***) new (double **[ this.nAngularSamples ]);
         for ( i = 0; i < this.nAngularSamples; i++ ) {
-            var angle = this.carto.toRadians(this.sampleAngle[i]);
+            var angle = Math.toRad(this.sampleAngle[i]);
             var cosAng = Math.cos(angle);
             var sinAng = Math.sin(angle);
 
             this.samplePos[i] = [];  //(double **) new (double *[ this.nRadialSamples ]);
             for ( j = 0; j < this.nRadialSamples; j++ ) {
-                this.samplePos[i].push( new Carto.Coord2(this.sampleDist[j] * cosAng, this.sampleDist[j] * sinAng) );
+                this.samplePos[i].push( new THREE.Vector2(this.sampleDist[j] * cosAng, this.sampleDist[j] * sinAng) );
             }
         }
 
@@ -205,7 +205,7 @@ HurrModel.HurrModel.prototype = {
             // allocate the ray of CMetParm for the time-step data
             this.sampleData[i] = [];   //(CMetParm *) new CMetParm[this.nRadialSamples];
             for (j = 0; j < this.nRadialSamples; j++) {
-                this.sampleData[i].push( new MetParm() );
+                this.sampleData[i].push( new MetParm.MetParm() );
             }
         }
 
@@ -215,10 +215,8 @@ HurrModel.HurrModel.prototype = {
     /**
      * Performs one time-step iteration for the model
      *
-     *  Parameters:    hParm - currently defined set of parameters
-     *
      */
-    doTimeStep: function () {
+    update: function ( dt ) {
 
         // update the available parms if the function returns false, the storm is complete
         if (this.updateStormData() === false)
@@ -228,21 +226,21 @@ HurrModel.HurrModel.prototype = {
         this.nCurStep++;
         this.curTime += this.dTimeStep;
 
-        this.centreOnScreen = (this.xEye >= this.xMinPlan && this.xEye <= this.xMaxPlan &&
-                                this.yEye >= this.yMinPlan && this.yEye <= this.yMaxPlan);
+        //this.centreOnScreen = (this.xEye >= this.xMinPlan && this.xEye <= this.xMaxPlan &&
+        //                        this.yEye >= this.yMinPlan && this.yEye <= this.yMaxPlan);
 
         // if the storm has moved on to land, recalculate the Holland model parameters
         if (this.onLand) {
             this.centralPressurePascals = Math.min(this.centralPressurePascals + this.fillingRatePascals * this.dTimeStep, this.peripheralPressurePascals);
             this.radiusToMaxWindMetres = this.radiusToMaxWindMetres + this.rateOfIncreaseMetres * this.dTimeStep;
-            this.radiusToMaxWindMetres = this.carto.clamp(this.radiusToMaxWindMetres, this.rMaxMax, this.rMaxMin);
+            this.radiusToMaxWindMetres = Math.clamp(this.radiusToMaxWindMetres, this.rMaxMax, this.rMaxMin);
             this.deltPressure = this.peripheralPressurePascals - this.centralPressurePascals;
             this.bHolland = 1.5 + (980.0 - this.centralPressurePascals / 100.0) / 120.0;
             this.aHolland = Math.pow((this.radiusToMaxWindMetres / 1000.0), this.bHolland);
         }
 
         // check if the centre has filled to the peripheral pressure
-        this.centreFilled = Math.abs(this.peripheralPressurePascals - this.centralPressurePascals) < HurrModel.MIN_PRESSURE_DIFFERENCE;
+        //this.centreFilled = Math.abs(this.peripheralPressurePascals - this.centralPressurePascals) < HurrModel.MIN_PRESSURE_DIFFERENCE;
 
         // now calculate the windfield for the current time
         for (var i = 0; i < this.nAngularSamples; i++) {
@@ -297,7 +295,7 @@ HurrModel.HurrModel.prototype = {
         var polarC = this.carto.cartesianToPolarNorth( this.xNow, this.yNow, this.xEye, this.yEye );
 
         //R2 = rDist * rDist;			// m^2
-        //Ang = this.carto.toRadians(Ang);
+        //Ang = Math.toRad(Ang);
 
         // impose a lower limit on the value of rdist. Set the pressure to
         // P0 and the wind velocity to 0 inside this limit
@@ -398,13 +396,13 @@ HurrModel.HurrModel.prototype = {
         //var nDir = 1;
         var index = 0;
 
-        var xCenter, yCenter;
-        //this.carto.transform(this.xEye, this.yEye, xCenter, yCenter);
+        //var xCenter, yCenter;
+        var center = this.carto.transform(this.xEye, this.yEye);
 
         // find the lat/lon of the closest node.
         var closeLon = Math.round(this.xEye / this.dataNodeStep) * this.dataNodeStep;
         var closeLat = Math.round(this.yEye / this.dataNodeStep) * this.dataNodeStep;
-        //var maxDist = this.carto.hypot(stepKM, stepKM) / 2.0 * 1000.0;  // in m
+        //var maxDist = Math.hypot(stepKM, stepKM) / 2.0 * 1000.0;  // in m
 
         do {
 
@@ -442,7 +440,7 @@ HurrModel.HurrModel.prototype = {
                         ySamp = yCenter + this.samplePos[aPos[j]][rPos[j]][1];
 
                         // now perform a simple moving average accumulation
-                        weight = this.carto.hypot(xSamp - xNode, ySamp - yNode);
+                        weight = Math.hypot(xSamp - xNode, ySamp - yNode);
                         xVel += this.sampleData[aPos[j]][rPos[j]].xVel / weight;
                         yVel += this.sampleData[aPos[j]][rPos[j]].yVel / weight;
                         sumWeight += 1.0 / weight;
@@ -453,7 +451,7 @@ HurrModel.HurrModel.prototype = {
 
                     met.xVel = xVel;
                     met.yVel = yVel;
-                    met.velocity = this.carto.hypot(xVel, yVel);
+                    met.velocity = Math.hypot(xVel, yVel);
                     if (met.velocity > met.maxVelocity)
                         met.maxVelocity = met.velocity;
 
@@ -493,7 +491,7 @@ HurrModel.HurrModel.prototype = {
     findClosest: function (x, y, rPos, aPos) {
 
         var n = 0;
-        var angle = this.carto.toDegrees(Math.atan2(y, x));
+        var angle = Math.toDeg(Math.atan2(y, x));
 
         if (angle < 0.0)
             angle += 360.0;
@@ -502,7 +500,7 @@ HurrModel.HurrModel.prototype = {
         if (angleIndex >= (this.nAngularSamples - 1))
             angleIndex = 0;
 
-        x = this.carto.hypot(x, y);
+        x = Math.hypot(x, y);
 
         while (x >= this.sampleDist[n] && n < this.nRadialSamples) n++;
 
@@ -567,7 +565,7 @@ HurrModel.HurrModel.prototype = {
             this.interpolate(storm.x, prevStorm.x, prop, lon, HurrModel.MISSING, true) &&
             this.interpolate(storm.y, prevStorm.y, prop, lat, HurrModel.MISSING, true)) {
             this.cycloneAzimuth = heading;
-            this.cycloneAzimuthRadians = this.carto.toRadians(this.cycloneAzimuth);
+            this.cycloneAzimuthRadians = Math.toRad(this.cycloneAzimuth);
             this.translationalSpeed = fwdVelocity * HurrModel.NAUTICALMILE_TO_METER / 3600.0;   // knots to m/s
             //this.TSSinAzimuth = this.translationalSpeed * Math.sin(this.cycloneAzimuthRadians) * this.dTimeStep;
             //this.TSCosAzimuth = this.translationalSpeed * Math.cos(this.cycloneAzimuthRadians) * this.dTimeStep;
@@ -581,15 +579,15 @@ HurrModel.HurrModel.prototype = {
     },
 
     /**
-     * Init the model from the data in the file
+     * Init the model from the data in the StormParm
      */
-    initialiseFromStormData: function () {
-        var storm = this.stormArray[0];
+    initialiseFromStormData: function ( storm ) {
+        //var storm = this.stormArray[0];
         this.startStorm = storm.julianDay * 24 + storm.hour;
 
         this.cycloneAzimuth = storm.heading;
-        this.cycloneAzimuthRadians = this.carto.toRadians(this.cycloneAzimuth);
-        this.translationalSpeed = stomr.fwdVelocity * 1680.0 / 3600.0;   // knots to m/s
+        this.cycloneAzimuthRadians = Math.toRad(this.cycloneAzimuth);
+        this.translationalSpeed = storm.fwdVelocity * 1680.0 / 3600.0;   // knots to m/s
         //this.TSSinAzimuth = this.translationalSpeed * Math.sin(this.cycloneAzimuthRadians) * this.dTimeStep;
         //this.TSCosAzimuth = this.translationalSpeed * Math.cos(this.cycloneAzimuthRadians) * this.dTimeStep;
         this.initialPosX = storm.x;
@@ -617,5 +615,40 @@ HurrModel.HurrModel.prototype = {
         }
 
         return true;
+    },
+
+    /**
+     * Drive the animation, alternating between updating the model and calling back to
+     * have it rendered.
+     * @returns {number}
+     */
+    timeStep: function() {
+
+        var newTime = performance.now();
+        var deltaTime = Math.min(newTime - this.currentTime, this.MAX_RENDER_TIME);
+        this.currentTime = newTime;
+
+        this.accumulator += deltaTime;
+
+        //console.log("Accum:" + this.accumulator.toFixed(2) + " t: " + this.t.toFixed(2) );
+
+        var n = 0;
+        while (this.accumulator >= this.dt) {
+            this.accumulator -= this.dt;
+
+            this.update( this.dt / 1000 );
+
+            this.t += this.dt;
+
+            n++;
+        }
+
+        var alpha = this.accumulator / this.dt;
+
+        //console.log("Render: " + this.accumulator.toFixed(2) + " t: " + this.t.toFixed(2) + " n: " + n);
+
+        this.renderFunc( this.sampleData );
+
+        return 0;
     }
 };

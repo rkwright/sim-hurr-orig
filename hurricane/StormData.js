@@ -22,24 +22,25 @@ StormData.StormData = function () {
     this.jsonData  = undefined;
 };
 
-StormData.prototype = {
+StormData.StormData.prototype = {
 
     loadJSON: function(callback) {
 
-    var xobj = new XMLHttpRequest();
-    xobj.overrideMimeType("application/json");
-    xobj.open('GET', this.stormFile, true);
-    xobj.onreadystatechange = function () {
-        if (xobj.readyState === XMLHttpRequest.HEADERS_RECEIVED) {
-            console.log(xobj.getAllResponseHeaders());
-        }
-        if (xobj.readyState === XMLHttpRequest.DONE && xobj.status === HTTP_OK) {
+        var xobj = new XMLHttpRequest();
+        xobj.overrideMimeType("application/json");
+        xobj.open('GET', this.stormFile, true);
+        xobj.onreadystatechange = function () {
+            if (xobj.readyState === XMLHttpRequest.HEADERS_RECEIVED) {
+                console.log(xobj.getAllResponseHeaders());
+            }
+
+            if (xobj.readyState === XMLHttpRequest.DONE && xobj.status === HttpStatus.OK) {
             // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
-            callback(xobj.responseText);
-        }
-    };
-    xobj.send(null);
-},
+                callback(xobj.responseText);
+            }
+        };
+        xobj.send(null);
+    },
 
     /**
      * Load the data from the specified JSON file, then parse the
@@ -53,6 +54,14 @@ StormData.prototype = {
             // Parse JSON string into object
             this.jsonData = JSON.parse(response);
         });
+    },
+
+    /**
+     * Getter for the JSON data
+     * @returns {*}
+     */
+    getJSON:  function () {
+        return this.jsonData;
     }
 
 /**
