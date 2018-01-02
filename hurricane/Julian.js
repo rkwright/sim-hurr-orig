@@ -19,7 +19,7 @@ var Julian = {
 Julian.Julian = function () {
 };
 
-Julian.prototype = {
+Julian.Julian.prototype = {
 
     /**
      * get the month from a a Julian value
