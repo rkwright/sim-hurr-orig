@@ -41,9 +41,6 @@
     // then initialize our demo's stuff
     initializeDemo();
 
-    // Start the animation
-    animateScene();
-
     /**
      * Initialize the Demo.
      */
@@ -56,17 +53,23 @@
             renderFunc: renderFunc
         });
 
-        hurrModel.initArrays();
-        hurrModel.initialise();
-
-        loadStorms();
+        loadStorms( stormReady );
     }
 
     function loadStorms() {
 
         stormData = new StormData.StormData();
-        stormData.loadData( "hurrdata.json" );
+        stormData.loadData( "hurrdata.json", stormReady );
         curStorm = stormData.getJSON();
+    }
+
+    function stormReady() {
+
+        hurrModel.initArrays();
+        hurrModel.initialise();
+
+        // Start the animation
+        animateScene();
     }
 
     function createGlobe () {
