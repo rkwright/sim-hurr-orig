@@ -122,7 +122,6 @@ MAZE.Maze.prototype = {
             this.findNeighbors( coord.x, coord.y );
 
             var k = this.getRandomInt( 0, this.neighbors.length );
-            var k = this.getRandomInt( 0, this.neighbors.length );
 
             coord = this.neighbors.splice(k,1)[0];
 
