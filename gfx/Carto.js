@@ -11,7 +11,7 @@
  * Constants
  */
 var Carto = {
-    revision: 'r01',
+    revision: '1.0',
     METERPERDEG: 111195.0,  // based on circumference at equator, https://solarsystem.nasa.gov/planets/earth/facts
     EARTH_DIAMETER: 12742.0,// per NASA
 

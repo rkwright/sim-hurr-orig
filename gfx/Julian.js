@@ -10,7 +10,7 @@
  * Constants
  */
 var Julian = {
-    revision: 'r01'
+    revision: '1.0'
 };
 
 /**

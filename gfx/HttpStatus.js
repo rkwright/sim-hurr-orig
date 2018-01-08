@@ -5,6 +5,8 @@
  */
 var HttpStatus = {
 
+    revision: '1.0',
+
     CONTINUE:                           100,     // "Continue"
     SWITCHING_PROTOCOLS:                101,     // "Switching Protocols"
     PROCESSING:                         102,     // "Processing"
