@@ -11,7 +11,7 @@
  */
 
 var StormData= {
-    revision: "r01"
+    revision: "1.0"
 };
 
 /**

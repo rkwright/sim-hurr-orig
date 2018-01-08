@@ -9,7 +9,7 @@
  */
 
 var MetParm = {
-    revision: "r01"
+    revision: "1.0"
 };
 
 /**

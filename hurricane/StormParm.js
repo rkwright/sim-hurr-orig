@@ -11,7 +11,7 @@
  */
 
 var StormParm = {
-    revision: "r01"
+    revision: "1.0"
 };
 
 /**

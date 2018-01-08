@@ -1,6 +1,5 @@
 /*
- * Cartographic projection Utilities.  Very simplistic at this point,
- * really supports only a purely spherical earth.
+ * Cartographic projection Utilities.  Very simplistic at this point
  *
  * @author rkwright / www.geofx.com
  *
@@ -12,6 +11,7 @@
  */
 var Carto = {
     revision: '1.0',
+
     METERPERDEG: 111195.0,  // based on circumference at equator, https://solarsystem.nasa.gov/planets/earth/facts
     EARTH_DIAMETER: 12742.0,// per NASA
 
@@ -73,6 +73,7 @@ Carto.Carto.prototype = {
 
         return polar;
     },
+
     /**
      * Given two coordinates in degrees, find the heading from the first to the
      * second by the shortest great circle distance
@@ -82,7 +83,6 @@ Carto.Carto.prototype = {
      * lat1,lon1  - in degrees
      *
      * Return:			heading in degrees where N = 0, NW = 45 and so on
-     *
      */
 
     findHeading: function ( lon1Deg, lat1Deg, lon2Deg, lat2Deg ) {

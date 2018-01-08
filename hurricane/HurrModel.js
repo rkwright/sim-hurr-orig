@@ -15,7 +15,7 @@
  * Constants for the Hurricane model
  */
 var HurrModel = {
-    revision: 'r01',
+    revision: '1.0',
 
     PERIPHERAL_PRESSURE: 1013.0,	// in mB
     INFLOW_ANGLE: 20.0,
