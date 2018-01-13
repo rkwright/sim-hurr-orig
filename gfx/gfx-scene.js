@@ -44,6 +44,7 @@ GFX.Scene = function ( parameters ) {
     this.mbStats = null;
 
     this.datgui = false;
+    this.guiWidth = 200;
     this.gui = null;
 
 	this.defaultLights = true;
@@ -550,7 +551,7 @@ GFX.Scene.prototype = {
         if (this.datgui === false)
             return;
 
-        this.gui = new dat.GUI({autoplace:false});
+        this.gui = new dat.GUI({autoplace:false, width:this.guiWidth});
 
         var guiContainer = document.createElement( 'div' );
         guiContainer.setAttribute("style", "position:absolute;top:0;left:0;z-index:1000;");
