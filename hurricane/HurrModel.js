@@ -94,14 +94,14 @@ HurrModel.HurrModel.prototype = {
         this.onLand = false;   // a safe assumption...
 
         // we need the positions in metres
-        //this.yVelNow = 0.0;
-        //this.xVelNow = 0.0;
+        this.yVelNow = 0.0;
+        this.xVelNow = 0.0;
         this.maxVelocity = 1.0;
         this.maxLandVelocity = 0.0;
 
         this.signHemisphere = (this.initialPosY < 0.0) ? -1.0 : 1.0;
 
-        // just assign these
+        // positions in lat/lon degrees
         this.xNow = this.initialPosX;
         this.yNow = this.initialPosY;
         this.xEye = this.initialPosX;
@@ -126,7 +126,7 @@ HurrModel.HurrModel.prototype = {
         // hardcode the inflow angle (why?)
         this.inflowAngle = Math.toRad(HurrModel.INFLOW_ANGLE);
 
-        //-----filling rate over land - convert to Pascals/sec
+        // filling rate over land - convert to Pascals/sec
         this.fillingRatePascals = this.fillingRate / 36.0;
 
         // covert rate of increase in RMAX over land to m/s
@@ -141,11 +141,11 @@ HurrModel.HurrModel.prototype = {
         this.alpha = -this.inflowAngle - Math.PI / 2;		// was positive alpha...
         // this.alpha = this.inflowAngle;
 
-        //-----asymmetric part ----
+        //----- asymmetric part ----
         this.T0 = 0.514791;	// hmmm, what is this constant?
         this.ATT = 1.5 * Math.pow(this.translationalSpeed, 0.63) * Math.pow(this.T0, 0.37);
 
-        //-----Initial Holland model parameters
+        //----- Initial Holland model parameters
         // B parameter - based on central pressure (in millibars)
         this.bHolland = 1.5 + (980.0 - this.centralPressurePascals / 100.0) / 120.0;
 
@@ -396,13 +396,15 @@ HurrModel.HurrModel.prototype = {
         //var nDir = 1;
         var index = 0;
 
-        //var xCenter, yCenter;
-        var center = this.carto.transform(this.xEye, this.yEye);
+        var centerMerc = this.carto.latlonToMerc(this.xEye, this.yEye);
+        var xCenter = centerMerc.x;
+        var yCenter = centerMerc.y;
+        var xNode, yNode;
 
         // find the lat/lon of the closest node.
         var closeLon = Math.round(this.xEye / this.dataNodeStep) * this.dataNodeStep;
         var closeLat = Math.round(this.yEye / this.dataNodeStep) * this.dataNodeStep;
-        //var maxDist = Math.hypot(stepKM, stepKM) / 2.0 * 1000.0;  // in m
+        var maxDist = Math.hypot(stepKM, stepKM) / 2.0 * 1000.0;  // in m
 
         do {
 
@@ -419,12 +421,14 @@ HurrModel.HurrModel.prototype = {
 
             var lon = closeLon + index * this.dataNodeStep;
             var lat = closeLat - nRangeY * this.dataNodeStep;
-            var xNode, yNode;
+            var nodeMerc;
             var weight;
 
             for ( n = -nRangeY; n < nRangeY; n++) {
                 met = this.metData[nMeridian + index][nCenterY + n];
-                //this.mapProj.Transform(lon, lat, xNode, yNode);
+                nodeMerc = this.carto.latlonToMerc(lon, lat);
+                xNode = nodeMerc.x;
+                yNode = nodeMerc.y;
 
                 // now find the four closest sampled points
                 var nClose = this.findClosest(xNode - xCenter, yNode - yCenter, rPos, aPos);
@@ -474,19 +478,11 @@ HurrModel.HurrModel.prototype = {
     /**
      *  Find the four closest points in the samplePos array to the specified point
      *
-     *  Parameters:    x,y  -
-     *
-     *
-     *
-     * Return:            number of closest points, 1 if complete coincidence (very rare)
-     */
-    /**
-     *
      * @param x             coordinates of the current point
      * @param y
      * @param rPos          X-indicies of the four closest points
      * @param aPos          Y-indicies of the four closest points
-     * @returns             number of points returned
+     * @returns             number of closest points
      */
     findClosest: function (x, y, rPos, aPos) {
 

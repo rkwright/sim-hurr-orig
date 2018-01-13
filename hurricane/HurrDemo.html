@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Hurricane Demo</title>
-
+    <link rel="stylesheet" type="text/css" href="../css/gfx-scene.css" />
     <!-- Set the viewport size to the screen size, so it will be displayed maximized, but unscaled. -->
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1"/>
 
@@ -16,25 +16,28 @@
     <script src="../gfx/math-ext.js"></script>
     <script src="../gfx/HttpStatus.js"></script>
     <script src="../gfx/gfx-scene.js"></script>
-    <script src="Julian.js"></script>
-    <script src="Carto.js"></script>
+    <script src="../gfx/Julian.js"></script>
+    <script src="../gfx/Carto.js"></script>
     <script src="MetParm.js"></script>
     <script src="StormParm.js"></script>
-    <script src="StormJSON.js"></script>
+    <script src="StormFile.js"></script>
     <script src="HurrModel.js"></script>
 </head>
 <body>
 
 <script>
     var hurrModel = undefined;
-    var stormData = undefined;
+    var stormFile = new StormFile.StormFile();
     var curStorm  = undefined;
+    //var gui = undefined;
 
     // allocate the Scene object, request orbitControls, some of 3D axes 10 units high and the stats
     var gfxScene = new GFX.Scene( {
         cameraPos : [4, 3, 4],
         axesHeight:10,
         controls:true,
+        datgui:true,
+        guiWidth:500,
         displayStats:true});
 
 
@@ -46,8 +49,11 @@
      */
     function initializeDemo() {
 
+        // Create the mesh onto which we will render the output of the hurricane model
         createGlobe();
 
+        // now create the model.  It doesn't have any parameters or data - it's
+        // just the executable model itself
         hurrModel = new HurrModel.HurrModel({
 
             renderFunc: renderFunc
@@ -58,13 +64,19 @@
 
     function loadStorms() {
 
-        stormData = new StormData.StormData();
-        stormData.loadData( "hurrdata.json", stormReady );
-        curStorm = stormData.getJSON();
+        stormFile = new StormFile.StormFile();
+        //stormFile.loadData( "hurrdata.json", stormReady );
+        stormFile.loadData( "hurdat2-1851-2016-041117.json", stormReady );
     }
 
     function stormReady() {
 
+        curStorm = stormFile.getJSON();
+
+        setupDatGui();
+    }
+
+    function runStorm() {
         hurrModel.initArrays();
         hurrModel.initialise();
 
@@ -87,6 +99,48 @@
 
 
     }
+
+    /**
+     * Set up the datgui controls on the basis of the loaded storm data
+     */
+    function setupDatGui() {
+
+        var years = stormFile.getYears();
+        var storms = stormFile.getStormsForYear( years[0] );
+        var stormLabels = stormFile.getStormLabels( storms );
+        var entryLabels = stormFile.getEntryLabels( storms[0] );
+
+        var options = [];
+        options.year = years[0];
+        options.stormLabels = stormLabels[0];
+        options.entryLabels = entryLabels[0];
+
+        var gui_year = gfxScene.gui.add(options, "year", years ).onChange(function() {
+
+            storms = stormFile.getStormsForYear(Number(options.year));
+            stormLabels = stormFile.getStormLabels(storms);
+            gui_storms = gui_storms.options(stormLabels);
+            options.stormLabels = stormLabels[0];
+            gui_storms.updateDisplay();
+        });
+
+        var gui_storms = gfxScene.gui.add(options, "stormLabels", stormLabels ).onChange(function() {
+
+            console.log("Selected storm");
+
+            entryLabels = stormFile.getEntryLabels( storms[0] );
+            gui_entries = gui_storms.options(entryLabels);
+            options.entryLabels = entryLabels[0];
+            gui_entries.updateDisplay();
+        });
+
+        var gui_entries = gfxScene.gui.add(options, "entryLabels", entryLabels ).onChange(function() {
+
+            console.log("Entries for storm");
+        });
+
+    }
+
     /**
      * Called by the hurricane model to have the sample data rendered
      * In this case, the wind arrows and eye are already in existence
