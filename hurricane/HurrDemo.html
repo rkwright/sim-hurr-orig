@@ -11,7 +11,7 @@
     <script src="../three-js/three.js"></script>
     <script src="../three-js/Detector.js"></script>
     <script src="../three-js/stats.js"></script>
-    <script src="../three-js/dat.gui.min.js"></script>
+    <script src="../three-js/dat.gui.js"></script>
     <script src="../gfx/OrbitControls-Touch-Ortho.js"></script>
     <script src="../gfx/math-ext.js"></script>
     <script src="../gfx/HttpStatus.js"></script>
@@ -29,6 +29,11 @@
     var hurrModel = undefined;
     var stormFile = new StormFile.StormFile();
     var curStorm  = undefined;
+    var years = undefined;
+    var storms = undefined;
+    var stormLabels = undefined;
+    var entryLabels = undefined;
+
     //var gui = undefined;
 
     // allocate the Scene object, request orbitControls, some of 3D axes 10 units high and the stats
@@ -96,8 +101,44 @@
             var mesh = new THREE.Mesh(globe, mat);
             gfxScene.add(mesh);
         } );
+    }
 
+    /**
+     * Remove any existing controller for storms and create a new one.
+     */
+    function addStormsGui ( controller, options, year ) {
 
+        if ( controller !== undefined )
+            gfxScene.gui.remove( controller );
+
+        storms = stormFile.getStormsForYear( Number(year) );
+        stormLabels = stormFile.getStormLabels(storms);
+
+        var gui_s = gfxScene.gui.add(options, "stormLabels", stormLabels );
+        gui_s.onChange( stormsChange );
+
+        return gui_s;
+    }
+
+    function stormsChange() {
+        console.log("Selected storm");
+    }
+
+    function addEntriesGui ( controller, options, storm ) {
+        if ( controller !== undefined )
+            gfxScene.gui.remove( controller );
+
+        entryLabels = stormFile.getEntryLabels( storm );
+        options.entryLabels = entryLabels[0];
+
+        var gui_e = gfxScene.gui.add(options, "entryLabels", entryLabels );
+        gui_e.onChange( entriesChange );
+
+        return gui_e;
+    }
+
+    function entriesChange() {
+        console.log("Selected entry");
     }
 
     /**
@@ -105,40 +146,26 @@
      */
     function setupDatGui() {
 
-        var years = stormFile.getYears();
-        var storms = stormFile.getStormsForYear( years[0] );
-        var stormLabels = stormFile.getStormLabels( storms );
-        var entryLabels = stormFile.getEntryLabels( storms[0] );
+        var gui_storms;
+        var gui_entries;
+        years = stormFile.getYears();
+        storms = stormFile.getStormsForYear(years[0]);
+        stormLabels = stormFile.getStormLabels(storms);
+        entryLabels = stormFile.getEntryLabels( storms[0] );
 
-        var options = [];
+        var options = {};
         options.year = years[0];
         options.stormLabels = stormLabels[0];
         options.entryLabels = entryLabels[0];
 
         var gui_year = gfxScene.gui.add(options, "year", years ).onChange(function() {
-
-            storms = stormFile.getStormsForYear(Number(options.year));
-            stormLabels = stormFile.getStormLabels(storms);
-            gui_storms = gui_storms.options(stormLabels);
-            options.stormLabels = stormLabels[0];
-            gui_storms.updateDisplay();
+            console.log("Changed year");
+            gui_storms = addStormsGui( gui_storms, options, options.year );
         });
 
-        var gui_storms = gfxScene.gui.add(options, "stormLabels", stormLabels ).onChange(function() {
+        gui_storms = addStormsGui( gui_storms, options, options.year );
 
-            console.log("Selected storm");
-
-            entryLabels = stormFile.getEntryLabels( storms[0] );
-            gui_entries = gui_storms.options(entryLabels);
-            options.entryLabels = entryLabels[0];
-            gui_entries.updateDisplay();
-        });
-
-        var gui_entries = gfxScene.gui.add(options, "entryLabels", entryLabels ).onChange(function() {
-
-            console.log("Entries for storm");
-        });
-
+        gui_entries = addEntriesGui( gui_entries, options, storms[0]);
     }
 
     /**
