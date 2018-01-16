@@ -33,6 +33,9 @@
     var storms = undefined;
     var stormLabels = undefined;
     var entryLabels = undefined;
+    var options = undefined;
+    var gui_storms;
+    var gui_entries;
 
     //var gui = undefined;
 
@@ -113,6 +116,7 @@
 
         storms = stormFile.getStormsForYear( Number(year) );
         stormLabels = stormFile.getStormLabels(storms);
+        options.stormLabels = stormLabels[0];
 
         var gui_s = gfxScene.gui.add(options, "stormLabels", stormLabels );
         gui_s.onChange( stormsChange );
@@ -121,7 +125,10 @@
     }
 
     function stormsChange() {
-        console.log("Selected storm");
+        var index = stormLabels.indexOf(options.stormLabels);
+        gui_entries = addEntriesGui( gui_entries, options, storms[index]);
+
+        console.log("Selected storm: " + index);
     }
 
     function addEntriesGui ( controller, options, storm ) {
@@ -138,6 +145,7 @@
     }
 
     function entriesChange() {
+        var index = entryLabels.indexOf(options.entryLabels);
         console.log("Selected entry");
     }
 
@@ -146,14 +154,12 @@
      */
     function setupDatGui() {
 
-        var gui_storms;
-        var gui_entries;
         years = stormFile.getYears();
         storms = stormFile.getStormsForYear(years[0]);
         stormLabels = stormFile.getStormLabels(storms);
         entryLabels = stormFile.getEntryLabels( storms[0] );
 
-        var options = {};
+        options = {};
         options.year = years[0];
         options.stormLabels = stormLabels[0];
         options.entryLabels = entryLabels[0];
@@ -161,6 +167,7 @@
         var gui_year = gfxScene.gui.add(options, "year", years ).onChange(function() {
             console.log("Changed year");
             gui_storms = addStormsGui( gui_storms, options, options.year );
+            gui_entries = addEntriesGui( gui_entries, options, storms[0]);
         });
 
         gui_storms = addStormsGui( gui_storms, options, options.year );
