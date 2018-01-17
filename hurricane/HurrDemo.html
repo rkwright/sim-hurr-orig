@@ -40,7 +40,6 @@
     // allocate the Scene object, request orbitControls, some of 3D axes 10 units high and the stats
     var gfxScene = new GFX.Scene( {
         cameraPos : [4, 3, 4],
-        axesHeight:10,
         controls:true,
         datgui:true,
         guiWidth:500,
@@ -130,7 +129,8 @@
      */
     function stormsChange() {
         var index = stormLabels.indexOf(options.stormLabels);
-        updateEntries( options, storms[index]);
+        curStorm = storms[index];
+        updateEntries( options, curStorm);
     }
 
     /**
