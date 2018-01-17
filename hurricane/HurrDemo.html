@@ -34,8 +34,6 @@
     var stormLabels = undefined;
     var entryLabels = undefined;
     var options = undefined;
-    var gui_storms;
-    var gui_entries;
 
     //var gui = undefined;
 
@@ -51,6 +49,9 @@
 
     // then initialize our demo's stuff
     initializeDemo();
+
+    // temporary...
+    animateScene();
 
     /**
      * Initialize the Demo.
@@ -107,46 +108,50 @@
     }
 
     /**
-     * Remove any existing controller for storms and create a new one.
+     * Update the existing controller for storms and create a new one.
+     * Have to do it this way as there appears to be no easy way to
+     * "refresh" the data in a controller
      */
-    function addStormsGui ( controller, options, year ) {
+    function updateStorms ( options, year ) {
 
-        if ( controller !== undefined )
-            gfxScene.gui.remove( controller );
+        if ( updateStorms.gui !== undefined )
+            gfxScene.gui.remove( updateStorms.gui );
 
         storms = stormFile.getStormsForYear( Number(year) );
         stormLabels = stormFile.getStormLabels(storms);
         options.stormLabels = stormLabels[0];
 
-        var gui_s = gfxScene.gui.add(options, "stormLabels", stormLabels );
-        gui_s.onChange( stormsChange );
-
-        return gui_s;
+        updateStorms.gui = gfxScene.gui.add(options, "stormLabels", stormLabels ).name("Storms");
+        updateStorms.gui.onChange( stormsChange );
     }
 
+    /**
+     * Handle the change event for the storms controller
+     */
     function stormsChange() {
         var index = stormLabels.indexOf(options.stormLabels);
-        gui_entries = addEntriesGui( gui_entries, options, storms[index]);
-
-        console.log("Selected storm: " + index);
+        updateEntries( options, storms[index]);
     }
 
-    function addEntriesGui ( controller, options, storm ) {
-        if ( controller !== undefined )
-            gfxScene.gui.remove( controller );
+    /**
+     * Update existing controller for the entries and create a new one
+     */
+    function updateEntries ( options, storm ) {
+        if ( updateEntries.gui !== undefined )
+            gfxScene.gui.remove( updateEntries.gui );
 
         entryLabels = stormFile.getEntryLabels( storm );
         options.entryLabels = entryLabels[0];
 
-        var gui_e = gfxScene.gui.add(options, "entryLabels", entryLabels );
-        gui_e.onChange( entriesChange );
-
-        return gui_e;
+        updateEntries.gui = gfxScene.gui.add(options, "entryLabels", entryLabels ).name("Entries");
+        updateEntries.gui.onChange( entriesChange );
     }
 
+    /**
+     * Handle the change event for the entries controller.  Not used yet.
+     */
     function entriesChange() {
         var index = entryLabels.indexOf(options.entryLabels);
-        console.log("Selected entry");
     }
 
     /**
@@ -164,15 +169,14 @@
         options.stormLabels = stormLabels[0];
         options.entryLabels = entryLabels[0];
 
-        var gui_year = gfxScene.gui.add(options, "year", years ).onChange(function() {
+        var gui_year = gfxScene.gui.add(options, "year", years ).name("Year").onChange(function() {
             console.log("Changed year");
-            gui_storms = addStormsGui( gui_storms, options, options.year );
-            gui_entries = addEntriesGui( gui_entries, options, storms[0]);
+            updateStorms( options, options.year );
+            updateEntries( options, storms[0]);
         });
 
-        gui_storms = addStormsGui( gui_storms, options, options.year );
-
-        gui_entries = addEntriesGui( gui_entries, options, storms[0]);
+        updateStorms( options, options.year );
+        updateEntries( options, storms[0]);
     }
 
     /**
