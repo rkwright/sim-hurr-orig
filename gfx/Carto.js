@@ -12,16 +12,21 @@
 var Carto = {
     revision: '1.0',
 
-    METERPERDEG: 111195.0,  // based on circumference at equator, https://solarsystem.nasa.gov/planets/earth/facts
-    EARTH_DIAMETER: 12742.0,// per NASA
+    METERPERDEG:    111195.0,            // based on circumference at equator, 
+    EARTH_DIAMETER: 12742.0,             // per NASA: https://solarsystem.nasa.gov/planets/earth/facts
 
-    radius_major:6378137.0,         // Equatorial Radius, WGS84
-    radius_minor:6356752.314245179, // defined as constant
-    f:298.257223563                 // 1/f=(a-b)/a , a=r_major, b=r_minor
+    RADIUS_MAJOR:   6378137.0,            // Equatorial Radius, WGS84
+    RADIUS_MINOR:   6356752.314245179,    // defined as constant
+    f:              298.257223563         // 1/f=(a-b)/a , a=r_major, b=r_minor
 };
 
 /**
- * Pseudo constructor
+ *  Note about coordinate order.  While geometry uses "x,y" it is more common in geodesy to
+ *  use "lat,lon" or "northing,easting".
+ *  This is codified in ISO 6709  (https://en.wikipedia.org/wiki/ISO_6709#Items)
+ */
+
+/**
  * @constructor
  */
 Carto.Carto = function () {
@@ -38,7 +43,7 @@ Carto.Carto.prototype = {
      * @param elev
      * @returns {Vector3|*}
      */
-    transform: function (lat, lon, elev ) {
+    latLonToXYZ: function ( lat, lon, elev ) {
         var radius = Carto.EARTH_DIAMETER;
 
         // this trasform from https://stackoverflow.com/questions/28365948/javascript-\
@@ -80,12 +85,12 @@ Carto.Carto.prototype = {
      * location
      *
      * Parameters:   lat0,lon0  - in degrees
-     * lat1,lon1  - in degrees
+     *               lat1,lon1  - in degrees
      *
-     * Return:			heading in degrees where N = 0, NW = 45 and so on
+     * Return:		 heading in degrees where N = 0, NW = 45 and so on
      */
 
-    findHeading: function ( lon1Deg, lat1Deg, lon2Deg, lat2Deg ) {
+    findHeading: function ( lat1Deg, lon1Deg, lat2Deg, lon2Deg ) {
         var	lat1,lon1;
         var	lat2,lon2;
         var	heading;
@@ -97,10 +102,10 @@ Carto.Carto.prototype = {
         lat2Deg = Math.wrapAng( lat2Deg, -90.0, 90.0, 180.0 );
 
         // convert it all to radians
-        lat2    = Math.toRad(lat2Deg);
-        lon2    = Math.toRad(lon2Deg);
-        lat1    = Math.toRad(lat1Deg);
-        lon1    = Math.toRad(lon1Deg);
+        lat2 = Math.toRad(lat2Deg);
+        lon2 = Math.toRad(lon2Deg);
+        lat1 = Math.toRad(lat1Deg);
+        lon1 = Math.toRad(lon1Deg);
 
         heading = Math.fmod( Math.atan2( Math.sin(lon1 - lon2) * Math.cos(lat2),
             Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon1 - lon2)), Math.PI*2);
@@ -119,7 +124,8 @@ Carto.Carto.prototype = {
      * @param lat2Deg
      * @returns {*}
      */
-    degreesToMeters: function ( lon1Deg, lat1Deg, lon2Deg, lat2Deg ) {
+    degreesToMeters: function ( lat1Deg, lon1Deg, lat2Deg, lon2Deg ) {
+
         if ( lat1Deg === lat2Deg && lon1Deg === lon2Deg )
             return 0.0;
 
@@ -140,13 +146,13 @@ Carto.Carto.prototype = {
 
     /**
      *   Given a coordinate, heading and distance travelled, finds the new coordinates
-     *   Parameters:   lat,lon  - in degrees
+     *   Parameters:  lat,lon  - in degrees
      *				  heading  - in degrees, where 0 is north, 45 NW, and so on
      *				  distance - in meters
      *			  newLat, newLon - resulting coordinate, in degrees
      */
 
-    metersToDegrees: function ( lonDeg,	latDeg,	heading, dist )  {
+    metersToDegrees: function ( latDeg, lonDeg,	heading, dist )  {
 
         var	lat,lon;
         var	newLat,newLon;
@@ -176,7 +182,7 @@ Carto.Carto.prototype = {
         newLonDeg = Math.wrapAng( newLonDeg, -180.0, 180.0, 360.0 );
         newLatDeg = Math.wrapAng( newLatDeg, -90.0, 90.0, 180.0 );
 
-        return new THREE.Vector2( newLatDeg, newLonDeg );
+        return { 'lat' : newLatDeg, 'lon': newLonDeg };
 
         /*
             // just a check to make sure we got the right value
@@ -199,12 +205,12 @@ Carto.Carto.prototype = {
     },
 
     // AZIM2MATHR(azim) ((PI+HALF_PI)-azim)
-    azimuthToRadians: function ( azim ) {
-        return (Math.PI * 1.5) - azim;
+    azimuthToRadians: function ( azimuth ) {
+        return (Math.PI * 1.5) - azimuth;
     },
 
     // AZIM2MATHD(azim) ((450.0)-azim)
-    azimuthToDegrees: function ( azim ) {
+    azimuthToDegrees: function ( azimuth ) {
         return 450.0 - azimuth;
     },
 
@@ -215,16 +221,16 @@ Carto.Carto.prototype = {
      */
 
      // lat lon to mercator
-     latlonToMerc: function(lon,lat)
+     latlonToMerc: function( lat, lon )
         {
             //lat, lon in rad
-            var x = Carto.radius_major * Math.toRad(lon);
+            var x = Carto.RADIUS_MAJOR * Math.toRad(lon);
 
             if (lat > 89.5) lat = 89.5;
             if (lat < -89.5) lat = -89.5;
 
 
-            var temp = Carto.radius_minor / Carto.radius_major;
+            var temp = Carto.RADIUS_MINOR / Carto.RADIUS_MAJOR;
             var es = 1.0 - Math.sqr(temp);
             var eccent = Math.sqrt(es);
 
@@ -236,20 +242,20 @@ Carto.Carto.prototype = {
             var com = 0.5 * eccent;
             var con2 = Math.pow( (1.0 - con) / (1.0 + con), com);
             var ts = Math.tan(0.5 * (Math.PI * 0.5 - phi)) / con2;
-            var y = 0 - Carto.radius_major * Math.log(ts);
+            var y = 0 - Carto.RADIUS_MAJOR * Math.log(ts);
 
            return { 'x' : x, 'y': y };
         },
 
-        mercToLatLon: function(x,y) //mercator to lat lon
+        mercToLatLon: function( x, y ) // mercator to lat lon
         {
-            var lon = Math.toDeg((x / Carto.radius_major));
+            var lon = Math.toDeg((x / Carto.RADIUS_MAJOR));
 
-            var temp = Carto.radius_minor / Carto.radius_major;
+            var temp = Carto.RADIUS_MINOR / Carto.RADIUS_MAJOR;
             var e = Math.sqrt(1.0 - (temp * temp));
-            var lat = Math.toDeg( this.pj_phi2( Math.exp( 0 - (y / Carto.radius_major)), e));
+            var lat = Math.toDeg( this.pj_phi2( Math.exp( 0 - (y / Carto.RADIUS_MAJOR)), e));
 
-            return { 'lon' : lon, 'lat' : lat };
+            return { 'lat' : lat, 'lon' : lon };
         },
 
         pj_phi2:function(ts, e)
