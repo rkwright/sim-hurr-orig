@@ -21,6 +21,7 @@ Math.clamp  = function (cv, lo, hi) { return ((cv > hi) ? hi : ((cv < lo) ? lo :
 Math.hypot  = function (x, y) { return Math.sqrt(x * x + y * y); };
 Math.roundi = function (a) { return (a < 0) ? Math.round(a - 0.5) : Math.round(a + 0.5); };
 Math.strcmp = function (str1, str2) { return str1 < str2 ? -1 : str1 > str2; };
+Math.swap   = function ( x1, x2) { var tmp = x1; x1 = x2; x2 = tmp; };
 Math.wrapAng = function( arg, loLim, upLim, incr ){
     while (arg > upLim)
         arg -= incr;
@@ -30,3 +31,4 @@ Math.wrapAng = function( arg, loLim, upLim, incr ){
 
     return arg;
 };
+
