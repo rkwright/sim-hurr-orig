@@ -14,7 +14,7 @@
 /**
  * Constants for the Hurricane model
  */
-var HurrModel = {
+var HURRMODEL = {
     revision: '1.0',
 
     PERIPHERAL_PRESSURE: 1013.0,	// in mB
@@ -37,7 +37,7 @@ var HurrModel = {
  * Initialize the parameters that control hurricane sim
  * @constructor
  */
-HurrModel.HurrModel = function ( objParm ) {
+HurrModel = function ( objParm ) {
 
     this.renderFunc = objParm.renderFunc;
 
@@ -54,7 +54,7 @@ HurrModel.HurrModel = function ( objParm ) {
     this.sampleAngle = undefined;
     this.sampleData = undefined;
 
-    this.carto = new Carto.Carto();
+    this.carto = new Carto();
 
     // from HurrParm.h
     this.cycloneAzimuth = 0;			// azimuth of hurricane track (degrees clockwise from North)
@@ -70,7 +70,7 @@ HurrModel.HurrModel = function ( objParm ) {
     //this.nTimeSteps = 0;
     this.dTimeStep = 0;
 
-    this.modelType = HurrModel.enModelType[0];
+    this.modelType = HURRMODEL.enModelType[0];
 
     this.xMinPlan = 0;
     this.xMaxPlan = 0;
@@ -78,7 +78,7 @@ HurrModel.HurrModel = function ( objParm ) {
     this.yMaxPlan = 0;
 };
 
-HurrModel.HurrModel.prototype = {
+HurrModel.prototype = {
 
     /**
      *

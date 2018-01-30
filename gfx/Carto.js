@@ -6,10 +6,12 @@
  * Copyright 2017, All rights reserved.
  */
 
+//'use strict';
+
 /**
  * Constants
  */
-var Carto = {
+var CARTO = {
     revision: '1.0',
 
     METERPERDEG:    111195.0,            // based on circumference at equator, 
@@ -29,11 +31,11 @@ var Carto = {
 /**
  * @constructor
  */
-Carto.Carto = function () {
+Carto = function () {
 
 };
 
-Carto.Carto.prototype = {
+Carto.prototype = {
 
     /**
      * transform from lat/lon to 3D x,y,z in meters relative to the centre of the earth.
@@ -44,7 +46,7 @@ Carto.Carto.prototype = {
      * @returns {Vector3|*}
      */
     latLonToXYZ: function ( lat, lon, elev ) {
-        var radius = Carto.EARTH_DIAMETER;
+        var radius = CARTO.EARTH_DIAMETER;
 
         // this trasform from https://stackoverflow.com/questions/28365948/javascript-\
         // latitude-longitude-to-xyz-position-on-earth-threejs
@@ -197,11 +199,11 @@ Carto.Carto.prototype = {
      * These methods assume a perfectly spherical earth
      */
     metersToDeg: function (m) {
-        return m / Carto.METERPERDEG;
+        return m / CARTO.METERPERDEG;
     },
 
     degToMeters: function (d) {
-        return d * Carto.METERPERDEG;
+        return d * CARTO.METERPERDEG;
     },
 
     // AZIM2MATHR(azim) ((PI+HALF_PI)-azim)
@@ -224,13 +226,13 @@ Carto.Carto.prototype = {
      latlonToMerc: function( lat, lon )
         {
             //lat, lon in rad
-            var x = Carto.RADIUS_MAJOR * Math.toRad(lon);
+            var x = CARTO.RADIUS_MAJOR * Math.toRad(lon);
 
             if (lat > 89.5) lat = 89.5;
             if (lat < -89.5) lat = -89.5;
 
 
-            var temp = Carto.RADIUS_MINOR / Carto.RADIUS_MAJOR;
+            var temp = CARTO.RADIUS_MINOR / CARTO.RADIUS_MAJOR;
             var es = 1.0 - Math.sqr(temp);
             var eccent = Math.sqrt(es);
 
@@ -242,18 +244,18 @@ Carto.Carto.prototype = {
             var com = 0.5 * eccent;
             var con2 = Math.pow( (1.0 - con) / (1.0 + con), com);
             var ts = Math.tan(0.5 * (Math.PI * 0.5 - phi)) / con2;
-            var y = 0 - Carto.RADIUS_MAJOR * Math.log(ts);
+            var y = 0 - CARTO.RADIUS_MAJOR * Math.log(ts);
 
            return { 'x' : x, 'y': y };
         },
 
         mercToLatLon: function( x, y ) // mercator to lat lon
         {
-            var lon = Math.toDeg((x / Carto.RADIUS_MAJOR));
+            var lon = Math.toDeg((x / CARTO.RADIUS_MAJOR));
 
-            var temp = Carto.RADIUS_MINOR / Carto.RADIUS_MAJOR;
+            var temp = CARTO.RADIUS_MINOR / CARTO.RADIUS_MAJOR;
             var e = Math.sqrt(1.0 - (temp * temp));
-            var lat = Math.toDeg( this.pj_phi2( Math.exp( 0 - (y / Carto.RADIUS_MAJOR)), e));
+            var lat = Math.toDeg( this.pj_phi2( Math.exp( 0 - (y / CARTO.RADIUS_MAJOR)), e));
 
             return { 'lat' : lat, 'lon' : lon };
         },

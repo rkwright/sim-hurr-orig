@@ -8,14 +8,14 @@
  * Copyright 2017, All rights reserved.
  */
 
-var MetParm = {
+var METPARM = {
     revision: "1.0"
 };
 
 /**
  * @constructor
  */
-MetParm.MetParm = function () {
+MetParm = function () {
 
 	this.yVel = 0;
 	this.xVel = 0;

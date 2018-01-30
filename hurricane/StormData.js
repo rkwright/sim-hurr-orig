@@ -7,7 +7,7 @@
  *
  */
 
-var StormData = {
+var STORMDATA = {
     revision: "1.0",
 
     // contents of the entry fields
@@ -28,7 +28,7 @@ var StormData = {
 /**
  * @constructor
  */
-StormData.StormData = function () {
+StormData = function () {
 
     this.atcID   = undefined;
     this.name    = undefined;

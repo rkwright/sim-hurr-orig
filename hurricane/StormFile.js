@@ -10,21 +10,21 @@
 /**
  * Constants
  */
-var StormFile = {
+var STORMFILE = {
     revision: '1.0'
 };
 
 /**
  * @constructor
  */
-StormFile.StormFile = function () {
+StormFile = function () {
     this.stormFile = undefined;
     this.jsonData  = undefined;
 
     stThis = this;
 };
 
-StormFile.StormFile.prototype = {
+StormFile.prototype = {
 
     loadJSON: function(callback) {
 

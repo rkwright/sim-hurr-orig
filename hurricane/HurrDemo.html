@@ -18,7 +18,6 @@
     <script src="../gfx/gfx-scene.js"></script>
     <script src="../gfx/Julian.js"></script>
     <script src="../gfx/Carto.js"></script>
-    <script src="../gfx/arc.js"></script>
     <script src="../gfx/GreatCircle.js"></script>
     <script src="MetParm.js"></script>
     <script src="StormParm.js"></script>
@@ -29,7 +28,7 @@
 
 <script>
     var hurrModel = undefined;
-    var stormFile = new StormFile.StormFile();
+    var stormFile = new StormFile();
     var curStorm  = undefined;
     var years = undefined;
     var storms = undefined;
@@ -44,6 +43,8 @@
         datgui:true,
         guiWidth:500,
         displayStats:true});
+
+    testFoo();
 
     testArc();
 
@@ -72,7 +73,7 @@
 
         // now create the model.  It doesn't have any parameters or data - it's
         // just the executable model itself
-        hurrModel = new HurrModel.HurrModel({
+        hurrModel = new HurrModel({
 
             renderFunc: renderFunc
         });
@@ -82,7 +83,7 @@
 
     function loadStorms() {
 
-        stormFile = new StormFile.StormFile();
+        stormFile = new StormFile();
         //stormFile.loadData( "hurrdata.json", stormReady );
         stormFile.loadData( "hurdat2-1851-2016-041117.json", stormReady );
     }

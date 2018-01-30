@@ -7,18 +7,20 @@
  *
  */
 
-var CylinderUtil = {
+'use strict';
+
+var CYLINDERUTIL = {
     revision: '1.0'
 };
 
-CylinderUtil.CylinderUtil = function () {
+CylinderUtil = function () {
     this.direction = new THREE.Vector3();
     this.orientation = new THREE.Matrix4();
     this.threeUp = new THREE.Object3D().up;
     this.matrix = new THREE.Matrix4();
 };
 
-CylinderUtil.CylinderUtil.prototype = {
+CylinderUtil.prototype = {
 
     createCylinder: function ( point0, point1, diameter, segments, material ) {
         this.direction.subVectors(point1, point0);

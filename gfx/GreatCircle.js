@@ -10,7 +10,7 @@
 /**
  * Constants
  */
-var GreatCircle = {
+var GREATCIRCLE = {
     revision: '1.0'
 };
 
@@ -22,15 +22,13 @@ var GreatCircle = {
  * @param properties
  * @constructor
  */
-GreatCircle = function( start, end, properties ) {
+function GreatCircle( start, end, properties ) {
     if (!start || start.lon === undefined || start.lat === undefined) {
         throw new Error("GreatCircle constructor expects two args: start and end objects with x and y properties");
     }
     if (!end || end.lon === undefined || end.lat === undefined) {
         throw new Error("GreatCircle constructor expects two args: start and end objects with x and y properties");
     }
-
-    console.log("GreatCircle: " + this.revision);
 
     this.startLon = Math.toRad(start.lon);
     this.startLat = Math.toRad(start.lat);
@@ -67,8 +65,8 @@ GreatCircle.prototype = {
         var x = A * Math.cos(this.startLat) * Math.cos(this.startLon) + B * Math.cos(this.endLat) * Math.cos(this.endLon);
         var y = A * Math.cos(this.startLat) * Math.sin(this.startLon) + B * Math.cos(this.endLat) * Math.sin(this.endLon);
         var z = A * Math.sin(this.startLat) + B * Math.sin(this.endLat);
-        var lat = R2D * Math.atan2(z, Math.sqrt(Math.sqr(x) + Math.sqr(y)));
-        var lon = R2D * Math.atan2(y, x);
+        var lat = Math.toDeg(Math.atan2(z, Math.sqrt(Math.sqr(x) + Math.sqr(y))));
+        var lon = Math.toDeg(Math.atan2(y, x));
         return [lon, lat];
     },
 

@@ -2,13 +2,17 @@
  *  @author rkwright   /  http://www.geofx.com
  */
 
-var GFX = { revision: '5.0' };
+// 'use strict';
+
+var GFX = {
+    revision: '5.0',
+    X_AXIS:    0,
+   	Y_AXIS:    1,
+   	Z_AXIS:    2
+};
 
 //some constants
-	var    	X_AXIS = 0;
-	var    	Y_AXIS = 1;
-	var    	Z_AXIS = 2;
-	
+
 GFX.Scene = function ( parameters ) {
 	
 	this.scene = null;
@@ -649,12 +653,12 @@ GFX.Scene.prototype = {
 			var cylinder = new THREE.Mesh( geometry, material ); 
 			
 			pos += AXIS_STEP/2.0;
-			if (axis === X_AXIS)
+			if (axis === GFX.X_AXIS)
 			{
 				cylinder.position.x = pos;
 				cylinder.rotation.z = Math.PI/2;
 			}
-			else if (axis === Y_AXIS)
+			else if (axis === GFX.Y_AXIS)
 			{
 				cylinder.rotation.y = Math.PI/2;
 				cylinder.position.y = pos;
@@ -671,8 +675,8 @@ GFX.Scene.prototype = {
 
 	drawAxes: function( height ) {
 	
-		this.drawAxis(X_AXIS, 0xff0000, height);
-		this.drawAxis(Y_AXIS, 0x00ff00, height);
-		this.drawAxis(Z_AXIS, 0x0000ff, height);
+		this.drawAxis(GFX.X_AXIS, 0xff0000, height);
+		this.drawAxis(GFX.Y_AXIS, 0x00ff00, height);
+		this.drawAxis(GFX.Z_AXIS, 0x0000ff, height);
 	}
 };
