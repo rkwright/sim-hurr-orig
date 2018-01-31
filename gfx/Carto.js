@@ -45,8 +45,8 @@ Carto.prototype = {
      * @param elev
      * @returns {Vector3|*}
      */
-    latLonToXYZ: function ( lat, lon, elev ) {
-        var radius = CARTO.EARTH_DIAMETER;
+    latLonToXYZ: function ( lat, lon, elev, scale ) {
+        var radius = elev * scale;
 
         // this trasform from https://stackoverflow.com/questions/28365948/javascript-\
         // latitude-longitude-to-xyz-position-on-earth-threejs

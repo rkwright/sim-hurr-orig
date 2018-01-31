@@ -11,73 +11,33 @@
  * Constants
  */
 var GREATCIRCLE = {
-    revision: '1.0'
+    revision: '1.1'
 };
 
 /**
  * http://en.wikipedia.org/wiki/Great-circle_distance
  *
- * @param start, in degrees
- * @param end, in degrees
- * @param properties
  * @constructor
  */
-function GreatCircle( start, end, properties ) {
-    if (!start || start.lon === undefined || start.lat === undefined) {
-        throw new Error("GreatCircle constructor expects two args: start and end objects with x and y properties");
-    }
-    if (!end || end.lon === undefined || end.lat === undefined) {
-        throw new Error("GreatCircle constructor expects two args: start and end objects with x and y properties");
-    }
-
-    this.startLon = Math.toRad(start.lon);
-    this.startLat = Math.toRad(start.lat);
-
-    this.endLon = Math.toRad(end.lon);
-    this.endLat = Math.toRad(end.lat);
-    
-    this.properties = properties || {};
-
-    var w = this.startLon - this.endLon;
-    var h = this.startLat - this.endLat;
-    var z = Math.sqr(Math.sin(h / 2.0)) + Math.cos(this.startLat) * Math.cos(this.endLat) * Math.sqr(Math.sin(w / 2.0));
-    this.g = 2.0 * Math.asin(Math.sqrt(z));
-
-    this.dateLineOffset = 0;
-    this.leftBorderX    = 0;
-    this.rightBorderX   = 0;
-    this.diffSpace      = 0;
-
-    if (this.g === Math.PI) {
-        throw new Error('it appears ' + start.view() + ' and ' + end.view() + " are 'antipodal', e.g diametrically opposite, thus there is no single route but rather infinite");
-    } else if (isNaN(this.g)) {
-        throw new Error('could not calculate great circle between ' + start + ' and ' + end);
-    }
-};
+function GreatCircle() {
+}
 
 GreatCircle.prototype = {
-    /*
-     * http://williams.best.vwh.net/avform.htm#Intermediate
-     */
-    interpolate: function(f) {
-        var A = Math.sin((1 - f) * this.g) / Math.sin(this.g);
-        var B = Math.sin(f * this.g) / Math.sin(this.g);
-        var x = A * Math.cos(this.startLat) * Math.cos(this.startLon) + B * Math.cos(this.endLat) * Math.cos(this.endLon);
-        var y = A * Math.cos(this.startLat) * Math.sin(this.startLon) + B * Math.cos(this.endLat) * Math.sin(this.endLon);
-        var z = A * Math.sin(this.startLat) + B * Math.sin(this.endLat);
-        var lat = Math.toDeg(Math.atan2(z, Math.sqrt(Math.sqr(x) + Math.sqr(y))));
-        var lon = Math.toDeg(Math.atan2(y, x));
-        return [lon, lat];
-    },
 
     /**
      * Generate points along the great circle
      *
+     * @param start, in degrees
+     * @param end, in degrees
      * @param npoints
      * @param options
      * @returns {Array}
      */
-    generateArc: function(npoints,options) {
+    generateArc: function( start, end, npoints, options ) {
+
+        // intialize all the class variables for this arc
+        this.initArc( start, end );
+
         var first_pass = [];
         if (!npoints || npoints <= 2) {
             first_pass.push([this.start.lon, this.start.lat]);
@@ -107,6 +67,54 @@ GreatCircle.prototype = {
         }
 
         return poMulti;
+    },
+
+    /**
+     * @param start, in degrees
+     * @param end, in degrees
+     */
+    initArc: function  ( start, end ) {
+
+        if (!start || start.lon === undefined || start.lat === undefined ||
+            !end || end.lon === undefined || end.lat === undefined) {
+            throw new Error("GreatCircle constructor expects two args: start and end objects with x and y properties");
+        }
+
+        this.startLon = Math.toRad(start.lon);
+        this.startLat = Math.toRad(start.lat);
+
+        this.endLon = Math.toRad(end.lon);
+        this.endLat = Math.toRad(end.lat);
+
+        var w = this.startLon - this.endLon;
+        var h = this.startLat - this.endLat;
+        var z = Math.sqr(Math.sin(h / 2.0)) + Math.cos(this.startLat) * Math.cos(this.endLat) * Math.sqr(Math.sin(w / 2.0));
+        this.g = 2.0 * Math.asin(Math.sqrt(z));
+
+        this.dateLineOffset = 0;
+        this.leftBorderX    = 0;
+        this.rightBorderX   = 0;
+        this.diffSpace      = 0;
+
+        if (this.g === Math.PI) {
+            throw new Error('it appears ' + start.view() + ' and ' + end.view() + " are 'antipodal', e.g diametrically opposite, thus there is no single route but rather infinite");
+        } else if (isNaN(this.g)) {
+            throw new Error('could not calculate great circle between ' + start + ' and ' + end);
+        }
+    },
+
+    /*
+     * http://williams.best.vwh.net/avform.htm#Intermediate
+     */
+    interpolate: function(f) {
+        var A = Math.sin((1 - f) * this.g) / Math.sin(this.g);
+        var B = Math.sin(f * this.g) / Math.sin(this.g);
+        var x = A * Math.cos(this.startLat) * Math.cos(this.startLon) + B * Math.cos(this.endLat) * Math.cos(this.endLon);
+        var y = A * Math.cos(this.startLat) * Math.sin(this.startLon) + B * Math.cos(this.endLat) * Math.sin(this.endLon);
+        var z = A * Math.sin(this.startLat) + B * Math.sin(this.endLat);
+        var lat = Math.toDeg(Math.atan2(z, Math.sqrt(Math.sqr(x) + Math.sqr(y))));
+        var lon = Math.toDeg(Math.atan2(y, x));
+        return [lon, lat];
     },
 
     /**
