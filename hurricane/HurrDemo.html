@@ -28,6 +28,7 @@
 <body>
 
 <script>
+    var TRACK_DIA   = 0.01;
     var hurrModel   = undefined;
     var stormFile   = new StormFile();
     var curStorm    = undefined;
@@ -116,7 +117,7 @@
         var globe = new THREE.SphereGeometry(2, 32, 32);
 
         var textureLoader = new THREE.TextureLoader();
-        var mat = new THREE.MeshPhongMaterial({ color: '#ffffff' });
+        var mat = new THREE.MeshPhongMaterial({ color: '#ffffff', transparent:true, opacity:0.75 });
         textureLoader.load( "images/8081-earthmap4k.jpg", function( texture ) {
             mat.map = texture;
             mat.needsUpdate = true;
@@ -145,11 +146,18 @@
         var endLL   = {};
         var scale = 2 / CARTO.EARTH_DIAMETER;
         var xyz;
-        var arcMesh;
         var arcMat = new THREE.MeshPhongMaterial({color: 0xc0c0c0, shininess:50});
+
+        roundJoin( startLL.lat, startLL.lon, scale, arcMat );
+
+        console.log(" LL: " + startLL.lat + ", " + startLL.lon);
 
         for ( var i=1; i<curStorm.entries.length; i++ ) {
             endLL = { lat: curStorm.entries[i][STORMDATA.LAT], lon: curStorm.entries[i][STORMDATA.LON] };
+
+            roundJoin( endLL.lat, endLL.lon, scale, arcMat );
+
+            console.log(" LL: " + endLL.lat + ", " + endLL.lon);
 
             points = gcGen.generateArc( startLL, endLL, 10, { offset:10 } );
 
@@ -157,18 +165,33 @@
             var helix = [];
 
             for ( var j=0; j<pts.length; j++ ) {
-                helix.push( carto.latLonToXYZ( pts[j][0], pts[j][1], CARTO.EARTH_DIAMETER, scale ) );
+                xyz = carto.latLonToXYZ( pts[j][1], pts[j][0], CARTO.EARTH_DIAMETER, scale ) ;
+                helix.push( xyz );
+                console.log("xyz: " + xyz.x.toFixed(2) + " " + xyz.y.toFixed(2) + " " + xyz.z.toFixed(2));
             }
 
             var curve = new THREE.CatmullRomCurve3( helix );
-            var geometry = new THREE.TubeGeometry( curve, helix.length, 0.05, 6, false );
+            var geometry = new THREE.TubeGeometry( curve, helix.length, TRACK_DIA, 32, false );
 
-            arcMesh = new THREE.Mesh(geometry, arcMat);
+            var arcMesh = new THREE.Mesh(geometry, arcMat);
             gfxScene.add( arcMesh );
 
             startLL = endLL;
         }
 
+    }
+
+    /**
+     * Create a sphere to form the "round join" between sections of the track
+     */
+    function roundJoin( lat, lon, scale, mat ) {
+        var join = new THREE.SphereGeometry(TRACK_DIA, 32, 32);
+
+        xyz = carto.latLonToXYZ( lat, lon, CARTO.EARTH_DIAMETER, scale ) ;
+
+        var mesh = new THREE.Mesh(join, mat);
+        mesh.position.set(xyz.x, xyz.y, xyz.z);
+        gfxScene.add(mesh);
     }
 
     function getStormLatLon ( storm ) {

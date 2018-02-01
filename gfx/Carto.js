@@ -43,6 +43,7 @@ Carto.prototype = {
      * @param lat
      * @param lon
      * @param elev
+     * @param scale
      * @returns {Vector3|*}
      */
     latLonToXYZ: function ( lat, lon, elev, scale ) {
@@ -50,8 +51,8 @@ Carto.prototype = {
 
         // this trasform from https://stackoverflow.com/questions/28365948/javascript-\
         // latitude-longitude-to-xyz-position-on-earth-threejs
-        var phi   = Math.PI/2 - lat;
-        var theta = Math.PI + lon;
+        var phi   = Math.PI/2 - Math.toRad(lat);
+        var theta = Math.PI + Math.toRad(lon);
         var x = -(radius * Math.sin(phi) * Math.cos(theta));
         var z = (radius * Math.sin(phi) * Math.sin(theta));
         var y = (radius * Math.cos(phi));
