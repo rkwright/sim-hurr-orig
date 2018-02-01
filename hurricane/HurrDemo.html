@@ -28,7 +28,7 @@
 <body>
 
 <script>
-    var TRACK_DIA   = 0.01;
+    var TRACK_DIA   = 0.005;
     var hurrModel   = undefined;
     var stormFile   = new StormFile();
     var curStorm    = undefined;
@@ -38,6 +38,8 @@
     var entryLabels = undefined;
     var options     = undefined;
     var carto = new Carto();
+    var saffirMat = [];
+    var stormData = new StormData();
 
     // allocate the Scene object, request orbitControls, some of 3D axes 10 units high and the stats
     var gfxScene = new GFX.Scene( {
@@ -80,6 +82,8 @@
         });
 
         loadStorms( stormReady );
+
+        createSaffirMat();
     }
 
     /**
@@ -127,6 +131,13 @@
         } );
     }
 
+    function createSaffirMat() {
+
+        for ( var i=0; i<STORMDATA.SAFFIR.length; i++ ) {
+            saffirMat[i] = new THREE.MeshLambertMaterial( {color: STORMDATA.SAFFIR[i].color});
+        }
+    }
+
     /**
      * Plot the current storm track by fetching the set of positions and creating
      * great-circle arcs for each and creating a curve in threee.js for them.
@@ -146,34 +157,39 @@
         var endLL   = {};
         var scale = 2 / CARTO.EARTH_DIAMETER;
         var xyz;
-        var arcMat = new THREE.MeshPhongMaterial({color: 0xc0c0c0, shininess:50});
 
-        roundJoin( startLL.lat, startLL.lon, scale, arcMat );
+        var saffirCat = stormData.getSaffirCat( curStorm.entries[0][STORMDATA.MAXWIND]);
+        var mat =  saffirMat[saffirCat];
+
+        roundJoin( startLL.lat, startLL.lon, scale, mat );
 
         console.log(" LL: " + startLL.lat + ", " + startLL.lon);
 
         for ( var i=1; i<curStorm.entries.length; i++ ) {
             endLL = { lat: curStorm.entries[i][STORMDATA.LAT], lon: curStorm.entries[i][STORMDATA.LON] };
 
-            roundJoin( endLL.lat, endLL.lon, scale, arcMat );
+            saffirCat = stormData.getSaffirCat( curStorm.entries[i][STORMDATA.MAXWIND]);
+            mat =  saffirMat[saffirCat];
+
+            roundJoin( endLL.lat, endLL.lon, scale, mat );
 
             console.log(" LL: " + endLL.lat + ", " + endLL.lon);
 
             points = gcGen.generateArc( startLL, endLL, 10, { offset:10 } );
 
             var pts = points[0];
-            var helix = [];
+            var track = [];
 
             for ( var j=0; j<pts.length; j++ ) {
                 xyz = carto.latLonToXYZ( pts[j][1], pts[j][0], CARTO.EARTH_DIAMETER, scale ) ;
-                helix.push( xyz );
+                track.push( xyz );
                 console.log("xyz: " + xyz.x.toFixed(2) + " " + xyz.y.toFixed(2) + " " + xyz.z.toFixed(2));
             }
 
-            var curve = new THREE.CatmullRomCurve3( helix );
-            var geometry = new THREE.TubeGeometry( curve, helix.length, TRACK_DIA, 32, false );
+            var curve = new THREE.CatmullRomCurve3( track );
+            var geometry = new THREE.TubeGeometry( curve, track.length, TRACK_DIA, 32, false );
 
-            var arcMesh = new THREE.Mesh(geometry, arcMat);
+            var arcMesh = new THREE.Mesh(geometry, mat);
             gfxScene.add( arcMesh );
 
             startLL = endLL;
