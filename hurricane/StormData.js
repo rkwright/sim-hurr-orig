@@ -8,7 +8,7 @@
  */
 
 var STORMDATA = {
-    revision: "1.0",
+    revision: "1.1",
 
     SAFFIR : [
         { cat: '5',  minMPH: 157, color: 0xff6060 },
