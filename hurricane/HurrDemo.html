@@ -117,18 +117,25 @@
     /**
      * Create the sphere mesh and wrap it with the image
      */
-    function createGlobe () {
+    function createGlobe() {
         var globe = new THREE.SphereGeometry(2, 32, 32);
 
         var textureLoader = new THREE.TextureLoader();
-        var mat = new THREE.MeshPhongMaterial({ color: '#ffffff', transparent:true, opacity:0.75 });
-        textureLoader.load( "images/8081-earthmap4k.jpg", function( texture ) {
+        var bumpLoader = new THREE.TextureLoader();
+        var mat = new THREE.MeshPhongMaterial({color: '#ffffff', transparent: true, opacity: 0.75});
+        textureLoader.load("images/8081-earthmap4k.jpg", function (texture) {
             mat.map = texture;
             mat.needsUpdate = true;
+            textureLoader.load("images/8081-earthbump4k.jpg", function (bump) {
+                mat.bumpMap = bump;
+                mat.bumpScale = 0.05;
 
-            var mesh = new THREE.Mesh(globe, mat);
-            gfxScene.add(mesh);
-        } );
+
+                var mesh = new THREE.Mesh(globe, mat);
+                gfxScene.add(mesh);
+            });
+        });
+
     }
 
     function createSaffirMat() {
