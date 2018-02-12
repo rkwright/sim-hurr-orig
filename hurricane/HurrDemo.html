@@ -23,6 +23,7 @@
     <script src="StormParm.js"></script>
     <script src="StormData.js"></script>
     <script src="StormFile.js"></script>
+    /* <script src="HurrGui.js"></script> */
     <script src="HurrModel.js"></script>
 </head>
 <body>
@@ -31,12 +32,6 @@
     var TRACK_DIA   = 0.005;
     var hurrModel   = undefined;
     var stormFile   = new StormFile();
-    var curStorm    = undefined;
-    var years       = undefined;
-    var storms      = undefined;
-    var stormLabels = undefined;
-    var entryLabels = undefined;
-    var options     = undefined;
     var carto = new Carto();
     var saffirMat = [];
     var stormData = new StormData();
@@ -48,6 +43,8 @@
         datgui:true,
         guiWidth:500,
         displayStats:true});
+
+    var hurrGui = new HurrGui( gfxScene.gui, stormFile, plotStormTrack );
 
     //testArc();
 
@@ -91,7 +88,7 @@
      */
     function loadStorms() {
 
-        stormFile = new StormFile();
+        //stormFile = new StormFile();
         //stormFile.loadData( "hurrdata.json", stormReady );
         stormFile.loadData( "hurdat2-1851-2016-041117.json", stormReady );
     }
@@ -100,7 +97,7 @@
      * Call back from HTTPRequest when data has been loaded
      */
     function stormReady() {
-        setupDatGui();
+        hurrGui.setupDatGui();
     }
 
     /**
@@ -157,7 +154,7 @@
      * - generate a CatMullCurve using three.js
      * - generate a tube geometry using that curve, returns the resulting geometry
      */
-    function plotStormTrack() {
+    function plotStormTrack( curStorm ) {
         var gcGen = new GreatCircle();
         var points;
         var startLL = { lat: curStorm.entries[0][STORMDATA.LAT], lon: curStorm.entries[0][STORMDATA.LON] };
@@ -201,7 +198,6 @@
 
             startLL = endLL;
         }
-
     }
 
     /**
@@ -218,87 +214,7 @@
     }
 
     function getStormLatLon ( storm ) {
-        var latLon
-    }
-
-    /**
-     * Update the existing controller for storms and create a new one.
-     * Have to do it this way as there appears to be no easy way to
-     * "refresh" the data in a controller
-     */
-    function updateStorms ( options, year ) {
-
-        if ( updateStorms.gui !== undefined )
-            gfxScene.gui.remove( updateStorms.gui );
-
-        storms = stormFile.getStormsForYear( Number(year) );
-        stormLabels = stormFile.getStormLabels(storms);
-        options.stormLabels = stormLabels[0];
-
-        updateStorms.gui = gfxScene.gui.add(options, "stormLabels", stormLabels ).name("Storms");
-        updateStorms.gui.onChange( stormsChange );
-    }
-
-    /**
-     * Handle the change event for the storms controller
-     */
-    function stormsChange() {
-        var index = stormLabels.indexOf(options.stormLabels);
-        curStorm = storms[index];
-        updateEntries( options, curStorm);
-    }
-
-    /**
-     * Update existing controller for the entries and create a new one
-     */
-    function updateEntries ( options, storm ) {
-        if ( updateEntries.gui !== undefined )
-            gfxScene.gui.remove( updateEntries.gui );
-
-        entryLabels = stormFile.getEntryLabels( storm );
-        options.entryLabels = entryLabels[0];
-
-        updateEntries.gui = gfxScene.gui.add(options, "entryLabels", entryLabels ).name("Entries");
-        updateEntries.gui.onChange( entriesChange );
-    }
-
-    /**
-     * Handle the change event for the entries controller.  Not used yet.
-     */
-    function entriesChange() {
-        var index = entryLabels.indexOf(options.entryLabels);
-    }
-
-    /**
-     * Set up the datgui controls on the basis of the loaded storm data
-     */
-    function setupDatGui() {
-
-        years = stormFile.getYears();
-        storms = stormFile.getStormsForYear(years[0]);
-        stormLabels = stormFile.getStormLabels(storms);
-        entryLabels = stormFile.getEntryLabels( storms[0] );
-
-        options = {};
-        options.year = years[0];
-        options.stormLabels = stormLabels[0];
-        options.entryLabels = entryLabels[0];
-        options.update = function() {
-            plotStormTrack();
-        };
-
-        var gui_year = gfxScene.gui.add(options, "year", years ).name("Year").onChange(function() {
-            console.log("Changed year");
-            updateStorms( options, options.year );
-            updateEntries( options, storms[0]);
-        });
-
-        updateStorms( options, options.year );
-
-        curStorm = storms[0];
-        updateEntries( options, curStorm);
-
-        gfxScene.gui.add( options, 'update' );
+        var latLon;
     }
 
     /**
