@@ -127,11 +127,14 @@ StormFile.prototype = {
     getStormLabels: function ( storms ) {
         var results = [];
         var storm;
+        var mois = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
         for ( var index = 0; index < storms.length; index++ ) {
             storm = storms[index];
+            var entry = storm.entries[0];
+            var start = mois[entry[1]] + " " + entry[2];
             if (storm ) {
-                var label = storm.atcID + " : " + storm.name;
+                var label = storm.atcID + " : " + storm.name + " : " + start;
                 results.push(label);
             }
         }
@@ -152,16 +155,33 @@ StormFile.prototype = {
         for ( var index = 0; index < storm.entries.length; index++ ) {
             entry = storm.entries[index];
             if ( entry ) {
-                label = "";
-                for ( var n=0; n<10; n++ ) {
-                    if (n > 0)
-                        label += ", ";
-                   label += entry[n];
-                }
+                label = entry[2] + " " + this.pad("0000", entry[3],true) + "h " + entry[6].toFixed(1) + " " +
+                            entry[7].toFixed(1) + " " + entry[8].toFixed(0) + " " + entry[9].toFixed(0);
+
                 results.push(label);
             }
         }
 
         return results;
+    },
+
+    /**
+     * Pad a string with specified chars, left or right
+     * For example, to zero pad a number to a length of 10 digits,
+     *     pad('0000000000',123,true);  ->   "0000000123"
+     *
+     * @param pad       the string to fill
+     * @param str       the string to be padded
+     * @param padLeft   padding on the left or right
+     * @returns {*}
+     */
+    pad: function(pad, str, padLeft) {
+    if (typeof str === 'undefined')
+        return pad;
+    if (padLeft) {
+        return (pad + str).slice(-pad.length);
+    } else {
+        return (str + pad).substring(0, pad.length);
     }
+}
 };
