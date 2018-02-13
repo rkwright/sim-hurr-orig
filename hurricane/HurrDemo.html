@@ -41,7 +41,7 @@
         cameraPos : [4, 3, 4],
         controls:true,
         datgui:true,
-        guiWidth:500,
+        guiWidth:350,
         displayStats:true});
 
     var hurrGui = new HurrGui( gfxScene.gui, stormFile, plotStormTrack );
@@ -120,10 +120,10 @@
         var textureLoader = new THREE.TextureLoader();
         var bumpLoader = new THREE.TextureLoader();
         var mat = new THREE.MeshPhongMaterial({color: '#ffffff', transparent: true, opacity: 0.75});
-        textureLoader.load("images/8081-earthmap4k.jpg", function (texture) {
+        textureLoader.load("images/8081-earthmap8k.jpg", function (texture) {
             mat.map = texture;
             mat.needsUpdate = true;
-            textureLoader.load("images/8081-earthbump4k.jpg", function (bump) {
+            textureLoader.load("images/8081-earthbump8k.jpg", function (bump) {
                 mat.bumpMap = bump;
                 mat.bumpScale = 0.05;
 
