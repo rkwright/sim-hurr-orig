@@ -155,7 +155,7 @@ StormFile.prototype = {
         for ( var index = 0; index < storm.entries.length; index++ ) {
             entry = storm.entries[index];
             if ( entry ) {
-                label = entry[2] + " " + this.pad("0000", entry[3],true) + "h " + entry[6].toFixed(1) + " " +
+                label = entry[2] + " " + this.pad("0000", entry[3],true).substring(0,2) + "h " + entry[6].toFixed(1) + " " +
                             entry[7].toFixed(1) + " " + entry[8].toFixed(0) + " " + entry[9].toFixed(0);
 
                 results.push(label);
