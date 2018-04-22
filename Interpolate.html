@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Interpolation Demo</title>
+    <link rel="stylesheet" type="text/css" href="css/gfx-scene.css" />
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1"/>
+
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="gfx/math-ext.js"></script>
+    <script src="gfx/HttpStatus.js"></script>
+    <script src="js/StormFile.js"></script>
+</head>
+<body onload="onload()">
+
+<script>
+    var     stormFile   = new StormFile();
+    var     percentData;
+    var     percentChart;
+    var     percentOptions;
+
+    google.charts.load('current', {'packages':['corechart']});
+    google.charts.setOnLoadCallback(drawChart);
+
+    function onload() {
+        console.log("onload called");
+        stormFile.loadData( "data/hurdat2-1851-2016-041117.json", stormReady, true );
+    }
+
+    function stormReady() {
+        percentChart.clearChart();
+        percentChart.draw(percentData, perentOptions);
+    }
+
+    function drawChart() {
+        percentData = new google.visualization.DataTable();
+        percentData.addColumn('number', 'Year');
+        percentData.addColumn('number', '%');
+
+        percentOptions = {
+            title: 'Percent Complete Over time',
+            legend: 'none',
+            width: 450,
+            height: 500,
+            hAxis: {
+                title: 'Year',
+                ticks: [1852, 64, 96, 128, 160, 192, 224, 2015]
+            },
+            vAxis: {
+                title: '% Complete',
+                ticks: [0, 25, 50, 75, 100]
+            }
+        };
+
+        percentChart = new google.visualization.LineChart(document.getElementById('percent_div'));
+
+        //updateSlopeData();
+    }
+
+</script>
+
+<table style="width: 900px; height: 500px">
+    <tr>
+        <th>Percent Complete</th>
+    </tr>
+    <tr>
+        <td><div id="percent_div"></div></td>
+    </tr>
+</table>
+
+</body>
+</html>

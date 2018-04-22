@@ -9,17 +9,17 @@
 /**
  * Constants
  */
-var JULIAN = {
+var Julian = {
     revision: '1.0'
 };
 
 /**
  * @constructor
  */
-Julian = function () {
+Julian.Julian = function () {
 };
 
-Julian.prototype = {
+Julian.Julian.prototype = {
 
     /**
      * get the month from a a Julian value

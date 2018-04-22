@@ -2,17 +2,13 @@
  *  @author rkwright   /  http://www.geofx.com
  */
 
-// 'use strict';
-
-var GFX = {
-    revision: '5.0',
-    X_AXIS:    0,
-   	Y_AXIS:    1,
-   	Z_AXIS:    2
-};
+var GFX = { revision: '5.0' };
 
 //some constants
-
+	var    	X_AXIS = 0;
+	var    	Y_AXIS = 1;
+	var    	Z_AXIS = 2;
+	
 GFX.Scene = function ( parameters ) {
 	
 	this.scene = null;
@@ -48,7 +44,6 @@ GFX.Scene = function ( parameters ) {
     this.mbStats = null;
 
     this.datgui = false;
-    this.guiWidth = 200;
     this.gui = null;
 
 	this.defaultLights = true;
@@ -555,7 +550,7 @@ GFX.Scene.prototype = {
         if (this.datgui === false)
             return;
 
-        this.gui = new dat.GUI({autoplace:false, width:this.guiWidth});
+        this.gui = new dat.GUI({autoplace:false});
 
         var guiContainer = document.createElement( 'div' );
         guiContainer.setAttribute("style", "position:absolute;top:0;left:0;z-index:1000;");
@@ -653,12 +648,12 @@ GFX.Scene.prototype = {
 			var cylinder = new THREE.Mesh( geometry, material ); 
 			
 			pos += AXIS_STEP/2.0;
-			if (axis === GFX.X_AXIS)
+			if (axis === X_AXIS)
 			{
 				cylinder.position.x = pos;
 				cylinder.rotation.z = Math.PI/2;
 			}
-			else if (axis === GFX.Y_AXIS)
+			else if (axis === Y_AXIS)
 			{
 				cylinder.rotation.y = Math.PI/2;
 				cylinder.position.y = pos;
@@ -675,8 +670,8 @@ GFX.Scene.prototype = {
 
 	drawAxes: function( height ) {
 	
-		this.drawAxis(GFX.X_AXIS, 0xff0000, height);
-		this.drawAxis(GFX.Y_AXIS, 0x00ff00, height);
-		this.drawAxis(GFX.Z_AXIS, 0x0000ff, height);
+		this.drawAxis(X_AXIS, 0xff0000, height);
+		this.drawAxis(Y_AXIS, 0x00ff00, height);
+		this.drawAxis(Z_AXIS, 0x0000ff, height);
 	}
 };
