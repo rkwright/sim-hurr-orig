@@ -63,7 +63,7 @@
                     if (stormThis.prune === true)
                         stormThis.pruneMissing();
 
-                    stormThis.stormReady();
+                    stormThis.stormReady( stormThis );
 
                 } catch (e) {
                     if (e instanceof SyntaxError) {
@@ -103,13 +103,13 @@
                         k++;
                     }
                 }
-                var pc = (k / storm.entries.length * 100);
-                if (pc < 50) {
-                    console.log(storm.entries[0][0] + " " + storm.atcID + " " + storm.name + " " + pc + "% missing");
-                    this.interpMissingPoints( storm, pc );
+                storm.pc = (storm.entries.length - k)/ storm.entries.length * 100;
+                if (storm.pc < 50) {
+                    //console.log(storm.entries[0][0] + " " + storm.atcID + " " + storm.name + " " + storm.pc + "% missing");
+                    this.interpMissingPoints( storm, storm.pc );
                 }
-                else
-                    console.error( "------- BAD ------ " +  storm.entries[0][0] + " " + storm.atcID + " " + storm.name + " " + pc + "% missing");
+                //else
+                    //console.error( "------- BAD ------ " +  storm.entries[0][0] + " " + storm.atcID + " " + storm.name + " " + storm.pc + "% missing");
 
             }
         },
