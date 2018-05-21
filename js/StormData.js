@@ -1,5 +1,5 @@
 /*
- * Storm Data.  The object repre for a single storm for the hurricane modelling
+ * Storm Data.  The object represents a single storm for the hurricane modelling
  *
  * @author rkwright / www.geofx.com
  *

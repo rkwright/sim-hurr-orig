@@ -9,7 +9,7 @@
 
 'use strict';
 
-//var StormFile = (function () {
+var StormFile = (function () {
 
     // constructor
     function StormFile() {
@@ -96,6 +96,8 @@
             while (i < this.jsonData.storms.length) {
                 var storm = this.jsonData.storms[i++];
 
+                this.addMissingTS( storm );
+
                 k = 0;
                 for ( var n = 0; n < storm.entries.length; n++ ) {
                     var tr = storm.entries[n];
@@ -111,6 +113,64 @@
                 //else
                     //console.error( "------- BAD ------ " +  storm.entries[0][0] + " " + storm.atcID + " " + storm.name + " " + storm.pc + "% missing");
 
+            }
+        },
+
+        /**
+         * Check if any of the time-points are missing. If so, fill
+         * in the missing time-steps. For each new timestep, all the
+         * fields except time are set to "missing"
+         * @param storm
+         */
+        addMissingTS: function ( storm ) {
+
+            var times  = [ 0, 1, 2, 3 ];
+            var nextTS = [ 1, 2, 3, 0 ];
+            var curTS  = Number(storm.entries[0][3]) / 6;
+
+            var i = 1;
+            while ( i < storm.entries.length ) {
+
+                var ts = storm.entries[i][3];
+
+
+                var entryTS = Number(storm.entries[i][3]) / 600;
+
+                i++;
+            }
+        },
+
+        /**
+         * Checks the values for lat/lon, pressure and windspeed.
+         * If any of the values are missing (-999), then the value
+         * needs to be computed via linear interpolation.
+         * @param storm
+         */
+        interpMissingValues: function ( storm ) {
+
+            var stData = new StormData();
+
+            interpMissingValuesLat( storm, stData.LAT);
+        },
+
+        /**
+         *
+         * @param storm
+         * @param col
+         */
+        interpMissingValuesLat( storm, col ) {
+
+            for ( var i=0; i< storm.entries.length; i++ ) {
+
+                var lat = storm.entries[i][col];
+                if (lat === stData.MISSING) {
+                    
+                }
+
+
+                var entryTS = Number(storm.entries[i][3]) / 600;
+
+                i++;
             }
         },
 
@@ -232,5 +292,5 @@
         }
     };
 
-//        return StormFile;
-//})();
+        return StormFile;
+})();
