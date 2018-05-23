@@ -15,7 +15,6 @@ var StormFile = (function () {
     function StormFile() {
         this.stormFile = undefined;
         this.jsonData = undefined;
-        this.prune = false;
 
         window.stormThis = this;
     }
@@ -48,20 +47,19 @@ var StormFile = (function () {
          * Load the data from the specified JSON file, then parse the resulting payload
          * @param stormFile
          * @param stormReady
-         * @param prune
          */
-        loadData: function (stormFile, stormReady, prune) {
+        loadData: function (stormFile, stormReady ) {
 
             this.stormFile = stormFile;
             this.stormReady = stormReady;
-            this.prune = prune;
+
             this.loadJSON(function (response) {
                 // Parse JSON string into object
                 try {
                     stormThis.jsonData = JSON.parse(response);
 
-                    if (stormThis.prune === true)
-                        stormThis.pruneMissing();
+                    if (true)  // debug
+                        stormThis.walkStorms();
 
                     stormThis.stormReady( stormThis );
 
@@ -89,54 +87,14 @@ var StormFile = (function () {
          * or more consecutive entries with MISSING data. For storms with missing data (<3)
          * interpolate the missing data.
          */
-        pruneMissing: function () {
+        walkStorms: function () {
             var i = 0;
             var k = 0;
 
             while (i < this.jsonData.storms.length) {
                 var storm = this.jsonData.storms[i++];
 
-                this.addMissingTS( storm );
-
-                k = 0;
-                for ( var n = 0; n < storm.entries.length; n++ ) {
-                    var tr = storm.entries[n];
-                    if (storm.entries[n].includes(-999)) {
-                        k++;
-                    }
-                }
-                storm.pc = (storm.entries.length - k)/ storm.entries.length * 100;
-                if (storm.pc < 50) {
-                    //console.log(storm.entries[0][0] + " " + storm.atcID + " " + storm.name + " " + storm.pc + "% missing");
-                    this.interpMissingPoints( storm, storm.pc );
-                }
-                //else
-                    //console.error( "------- BAD ------ " +  storm.entries[0][0] + " " + storm.atcID + " " + storm.name + " " + storm.pc + "% missing");
-
-            }
-        },
-
-        /**
-         * Check if any of the time-points are missing. If so, fill
-         * in the missing time-steps. For each new timestep, all the
-         * fields except time are set to "missing"
-         * @param storm
-         */
-        addMissingTS: function ( storm ) {
-
-            var times  = [ 0, 1, 2, 3 ];
-            var nextTS = [ 1, 2, 3, 0 ];
-            var curTS  = Number(storm.entries[0][3]) / 6;
-
-            var i = 1;
-            while ( i < storm.entries.length ) {
-
-                var ts = storm.entries[i][3];
-
-
-                var entryTS = Number(storm.entries[i][3]) / 600;
-
-                i++;
+                this.fillMissingValues( storm );
             }
         },
 
@@ -146,11 +104,9 @@ var StormFile = (function () {
          * needs to be computed via linear interpolation.
          * @param storm
          */
-        interpMissingValues: function ( storm ) {
+        fillMissingValues: function ( storm ) {
 
-            var stData = new StormData();
-
-            interpMissingValuesLat( storm, stData.LAT);
+            this.fillMissingValuesByCol( storm, StormData.LAT);
         },
 
         /**
@@ -158,20 +114,33 @@ var StormFile = (function () {
          * @param storm
          * @param col
          */
-        interpMissingValuesLat( storm, col ) {
+        fillMissingValuesByCol: function( storm, col ) {
 
             for ( var i=0; i< storm.entries.length; i++ ) {
 
-                var lat = storm.entries[i][col];
-                if (lat === stData.MISSING) {
-                    
+                var entry = storm.entries[i];
+                if (entry[col] !== -999) {
+                    var curTime =  this.getUTCDate( entry );
+
+                    console.log("Cur UTC Date: " + curTime + "UTC Day: " + curTime.getUTCDate() + " UTC Hours: " + curTime.getUTCHours());
                 }
-
-
-                var entryTS = Number(storm.entries[i][3]) / 600;
-
-                i++;
             }
+        },
+
+        /**
+         * Given a NASA-style UNIX date, return the JavaScript UTC date object
+         * @param entry
+         * @returns {Date}
+         */
+        getUTCDate: function ( entry ) {
+            var hours = Math.floor( entry[StormData.TIME] / 100 );
+            var minutes  = entry[StormData.TIME] % 100;
+            return new Date( Date.UTC(
+                entry[StormData.YEAR],
+                entry[StormData.MONTH],
+                entry[StormData.DAY],
+                hours,
+                minutes));
         },
 
         /**

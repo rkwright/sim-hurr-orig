@@ -5,74 +5,22 @@
     <title>Interpolation Demo</title>
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1"/>
 
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="gfx/math-ext.js"></script>
     <script src="gfx/HttpStatus.js"></script>
     <script src="gfx/Julian.js"></script>
     <script src="js/StormData.js"></script>
     <script src="js/StormFile.js"></script>
 </head>
-<body onload="onload()">
+<body>
 
 <script>
     var     stormFile   = new StormFile();
-    var     percentData;
-    var     percentChart;
-    var     percentOptions;
 
-    google.charts.load('current', {'packages':['corechart']});
-    //google.charts.setOnLoadCallback(drawChart);
-
-    function onload() {
-        console.log("onload called");
-        stormFile.loadData( "data/hurdat2-1851-2016-041117.json", stormReady, true );
-    }
+    stormFile.loadData( "data/hurrdat-short.json", stormReady, true );
 
     function stormReady( stormFile ) {
 
-        drawChart( stormFile );
-    }
-
-    function drawChart( stormFile ) {
-        if ( percentData === undefined)
-            percentData = new google.visualization.DataTable();
-        else
-            percentChart.clearChart();
-
-        percentData.addColumn('number', 'Year');
-        percentData.addColumn('number', '%');
-
-        percentOptions = {
-            title: 'Percent Missing Over time',
-            legend: 'none',
-            width: 1500,
-            height: 500,
-            hAxis: {
-                title: 'Year',
-                ticks: [1852, 1900, 1950, 2016]
-            },
-            vAxis: {
-                title: '% Complete',
-                ticks: [0, 25, 50, 75, 100]
-            }
-        };
-
-        var julian = new Julian();
-
-        for ( var i=0; i<stormFile.jsonData.storms.length; i++ ) {
-           storm = stormFile.jsonData.storms[i];
-
-            julianDate = julian.getJulian( storm.entries[0][2], storm.entries[0][1], storm.entries[0][0]) / 365;
-
-            percentData.addRows([
-               [storm.entries[0][0] + julianDate, storm.pc < 1 ? 0.5 : storm.pc ]
-           ]);
-           console.log("Year: " + storm.entries[0][0] + " pcMissing: " + storm.pc + " ID: " + storm.atcID);
-       }
-
-       percentChart = new google.visualization.ColumnChart(document.getElementById('percent_div'));
-
-       percentChart.draw(percentData, percentOptions);
+        //drawChart( stormFile );
     }
 
 </script>

@@ -19,12 +19,13 @@ var StormData = (function () {
         this.entries = [];
     };
 
-    StormData.prototype = {
+    // ----- Constants ------
 
-        // Constants
-        REVISION: "1.1",
+    StormData.WOWSER = 1.245;
 
-        SAFFIR: [
+    StormData.REVISION = "1.1";
+
+    StormData.SAFFIR =  [
             {cat: '5', minMPH: 157, color: 0xff6060},
             {cat: '4', minMPH: 130, color: 0xff8f20},
             {cat: '3', minMPH: 111, color: 0xffc140},
@@ -32,21 +33,23 @@ var StormData = (function () {
             {cat: '1', minMPH: 74, color: 0xffffcc},
             {cat: 'TS', minMPH: 39, color: 0x01faf4},
             {cat: 'TD', minMPH: 33, color: 0x5dbaff}
-        ],
+        ];
 
         // contents of the entry fields
-        YEAR:     0,
-        MONTH:    1,
-        DAY:      2,
-        TIME:     3,    // an integer in 24 hour format, e.g. 600, 1200, etc.
-        EVENT:    4,    // e.g. landfall, etc.  Usually blank
-        STATUS:   5,    // e.g. HU, TS, etc.
-        LAT:      6,    // in degrees with sign
-        LON:      7,    // in degrees with sign
-        MAXWIND:  8,    // in knots
-        MINPRESS: 9,    // in mb
+    StormData.YEAR     = 0;
+    StormData.MONTH    = 1;
+    StormData.DAY      = 2;
+    StormData.TIME     = 3;    // an integer in 24 hour format, e.g. 600, 1200, etc.
+    StormData.EVENT    = 4;    // e.g. landfall, etc.  Usually blank
+    StormData.STATUS   = 5;    // e.g. HU, TS, etc.
+    StormData.LAT      = 6;    // in degrees with sign
+    StormData.LON      = 7;    // in degrees with sign
+    StormData.MAXWIND  = 8;    // in knots
+    StormData.MINPRESS = 9;   // in mb
 
-        MISSING: -999,
+    StormData.MISSING  = -999;
+
+    StormData.prototype = {
 
         /**
          * Return the Saffir-Simpson category for the specified windspeed, in MPH
