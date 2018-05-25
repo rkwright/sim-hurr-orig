@@ -93,6 +93,9 @@ var StormFile = (function () {
 
             while (i < this.jsonData.storms.length) {
                 var storm = this.jsonData.storms[i++];
+                storm.timeSpline = [];
+                storm.timeSpline.push( new TimeSpline() );
+                storm.timeSpline.push( new TimeSpline() );
 
                 this.fillMissingValues( storm );
             }
@@ -106,7 +109,10 @@ var StormFile = (function () {
          */
         fillMissingValues: function ( storm ) {
 
-            this.fillMissingValuesByCol( storm, StormData.LAT);
+           // this.fillMissingValuesByCol( storm, StormData.LAT);
+            //this.fillMissingValuesByCol( storm, StormData.LON);
+            //this.fillMissingValuesByCol( storm, StormData.MAXWIND);
+            this.fillMissingValuesByCol( storm, StormData.MINPRESS);
         },
 
         /**
@@ -115,14 +121,43 @@ var StormFile = (function () {
          * @param col
          */
         fillMissingValuesByCol: function( storm, col ) {
+            var missVal = [];
+            var obsVal  = [];
+            var timeSpline = storm.timeSpline[col-StormData.MAXWIND];
+            timeSpline.spline = new THREE.SplineCurve();
+
+            timeSpline.timeIntcp = this.getUTCDate( storm.entries[0]);
+            var timFin = this.getUTCDate( storm.entries[storm.entries.length-1]);
+            timeSpline.timeSlope = 1.0 / (timFin - timeSpline.timeIntcp);
 
             for ( var i=0; i< storm.entries.length; i++ ) {
 
                 var entry = storm.entries[i];
-                if (entry[col] !== -999) {
-                    var curTime =  this.getUTCDate( entry );
+                var curTime = this.getUTCDate( entry );
 
-                    console.log("Cur UTC Date: " + curTime + "UTC Day: " + curTime.getUTCDate() + " UTC Hours: " + curTime.getUTCHours());
+                if (entry[col] !== -999) {
+
+                    timeSpline.spline.points.push( new THREE.Vector2( curTime, entry[col] ));
+                    obsVal.push( new THREE.Vector2( curTime, entry[col] ));
+                    console.log("Cur UTC Date: " + curTime + " x: " + Number(curTime)/1000.0 + " y: " + entry[col] );
+                }
+                else {
+                    missVal.push( (curTime - timeSpline.timeIntcp) * timeSpline.timeSlope);
+                    console.log("Missing Data! curTime: " + curTime);
+                }
+            }
+
+            if (obsVal.length > 0) {
+                console.log(" updating the spline info");
+
+                for (var k = 0; k < storm.entries.length; k++) {
+
+                    var ent = storm.entries[k];
+                    var t = this.getUTCDate(ent);
+                    var u = (t - timeSpline.timeIntcp) * timeSpline.timeSlope;
+                    var pos = timeSpline.spline.getPoint(u);
+
+                    console.log(k + " t: " + t + " hour: " + t.getUTCHours() + "h,  u: " + u + " pos.x,y: " + pos.x + ", " + pos.y);
                 }
             }
         },

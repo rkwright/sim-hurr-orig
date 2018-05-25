@@ -14,9 +14,9 @@ var TimeSpline = (function () {
      */
     TimeSpline = function () {
 
-        this.timeIntcp = 0;
-        this.timeSlope = 1;
-        this.spline = [];
+        this.timeIntcp = 0;             // date object in MS since 1970
+        this.timeSlope = 1;             // slope of span from t0 to tfin
+        this.spline    = undefined;     // the THREE spline object
     };
 
     TimeSpline.prototype = {
