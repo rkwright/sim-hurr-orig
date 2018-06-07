@@ -379,7 +379,7 @@ HurrModel.prototype = {
      *    does backwards interpolation.
      */
 
-    interpolate: function (a, b, prop, missing, bTween) {
+    interpolate: function (a, b, prop, newValue, missing, bTween) {
         if (a === HurrModel.MISSING || b === HurrModel.MISSING)
             return false;
 
