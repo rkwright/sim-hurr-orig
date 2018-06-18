@@ -16,14 +16,16 @@ var StormFile = (function () {
         this.stormFile = undefined;
         this.jsonData = undefined;
 
+        this.skipped = [];
+        this.index = 0;
+
         window.stormThis = this;
     }
 
+    // Constants
+    StormFile.REVISION =  '1.0';
+
     StormFile.prototype = {
-
-        // Constants
-        REVISION: '1.0',
-
 
         loadJSON: function (callback) {
 
@@ -36,7 +38,8 @@ var StormFile = (function () {
                 }
 
                 if (xobj.readyState === XMLHttpRequest.DONE && xobj.status === HttpStatus.OK) {
-                    // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+                    // Required use of an anonymous callback as .open will NOT return a value 
+                    // but simply returns undefined in asynchronous mode
                     callback(xobj.responseText);
                 }
             };
@@ -70,7 +73,6 @@ var StormFile = (function () {
                         console.error(e, false);
                     }
                 }
-
             });
         },
 
@@ -93,11 +95,19 @@ var StormFile = (function () {
 
             while (i < this.jsonData.storms.length) {
                 var storm = this.jsonData.storms[i++];
-                storm.timeSpline = [];
-                storm.timeSpline.push( new TimeSpline() );
-                storm.timeSpline.push( new TimeSpline() );
-
+                this.addUTCDates( storm );
                 this.fillMissingValues( storm );
+            }
+        },
+
+        /**
+         * Walk the storms and convert the NASA-style (F77) dates to JS Data
+         * @param storm
+         */
+        addUTCDates: function( storm ) {
+            for ( var i=0; i< storm.entries.length; i++ ) {
+                var entry = storm.entries[i];
+                entry.date = this.getUTCDate(entry);
             }
         },
 
@@ -115,49 +125,52 @@ var StormFile = (function () {
             this.fillMissingValuesByCol( storm, StormData.MINPRESS);
         },
 
+        getNextEnt: function ( entries, skipped ) {
+            if ( skipped.length > 0) {
+                this.index = skipped.pop();
+                return true;
+            }
+            else if (this.index < entries.length) {
+                return true;
+            }
+
+            return false;
+        },
+
+        linearInterp: function ( entries, col ) {
+
+            if (index < 1 || index >= entries.length)
+                return false;
+
+            if ( entries[index-1][col] !== StormData.MISSING || entries[index+1][col] !== StormData.MISSING )
+                return false;
+
+            var t = entries[index-1][col] + t * (entries[index-+1][col] - entries[index-1][col])
+
+            entries[index][col] = entries[index-1][col] + t * (entries[index+1][col] - entries[index-1][col])
+        },
+
         /**
          *
          * @param storm
          * @param col
          */
         fillMissingValuesByCol: function( storm, col ) {
-            var missVal = [];
-            var obsVal  = [];
-            var timeSpline = storm.timeSpline[col-StormData.MAXWIND];
-            timeSpline.spline = new THREE.SplineCurve();
 
-            timeSpline.timeIntcp = this.getUTCDate( storm.entries[0]);
-            var timFin = this.getUTCDate( storm.entries[storm.entries.length-1]);
-            timeSpline.timeSlope = 1.0 / (timFin - timeSpline.timeIntcp);
+            this.skipped = [];
+            this.index   = 0;
 
-            for ( var i=0; i< storm.entries.length; i++ ) {
+            while ( this.getNextEntry() ) {
 
-                var entry = storm.entries[i];
-                var curTime = this.getUTCDate( entry );
+                var curEnt = entries[this.index];
+                if (curEnt[col] === StormData.MISSING) {
+                    console.log("Handling missing value here");
+                    if (this.linearInterp( curEnt, col )) {
 
-                if (entry[col] !== -999) {
+                    }
+                    else if ( this.lerp( curEnt, col ) ) {
 
-                    timeSpline.spline.points.push( new THREE.Vector2( curTime, entry[col] ));
-                    obsVal.push( new THREE.Vector2( curTime, entry[col] ));
-                    console.log("Cur UTC Date: " + curTime + " x: " + Number(curTime)/1000.0 + " y: " + entry[col] );
-                }
-                else {
-                    missVal.push( (curTime - timeSpline.timeIntcp) * timeSpline.timeSlope);
-                    console.log("Missing Data! curTime: " + curTime);
-                }
-            }
-
-            if (obsVal.length > 0) {
-                console.log(" updating the spline info");
-
-                for (var k = 0; k < storm.entries.length; k++) {
-
-                    var ent = storm.entries[k];
-                    var t = this.getUTCDate(ent);
-                    var u = (t - timeSpline.timeIntcp) * timeSpline.timeSlope;
-                    var pos = timeSpline.spline.getPoint(u);
-
-                    console.log(k + " t: " + t + " hour: " + t.getUTCHours() + "h,  u: " + u + " pos.x,y: " + pos.x + ", " + pos.y);
+                    }
                 }
             }
         },

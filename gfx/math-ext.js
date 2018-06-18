@@ -30,3 +30,7 @@ Math.wrapAng = function( arg, loLim, upLim, incr ){
 
     return arg;
 };
+
+Math.lerp = function ( A, B, t ) {
+    return A + t * (B - A);
+};
