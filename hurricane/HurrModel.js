@@ -14,18 +14,14 @@
 /**
  * Constants for the Hurricane model
  */
-var HurrModel = {
+var HURRMODEL = {
     revision: '1.0',
 
-    PERIPHERAL_PRESSURE: 1013.0,	// in mB
-    INFLOW_ANGLE: 20.0,
-    CORIOLIS: 2.0e-5,	// Coriolis parameter in the tropics (1/s)
-    MIN_PRESSURE_DIFFERENCE: 0.1,
-    AIR_DENSITY: 1.225,
-
-    MAX_STORM_NODES: 1000,
-
-    NAUTICALMILE_TO_METER: 1852.0,
+    PERIPHERAL_PRESSURE:        1013.0,	// in mB
+    INFLOW_ANGLE:               20.0,
+    CORIOLIS:                   2.0e-5,	// Coriolis parameter in the tropics (1/s)
+    MIN_PRESSURE_DIFFERENCE:    0.1,
+    AIR_DENSITY:                1.225,
 
     enModelType: ["Holland", "NWS23", "RMS97"],
     enPositionUnits: ["Meters", "Degrees"],
@@ -37,7 +33,7 @@ var HurrModel = {
  * Initialize the parameters that control hurricane sim
  * @constructor
  */
-HurrModel.HurrModel = function ( objParm ) {
+HurrModel = function ( objParm ) {
 
     this.renderFunc = objParm.renderFunc;
 
@@ -54,7 +50,7 @@ HurrModel.HurrModel = function ( objParm ) {
     this.sampleAngle = undefined;
     this.sampleData = undefined;
 
-    this.carto = new Carto.Carto();
+    this.carto = new Carto();
 
     // from HurrParm.h
     this.cycloneAzimuth = 0;			// azimuth of hurricane track (degrees clockwise from North)
@@ -70,15 +66,17 @@ HurrModel.HurrModel = function ( objParm ) {
     //this.nTimeSteps = 0;
     this.dTimeStep = 0;
 
-    this.modelType = HurrModel.enModelType[0];
+    this.modelType = HURRMODEL.enModelType[0];
 
+    /*
     this.xMinPlan = 0;
     this.xMaxPlan = 0;
     this.yMinPlan = 0;
     this.yMaxPlan = 0;
+    */
 };
 
-HurrModel.HurrModel.prototype = {
+HurrModel.prototype = {
 
     /**
      *
@@ -94,14 +92,14 @@ HurrModel.HurrModel.prototype = {
         this.onLand = false;   // a safe assumption...
 
         // we need the positions in metres
-        //this.yVelNow = 0.0;
-        //this.xVelNow = 0.0;
+        this.yVelNow = 0.0;
+        this.xVelNow = 0.0;
         this.maxVelocity = 1.0;
         this.maxLandVelocity = 0.0;
 
         this.signHemisphere = (this.initialPosY < 0.0) ? -1.0 : 1.0;
 
-        // just assign these
+        // positions in lat/lon degrees
         this.xNow = this.initialPosX;
         this.yNow = this.initialPosY;
         this.xEye = this.initialPosX;
@@ -126,7 +124,7 @@ HurrModel.HurrModel.prototype = {
         // hardcode the inflow angle (why?)
         this.inflowAngle = Math.toRad(HurrModel.INFLOW_ANGLE);
 
-        //-----filling rate over land - convert to Pascals/sec
+        // filling rate over land - convert to Pascals/sec
         this.fillingRatePascals = this.fillingRate / 36.0;
 
         // covert rate of increase in RMAX over land to m/s
@@ -141,11 +139,11 @@ HurrModel.HurrModel.prototype = {
         this.alpha = -this.inflowAngle - Math.PI / 2;		// was positive alpha...
         // this.alpha = this.inflowAngle;
 
-        //-----asymmetric part ----
+        //----- asymmetric part ----
         this.T0 = 0.514791;	// hmmm, what is this constant?
         this.ATT = 1.5 * Math.pow(this.translationalSpeed, 0.63) * Math.pow(this.T0, 0.37);
 
-        //-----Initial Holland model parameters
+        //----- Initial Holland model parameters
         // B parameter - based on central pressure (in millibars)
         this.bHolland = 1.5 + (980.0 - this.centralPressurePascals / 100.0) / 120.0;
 
@@ -158,6 +156,24 @@ HurrModel.HurrModel.prototype = {
         // clean up the storage arrays, as necessary
         this.stormTrack = [];
         this.stormArray = [];
+    },
+
+    /**
+     * Init the model from the data in the StormParm
+     */
+    initialiseFromStormData: function ( storm ) {
+        //var storm = this.stormArray[0];
+        this.startStorm = storm.julianDay * 24 + storm.hour;
+
+        this.cycloneAzimuth = storm.heading;
+        this.cycloneAzimuthRadians = Math.toRad(this.cycloneAzimuth);
+        this.translationalSpeed = storm.fwdVelocity * 1680.0 / 3600.0;   // knots to m/s
+        //this.TSSinAzimuth = this.translationalSpeed * Math.sin(this.cycloneAzimuthRadians) * this.dTimeStep;
+        //this.TSCosAzimuth = this.translationalSpeed * Math.cos(this.cycloneAzimuthRadians) * this.dTimeStep;
+        this.initialPosX = storm.x;
+        this.initialPosY = storm.y;
+
+        return true;
     },
 
     /**
@@ -205,11 +221,46 @@ HurrModel.HurrModel.prototype = {
             // allocate the ray of CMetParm for the time-step data
             this.sampleData[i] = [];   //(CMetParm *) new CMetParm[this.nRadialSamples];
             for (j = 0; j < this.nRadialSamples; j++) {
-                this.sampleData[i].push( new MetParm.MetParm() );
+                this.sampleData[i].push( new MetParm() );
             }
         }
 
         return true;
+    },
+
+    /**
+     * Drive the animation, alternating between updating the model and calling back to
+     * have it rendered.
+     * @returns {number}
+     */
+    timeStep: function() {
+
+        var newTime = performance.now();
+        var deltaTime = Math.min(newTime - this.currentTime, this.MAX_RENDER_TIME);
+        this.currentTime = newTime;
+
+        this.accumulator += deltaTime;
+
+        //console.log("Accum:" + this.accumulator.toFixed(2) + " t: " + this.t.toFixed(2) );
+
+        var n = 0;
+        while (this.accumulator >= this.dt) {
+            this.accumulator -= this.dt;
+
+            this.update( this.dt / 1000 );
+
+            this.t += this.dt;
+
+            n++;
+        }
+
+        var alpha = this.accumulator / this.dt;
+
+        //console.log("Render: " + this.accumulator.toFixed(2) + " t: " + this.t.toFixed(2) + " n: " + n);
+
+        this.renderFunc( this.sampleData );
+
+        return 0;
     },
 
     /**
@@ -248,17 +299,13 @@ HurrModel.HurrModel.prototype = {
 
             // TRACE("%3d", i);
             for ( var j = 0; j < this.nRadialSamples; j++ ) {
+
                 var velocity = this.calcWindSpeeds(this.sampleDist[j], angle);
 
                 this.sampleData[i][j].xVel = velocity.x;
                 this.sampleData[i][j].yVel = velocity.y;
 
                 this.sampleData[i][j].velocity = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
-
-                var storm = new StormParm.StormParm();
-                storm.x = this.xEye;
-                storm.y = this.yEye;
-                this.stormTrack.push(storm);
 
                 // TRACE("(%3.0f, %3.0f) ", xVel,yVel);
             }
@@ -269,6 +316,82 @@ HurrModel.HurrModel.prototype = {
         this.accumulateData();
 
         return false;
+    },
+
+    /**
+     * Get the current, possibly interpolated, data for this time step
+     */
+    updateStormData: function () {
+        var storm;
+        var prevStorm;
+        var stormTime;
+
+        if (this.nCurStep === 0) {
+            storm = this.stormArray[0];
+            this.startStorm = storm.julianDay * 24 + storm.hour;
+        }
+
+        var curTime = this.startStorm + this.nCurStep * this.dTimeStep / 3600.0;
+
+        for (var i = 0; i < this.stormArray.length; i++) {
+            storm = this.stormArray[i];
+
+            stormTime = storm.julianDay * 24 + storm.hour;
+
+            // if we have found the right spot, interpolate the values we need
+            if (stormTime >= curTime)
+                break;
+        }
+
+        // end of time?
+        if (i >= this.stormArray.length)
+            return false;
+
+        prevStorm = this.stormArray[i - 1];
+        var prevTime = prevStorm.julianDay * 24 + prevStorm.hour;
+        var prop = (stormTime - curTime) / (stormTime - prevTime);
+        var heading;
+        var lon;
+        var lat;
+        var fwdVelocity;
+
+        if (this.interpolate(storm.heading, prevStorm.heading, prop, heading, HurrModel.MISSING, true) &&
+            this.interpolate(storm.fwdVelocity, prevStorm.fwdVelocity, prop, fwdVelocity, HurrModel.MISSING, true) &&
+            this.interpolate(storm.x, prevStorm.x, prop, lon, HurrModel.MISSING, true) &&
+            this.interpolate(storm.y, prevStorm.y, prop, lat, HurrModel.MISSING, true)) {
+            this.cycloneAzimuth = heading;
+            this.cycloneAzimuthRadians = Math.toRad(this.cycloneAzimuth);
+            this.translationalSpeed = fwdVelocity * HurrModel.NAUTICALMILE_TO_METER / 3600.0;   // knots to m/s
+            //this.TSSinAzimuth = this.translationalSpeed * Math.sin(this.cycloneAzimuthRadians) * this.dTimeStep;
+            //this.TSCosAzimuth = this.translationalSpeed * Math.cos(this.cycloneAzimuthRadians) * this.dTimeStep;
+            this.xEye = lon;
+            this.yEye = lat;
+
+            return true;
+        }
+
+        return false;
+    },
+
+    /**
+     * Interpolates the two values to obtain the linear interpolation for the
+     * new value.  Interpolates between the values if flag is false, else
+     *    does backwards interpolation.
+     */
+
+    interpolate: function (a, b, prop, missing, bTween) {
+        if (a === HurrModel.MISSING || b === HurrModel.MISSING)
+            return false;
+
+        var slope = b - a;
+        if (bTween) {
+            newValue = a + slope * prop;
+        }
+        else {
+            newValue = a - slope * prop;
+        }
+
+        return true;
     },
 
     /**
@@ -346,8 +469,10 @@ HurrModel.HurrModel.prototype = {
             // centre. Check Vel against ATT to ensure that the velocities
             // on the left hand side (relative to the track) never become
             // anticyclonic.
+
             // N.B. Our azimuths are geodetic i.e. clockwise from north, but the sine and cosine functions
             // are defined in terms of counter-clockwise rotation from "east" so we have to correct for this
+
             if (Vel >= this.ATT) {
                 Vel += this.ATT * Math.cos(this.carto.azimuthToRadians(beta));          // - HALF_PI );
                 velocity.vx = Vel * Math.sin(this.carto.azimuthToRadians(AziSite));     // - HALF_PI );
@@ -396,13 +521,15 @@ HurrModel.HurrModel.prototype = {
         //var nDir = 1;
         var index = 0;
 
-        //var xCenter, yCenter;
-        var center = this.carto.transform(this.xEye, this.yEye);
+        var centerMerc = this.carto.latlonToMerc(this.xEye, this.yEye);
+        var xCenter = centerMerc.x;
+        var yCenter = centerMerc.y;
+        var xNode, yNode;
 
         // find the lat/lon of the closest node.
         var closeLon = Math.round(this.xEye / this.dataNodeStep) * this.dataNodeStep;
         var closeLat = Math.round(this.yEye / this.dataNodeStep) * this.dataNodeStep;
-        //var maxDist = Math.hypot(stepKM, stepKM) / 2.0 * 1000.0;  // in m
+        var maxDist = Math.hypot(stepKM, stepKM) / 2.0 * 1000.0;  // in m
 
         do {
 
@@ -419,12 +546,14 @@ HurrModel.HurrModel.prototype = {
 
             var lon = closeLon + index * this.dataNodeStep;
             var lat = closeLat - nRangeY * this.dataNodeStep;
-            var xNode, yNode;
+            var nodeMerc;
             var weight;
 
             for ( n = -nRangeY; n < nRangeY; n++) {
                 met = this.metData[nMeridian + index][nCenterY + n];
-                //this.mapProj.Transform(lon, lat, xNode, yNode);
+                nodeMerc = this.carto.latlonToMerc(lon, lat);
+                xNode = nodeMerc.x;
+                yNode = nodeMerc.y;
 
                 // now find the four closest sampled points
                 var nClose = this.findClosest(xNode - xCenter, yNode - yCenter, rPos, aPos);
@@ -474,19 +603,11 @@ HurrModel.HurrModel.prototype = {
     /**
      *  Find the four closest points in the samplePos array to the specified point
      *
-     *  Parameters:    x,y  -
-     *
-     *
-     *
-     * Return:            number of closest points, 1 if complete coincidence (very rare)
-     */
-    /**
-     *
      * @param x             coordinates of the current point
      * @param y
      * @param rPos          X-indicies of the four closest points
      * @param aPos          Y-indicies of the four closest points
-     * @returns             number of points returned
+     * @returns             number of closest points
      */
     findClosest: function (x, y, rPos, aPos) {
 
@@ -520,135 +641,5 @@ HurrModel.HurrModel.prototype = {
         rPos[3] = n;
 
         return 4;
-    },
-
-
-    /**
-     * Get the current, possibly interpolated, data for this time step
-     */
-    updateStormData: function () {
-        var storm;
-        var prevStorm;
-        var stormTime;
-
-        if (this.nCurStep === 0) {
-            storm = this.stormArray[0];
-            this.startStorm = storm.julianDay * 24 + storm.hour;
-        }
-
-        var curTime = this.startStorm + this.nCurStep * this.dTimeStep / 3600.0;
-
-        for (var i = 0; i < this.stormArray.length; i++) {
-            storm = this.stormArray[i];
-
-            stormTime = storm.julianDay * 24 + storm.hour;
-
-            // if we have found the right spot, interpolate the values we need
-            if (stormTime >= curTime)
-                break;
-        }
-
-        // end of time?
-        if (i >= this.stormArray.length)
-            return false;
-
-        prevStorm = this.stormArray[i - 1];
-        var prevTime = prevStorm.julianDay * 24 + prevStorm.hour;
-        var prop = (stormTime - curTime) / (stormTime - prevTime);
-        var heading;
-        var lon;
-        var lat;
-        var fwdVelocity;
-
-        if (this.interpolate(storm.heading, prevStorm.heading, prop, heading, HurrModel.MISSING, true) &&
-            this.interpolate(storm.fwdVelocity, prevStorm.fwdVelocity, prop, fwdVelocity, HurrModel.MISSING, true) &&
-            this.interpolate(storm.x, prevStorm.x, prop, lon, HurrModel.MISSING, true) &&
-            this.interpolate(storm.y, prevStorm.y, prop, lat, HurrModel.MISSING, true)) {
-            this.cycloneAzimuth = heading;
-            this.cycloneAzimuthRadians = Math.toRad(this.cycloneAzimuth);
-            this.translationalSpeed = fwdVelocity * HurrModel.NAUTICALMILE_TO_METER / 3600.0;   // knots to m/s
-            //this.TSSinAzimuth = this.translationalSpeed * Math.sin(this.cycloneAzimuthRadians) * this.dTimeStep;
-            //this.TSCosAzimuth = this.translationalSpeed * Math.cos(this.cycloneAzimuthRadians) * this.dTimeStep;
-            this.xEye = lon;
-            this.yEye = lat;
-
-            return true;
-        }
-
-        return false;
-    },
-
-    /**
-     * Init the model from the data in the StormParm
-     */
-    initialiseFromStormData: function ( storm ) {
-        //var storm = this.stormArray[0];
-        this.startStorm = storm.julianDay * 24 + storm.hour;
-
-        this.cycloneAzimuth = storm.heading;
-        this.cycloneAzimuthRadians = Math.toRad(this.cycloneAzimuth);
-        this.translationalSpeed = storm.fwdVelocity * 1680.0 / 3600.0;   // knots to m/s
-        //this.TSSinAzimuth = this.translationalSpeed * Math.sin(this.cycloneAzimuthRadians) * this.dTimeStep;
-        //this.TSCosAzimuth = this.translationalSpeed * Math.cos(this.cycloneAzimuthRadians) * this.dTimeStep;
-        this.initialPosX = storm.x;
-        this.initialPosY = storm.y;
-
-        return true;
-    },
-
-    /**
-     * Interpolates the two values to obtain the linear interpolation for the
-     * new value.  Interpolates between the values if flag is false, else
-     *    does backwards interpolation.
-     */
-
-    interpolate: function (a, b, prop, missing, bTween) {
-        if (a === HurrModel.MISSING || b === HurrModel.MISSING)
-            return false;
-
-        var slope = b - a;
-        if (bTween) {
-            newValue = a + slope * prop;
-        }
-        else {
-            newValue = a - slope * prop;
-        }
-
-        return true;
-    },
-
-    /**
-     * Drive the animation, alternating between updating the model and calling back to
-     * have it rendered.
-     * @returns {number}
-     */
-    timeStep: function() {
-
-        var newTime = performance.now();
-        var deltaTime = Math.min(newTime - this.currentTime, this.MAX_RENDER_TIME);
-        this.currentTime = newTime;
-
-        this.accumulator += deltaTime;
-
-        //console.log("Accum:" + this.accumulator.toFixed(2) + " t: " + this.t.toFixed(2) );
-
-        var n = 0;
-        while (this.accumulator >= this.dt) {
-            this.accumulator -= this.dt;
-
-            this.update( this.dt / 1000 );
-
-            this.t += this.dt;
-
-            n++;
-        }
-
-        var alpha = this.accumulator / this.dt;
-
-        //console.log("Render: " + this.accumulator.toFixed(2) + " t: " + this.t.toFixed(2) + " n: " + n);
-
-        this.renderFunc( this.sampleData );
-
-        return 0;
     }
 };

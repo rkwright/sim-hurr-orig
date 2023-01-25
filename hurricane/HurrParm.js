@@ -9,14 +9,14 @@
  *
  */
 
-var HurrParm = {
+var HURRPARM = {
     revision: "1.0"
 };
 
 /**
  * @constructor
  */
-HurrParm.HurrParm = function () {
+HurrParm = function () {
     this.cycloneAzimuth     = 0.0;
     this.fillingRate        = 1.0;
     this.initialPosX        = 1900.0;

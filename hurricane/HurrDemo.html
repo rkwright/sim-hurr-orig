@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Hurricane Demo</title>
-
+    <link rel="stylesheet" type="text/css" href="../css/gfx-scene.css" />
     <!-- Set the viewport size to the screen size, so it will be displayed maximized, but unscaled. -->
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1"/>
 
@@ -11,90 +11,91 @@
     <script src="../three-js/three.js"></script>
     <script src="../three-js/Detector.js"></script>
     <script src="../three-js/stats.js"></script>
-    <script src="../three-js/dat.gui.min.js"></script>
+    <script src="../three-js/dat.gui.js"></script>
     <script src="../gfx/OrbitControls-Touch-Ortho.js"></script>
     <script src="../gfx/math-ext.js"></script>
     <script src="../gfx/HttpStatus.js"></script>
     <script src="../gfx/gfx-scene.js"></script>
     <script src="../gfx/Julian.js"></script>
     <script src="../gfx/Carto.js"></script>
+    <script src="../gfx/GreatCircle.js"></script>
     <script src="MetParm.js"></script>
     <script src="StormParm.js"></script>
-    <script src="StormJSON.js"></script>
+    <script src="StormData.js"></script>
+    <script src="StormFile.js"></script>
+    <script src="HurrGui.js"></script>
+    <script src="HurrPlot.js"></script>
     <script src="HurrModel.js"></script>
 </head>
 <body>
 
 <script>
-    var hurrModel = undefined;
-    var stormData = undefined;
-    var curStorm  = undefined;
+    var TRACK_DIA   = 0.005;
+    var hurrModel   = undefined;
+    var stormFile   = new StormFile();
+    var carto = new Carto();
+    var stormData = new StormData();
 
     // allocate the Scene object, request orbitControls, some of 3D axes 10 units high and the stats
     var gfxScene = new GFX.Scene( {
         cameraPos : [4, 3, 4],
-        axesHeight:10,
         controls:true,
+        datgui:true,
+        guiWidth:350,
         displayStats:true});
 
+    var hurrPlot = new HurrPlot( gfxScene );
+    var hurrGui = new HurrGui( gfxScene.gui, stormFile, hurrPlot.plotStormTrack, runStorm );
 
     // then initialize our demo's stuff
     initializeDemo();
+
+    // temporary...
+    animateScene();
 
     /**
      * Initialize the Demo.
      */
     function initializeDemo() {
 
-        createGlobe();
+        // Create the mesh onto which we will render the output of the hurricane model
+        hurrPlot.createGlobe();
 
-        hurrModel = new HurrModel.HurrModel({
-
-            renderFunc: renderFunc
+        // now create the model.  It doesn't have any parameters or data - it's
+        // just the executable model itself
+        hurrModel = new HurrModel({
+            renderFunc: hurrPlot.renderHurricane
         });
 
         loadStorms( stormReady );
     }
 
+    /**
+     * Load all the storms in the specified file, parsing them into JSON
+     */
     function loadStorms() {
 
-        stormData = new StormData.StormData();
-        stormData.loadData( "hurrdata.json", stormReady );
-        curStorm = stormData.getJSON();
+        //stormFile = new StormFile();
+        //stormFile.loadData( "hurrdata.json", stormReady );
+        stormFile.loadData( "hurdat2-1851-2016-041117.json", stormReady, true );
     }
 
+    /**
+     * Call back from HTTPRequest when data has been loaded
+     */
     function stormReady() {
+        hurrGui.setupDatGui();
+    }
 
-        hurrModel.initArrays();
-        hurrModel.initialise();
+    /**
+     *  Initialize the current model run and kick it off
+     */
+    function runStorm( storm ) {
+        hurrModel.initArrays( storm );
+        hurrModel.initialise( storm );
 
         // Start the animation
-        animateScene();
-    }
-
-    function createGlobe () {
-        var globe = new THREE.SphereGeometry(2, 32, 32);
-
-        var textureLoader = new THREE.TextureLoader();
-        var mat = new THREE.MeshPhongMaterial({ color: '#ffffff' });
-        textureLoader.load( "images/8081-earthmap4k.jpg", function( texture ) {
-            mat.map = texture;
-            mat.needsUpdate = true;
-
-            var mesh = new THREE.Mesh(globe, mat);
-            gfxScene.add(mesh);
-        } );
-
-
-    }
-    /**
-     * Called by the hurricane model to have the sample data rendered
-     * In this case, the wind arrows and eye are already in existence
-     * so we just update the location of the eye and set the direction
-     * and scale of the arrows
-     */
-    function renderFunc ( eyex, eyeY, sampleData ) {
-
+        //animateScene();
     }
 
     /**
