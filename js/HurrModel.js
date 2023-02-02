@@ -43,7 +43,7 @@ class HurrModel {
         this.dataNodeStep = 0.5;				// in degrees
 
         this.radiusStormInfluence = 750.0;		// radius of storm influence, in km
-        this.nRadialSamples = 12;				// number of steps outward (radial( to be sampled
+        this.nRadialSamples = 12;				// number of steps outward (radial) to be sampled
         this.nAngularSamples = 15;				// number of angular samples
 
         this.samplePos = undefined;
@@ -53,7 +53,7 @@ class HurrModel {
 
         this.carto = new Carto();
 
-        // from HurrParm.h
+        //
         this.cycloneAzimuth = 0;			// azimuth of hurricane track (degrees clockwise from North)
         this.fillingRate = 0;				// rate at which center fills (hPa/hr)
         this.initialPosX = 0;				// intial coords of center
@@ -268,11 +268,11 @@ class HurrModel {
      */
     update ( dt ) {
 
-        // update the available parms if the function returns false, the storm is complete
+        // update the available params if the function returns false, the storm is complete
         if (this.updateStormData() === false)
             return true;
 
-        // loop through all of the time steps calculating and plotting the wind arrows
+        // loop through all the time steps calculating and plotting the wind arrows
         this.nCurStep++;
         this.curTime += this.dTimeStep;
 
@@ -491,7 +491,6 @@ class HurrModel {
     /**
      * This accumulates the data from the detailed time-step calcualtions across the nodal grid
      */
-
     accumulateData () {
 
         // first, find the closest meridian to the hurricane's center
