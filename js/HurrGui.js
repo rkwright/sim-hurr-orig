@@ -8,10 +8,13 @@
  */
 
 'use strict';
-var HurrGui = (function () {
+class HurrGui  {
+
+    // Constants
+    static REVISION = '1.0';
 
     // Constructor
-    function HurrGui( gui, stormFile, updateCallback, runCallback ) {
+    constructor( gui, stormFile, updateCallback, runCallback ) {
         this.gui = gui;
         this.stormFile = stormFile;
         this.updateCallback = updateCallback;
@@ -29,154 +32,146 @@ var HurrGui = (function () {
         window.gThis = this;
     }
 
-    HurrGui.prototype = {
 
-        // Constants
-        REVISION: '1.0',
+    /**
+     * Update the existing controller for storms and create a new one.
+     * Have to do it this way as there appears to be no easy way to
+     * "refresh" the data in a controller
+     */
+    updateStorms (year) {
 
-        /**
-         * Update the existing controller for storms and create a new one.
-         * Have to do it this way as there appears to be no easy way to
-         * "refresh" the data in a controller
-         */
-        updateStorms: function (year) {
+        if (this.updateStorms.gui !== undefined)
+            this.stormsGui.remove(this.updateStorms.gui);
 
-            if (this.updateStorms.gui !== undefined)
-                this.stormsGui.remove(this.updateStorms.gui);
+        this.storms = this.stormFile.getStormsForYear(Number(year));
+        this.curStorm = this.storms[0];
+        this.stormLabels = this.stormFile.getStormLabels(this.storms);
+        this.stormOptions.stormLabels = this.stormLabels[0];
 
-            this.storms = this.stormFile.getStormsForYear(Number(year));
-            this.curStorm = this.storms[0];
-            this.stormLabels = this.stormFile.getStormLabels(this.storms);
-            this.stormOptions.stormLabels = this.stormLabels[0];
+        this.updateStorms.gui = this.stormsGui.add(this.stormOptions, "stormLabels", this.stormLabels).name("Storms");
+        this.updateStorms.gui.onChange(this.stormsChange);
+    }
 
-            this.updateStorms.gui = this.stormsGui.add(this.stormOptions, "stormLabels", this.stormLabels).name("Storms");
-            this.updateStorms.gui.onChange(this.stormsChange);
-        },
+    /**
+     * Handle the change event for the storms controller
+     */
+    stormsChange () {
+        var gThis = window.gThis;
+        var index = gThis.stormLabels.indexOf( gThis.stormOptions.stormLabels );
+        gThis.curStorm = gThis.storms[index];
+        gThis.updateEntries( gThis.curStorm );
+        gThis.updateButton();
+        //gThis.updateCallback( gThis.curStorm );
+    }
 
-        /**
-         * Handle the change event for the storms controller
-         */
-        stormsChange: function () {
-            var gThis = window.gThis;
-            var index = gThis.stormLabels.indexOf( gThis.stormOptions.stormLabels );
-            gThis.curStorm = gThis.storms[index];
-            gThis.updateEntries( gThis.curStorm );
-            gThis.updateButton();
-            //gThis.updateCallback( gThis.curStorm );
-        },
+    /**
+     * Update existing controller for the entries and create a new one
+     */
+    updateEntries (storm) {
+        if (this.updateEntries.gui !== undefined)
+            this.stormsGui.remove(this.updateEntries.gui);
 
-        /**
-         * Update existing controller for the entries and create a new one
-         */
-        updateEntries: function (storm) {
-            if (this.updateEntries.gui !== undefined)
-                this.stormsGui.remove(this.updateEntries.gui);
+        this.entryLabels = stormFile.getEntryLabels(storm);
+        this.stormOptions.entryLabels = this.entryLabels[0];
 
-            this.entryLabels = stormFile.getEntryLabels(storm);
-            this.stormOptions.entryLabels = this.entryLabels[0];
+        this.updateEntries.gui = this.stormsGui.add(this.stormOptions, "entryLabels", this.entryLabels).name("Entries");
+        this.updateEntries.gui.onChange(this.entriesChange);
+    }
 
-            this.updateEntries.gui = this.stormsGui.add(this.stormOptions, "entryLabels", this.entryLabels).name("Entries");
-            this.updateEntries.gui.onChange(this.entriesChange);
-        },
+    /**
+     * Handle the change event for the entries controller.  Not used yet.
+     */
+    entriesChange () {
+        var gThis = window.gThis;
+        var index = gThis.entryLabels.indexOf( gThis.stormOptions.entryLabels );
+    }
 
-        /**
-         * Handle the change event for the entries controller.  Not used yet.
-         */
-        entriesChange: function () {
-            var gThis = window.gThis;
-            var index = gThis.entryLabels.indexOf( gThis.stormOptions.entryLabels );
-        },
+    /**
+     * Handle change in the year combo-box
+     */
+    yearChange () {
+        console.log("Changed year");
 
-        /**
-         * Handle change in the year combo-box
-         */
-        yearChange: function () {
-            console.log("Changed year");
+        var gThis = window.gThis;
+        gThis.updateStorms(gThis.stormOptions.year);
+        gThis.updateEntries(gThis.storms[0]);
+        gThis.updateButton();
+    }
 
-            var gThis = window.gThis;
-            gThis.updateStorms(gThis.stormOptions.year);
-            gThis.updateEntries(gThis.storms[0]);
-            gThis.updateButton();
-        },
+    /**
+     * Remove and renew the update "button"
+     */
+    updateButton () {
+       if (this.updateButton.gui !== undefined)
+           this.stormsGui.remove(this.updateButton.gui);
 
-        /**
-         * Remove and renew the update "button"
-         */
-        updateButton: function() {
-           if (this.updateButton.gui !== undefined)
-               this.stormsGui.remove(this.updateButton.gui);
+       this.updateButton.gui = this.stormsGui.add(this.stormOptions, 'update');
+      this.stormOptions.update = function () {
+          window.gThis.updateCallback( window.gThis.curStorm );
+      };
+    }
 
-           this.updateButton.gui = this.stormsGui.add(this.stormOptions, 'update');
-          this.stormOptions.update = function () {
-              window.gThis.updateCallback( window.gThis.curStorm );
-          };
-        },
+    /**
+     * Set up the datgui controls on the basis of the loaded storm data
+     */
+    setupStormsGui () {
+        this.stormsGui = this.gui.addFolder("Storms");
 
-        /**
-         * Set up the datgui controls on the basis of the loaded storm data
-         */
-        setupStormsGui: function () {
-            this.stormsGui = this.gui.addFolder("Storms");
+        this.years = this.stormFile.getYears();
+        this.storms = this.stormFile.getStormsForYear(this.years[0]);
+        this.curStorm = this.storms[0];
+        this.stormLabels = this.stormFile.getStormLabels(this.storms);
+        this.entryLabels = this.stormFile.getEntryLabels(this.storms[0]);
 
-            this.years = this.stormFile.getYears();
-            this.storms = this.stormFile.getStormsForYear(this.years[0]);
-            this.curStorm = this.storms[0];
-            this.stormLabels = this.stormFile.getStormLabels(this.storms);
-            this.entryLabels = this.stormFile.getEntryLabels(this.storms[0]);
+        this.stormOptions.year = this.years[0];
+        this.stormOptions.stormLabels = this.stormLabels[0];
+        this.stormOptions.entryLabels = this.entryLabels[0];
+        this.stormOptions.update = function () {
+            window.gThis.updateCallback( window.gThis.curStorm );
+        };
 
-            this.stormOptions.year = this.years[0];
-            this.stormOptions.stormLabels = this.stormLabels[0];
-            this.stormOptions.entryLabels = this.entryLabels[0];
-            this.stormOptions.update = function () {
-                window.gThis.updateCallback( window.gThis.curStorm );
-            };
+        var gui_year = this.stormsGui.add(this.stormOptions, "year", this.years).name("Year").onChange(this.yearChange);
 
-            var gui_year = this.stormsGui.add(this.stormOptions, "year", this.years).name("Year").onChange(this.yearChange);
+        this.updateStorms(this.stormOptions.year);
 
-            this.updateStorms(this.stormOptions.year);
+        this.updateEntries(this.curStorm);
 
-            this.updateEntries(this.curStorm);
+        this.updateButton();
 
-            this.updateButton();
+        this.stormsGui.open();
+    }
 
-            this.stormsGui.open();
-        },
+    /**
+     * Remove and renew the update "button"
+     */
+    runButton () {
+        if (this.runButton.gui !== undefined)
+            this.parmsGui.remove(this.runButton.gui);
 
-        /**
-         * Remove and renew the update "button"
-         */
-        runButton: function() {
-            if (this.runButton.gui !== undefined)
-                this.parmsGui.remove(this.runButton.gui);
+        this.runButton.gui = this.parmsGui.add(this.parmOptions, 'run');
+        this.parmOptions.run = function () {
+            window.gThis.runCallback( window.gThis.curStorm );
+        };
+    }
 
-            this.runButton.gui = this.parmsGui.add(this.parmOptions, 'run');
-            this.parmOptions.run = function () {
-                window.gThis.runCallback( window.gThis.curStorm );
-            };
-        },
-        /**
-         * Set up the datgui controls on the basis of the loaded storm data
-         */
-        setupParmsGui: function () {
-            this.parmsGui = this.gui.addFolder("Parms");
+    /**
+     * Set up the datgui controls on the basis of the loaded storm data
+     */
+    setupParmsGui () {
+        this.parmsGui = this.gui.addFolder("Parms");
 
-            this.parmOptions.run = function () {
-                window.gThis.runCallback( window.gThis.curStorm );
-            };
+        this.parmOptions.run = function () {
+            window.gThis.runCallback( window.gThis.curStorm );
+        };
 
-            this.runButton();
+        this.runButton();
 
-            this.parmsGui.open();
-        },
+        this.parmsGui.open();
+    }
 
-        setupDatGui: function () {
+    setupDatGui () {
 
-            this.setupStormsGui();
-            this.setupParmsGui();
-        }
-
-
-    };
-
-    return HurrGui;
-})();
+        this.setupStormsGui();
+        this.setupParmsGui();
+    }
+}

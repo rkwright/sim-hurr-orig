@@ -14,74 +14,73 @@
 /**
  * Constants for the Hurricane model
  */
-var HURRMODEL = {
-    revision: '1.0',
+class HurrModel {
 
-    PERIPHERAL_PRESSURE:        1013.0,	// in mB
-    INFLOW_ANGLE:               20.0,
-    CORIOLIS:                   2.0e-5,	// Coriolis parameter in the tropics (1/s)
-    MIN_PRESSURE_DIFFERENCE:    0.1,
-    AIR_DENSITY:                1.225,
+    //constants
+    static REVISION = '1.0';
 
-    enModelType: ["Holland", "NWS23", "RMS97"],
-    enPositionUnits: ["Meters", "Degrees"],
+    static vPERIPHERAL_PRESSURE =        1013.0;	// in mB
+    static INFLOW_ANGLE =                20.0;
+    static CORIOLIS =                    2.0e-5;	// Coriolis parameter in the tropics (1/s)
+    static MIN_PRESSURE_DIFFERENCE =     0.1;
+    static AIR_DENSITY =                 1.225;
 
-    MISSING: -999
-};
+    static enModelType = ["Holland", "NWS23", "RMS97"];
+    static enPositionUnits = ["Meters", "Degrees"];
 
-/**
- * Initialize the parameters that control hurricane sim
- * @constructor
- */
-HurrModel = function ( objParm ) {
+    static MISSING = -999;
 
-    this.renderFunc = objParm.renderFunc;
+    /**
+     * Initialize the parameters that control hurricane sim
+     * @constructor
+     */
+    constructor ( objParm ) {
 
-    this.metData = undefined;
+        this.renderFunc = objParm.renderFunc;
 
-    this.dataNodeStep = 0.5;				// in degrees
+        this.metData = undefined;
 
-    this.radiusStormInfluence = 750.0;		// radius of storm influence, in km
-    this.nRadialSamples = 12;				// number of steps outward (radial( to be sampled
-    this.nAngularSamples = 15;				// number of angular samples
+        this.dataNodeStep = 0.5;				// in degrees
 
-    this.samplePos = undefined;
-    this.sampleDist = undefined;
-    this.sampleAngle = undefined;
-    this.sampleData = undefined;
+        this.radiusStormInfluence = 750.0;		// radius of storm influence, in km
+        this.nRadialSamples = 12;				// number of steps outward (radial( to be sampled
+        this.nAngularSamples = 15;				// number of angular samples
 
-    this.carto = new Carto();
+        this.samplePos = undefined;
+        this.sampleDist = undefined;
+        this.sampleAngle = undefined;
+        this.sampleData = undefined;
 
-    // from HurrParm.h
-    this.cycloneAzimuth = 0;			// azimuth of hurricane track (degrees clockwise from North)
-    this.fillingRate = 0;				// rate at which center fills (hPa/hr)
-    this.initialPosX = 0;				// intial coords of center
-    this.initialPosY = 0;
-    this.peripheralPressure = 0;	// pressure outside hurricane proper
-    this.centralPressure = 0;		// initial pressure at the eye
-    this.radiusToMaxWind = 0;		// radius from eye to max windspeed
-    this.rateOfIncrease = 0;			// rate of increase of in RMAX over land (km/hr)
-    this.translationalSpeed = 0;	// speed that eye is moving (m/s)
+        this.carto = new Carto();
 
-    //this.nTimeSteps = 0;
-    this.dTimeStep = 0;
+        // from HurrParm.h
+        this.cycloneAzimuth = 0;			// azimuth of hurricane track (degrees clockwise from North)
+        this.fillingRate = 0;				// rate at which center fills (hPa/hr)
+        this.initialPosX = 0;				// intial coords of center
+        this.initialPosY = 0;
+        this.peripheralPressure = 0;	// pressure outside hurricane proper
+        this.centralPressure = 0;		// initial pressure at the eye
+        this.radiusToMaxWind = 0;		// radius from eye to max windspeed
+        this.rateOfIncrease = 0;			// rate of increase of in RMAX over land (km/hr)
+        this.translationalSpeed = 0;	// speed that eye is moving (m/s)
 
-    this.modelType = HURRMODEL.enModelType[0];
+        //this.nTimeSteps = 0;
+        this.dTimeStep = 0;
 
-    /*
-    this.xMinPlan = 0;
-    this.xMaxPlan = 0;
-    this.yMinPlan = 0;
-    this.yMaxPlan = 0;
-    */
-};
+        this.modelType = HURRMODEL.enModelType[0];
 
-HurrModel.prototype = {
+        /*
+        this.xMinPlan = 0;
+        this.xMaxPlan = 0;
+        this.yMinPlan = 0;
+        this.yMaxPlan = 0;
+        */
+    };
 
     /**
      *
      */
-    initialise: function ( curStorm ) {
+    initialise ( curStorm ) {
 
         this.initialiseFromStormData( curStorm );
 
@@ -156,12 +155,12 @@ HurrModel.prototype = {
         // clean up the storage arrays, as necessary
         this.stormTrack = [];
         this.stormArray = [];
-    },
+    }
 
     /**
      * Init the model from the data in the StormParm
      */
-    initialiseFromStormData: function ( storm ) {
+    initialiseFromStormData ( storm ) {
         //var storm = this.stormArray[0];
         this.startStorm = storm.julianDay * 24 + storm.hour;
 
@@ -174,12 +173,12 @@ HurrModel.prototype = {
         this.initialPosY = storm.y;
 
         return true;
-    },
+    }
 
     /**
      * Allocates the arrays for the hurricane simulation info
      */
-    initArrays: function () {
+    initArrays () {
 
         // allocate the equatorial array of pointers
         this.metData = []; //(CMetParm **) new (CMetParm *[ Math.round(360.0 / this.dataNodeStep) ]);
@@ -226,14 +225,14 @@ HurrModel.prototype = {
         }
 
         return true;
-    },
+    }
 
     /**
      * Drive the animation, alternating between updating the model and calling back to
      * have it rendered.
      * @returns {number}
      */
-    timeStep: function() {
+    timeStep () {
 
         var newTime = performance.now();
         var deltaTime = Math.min(newTime - this.currentTime, this.MAX_RENDER_TIME);
@@ -261,13 +260,13 @@ HurrModel.prototype = {
         this.renderFunc( this.sampleData );
 
         return 0;
-    },
+    }
 
     /**
      * Performs one time-step iteration for the model
      *
      */
-    update: function ( dt ) {
+    update ( dt ) {
 
         // update the available parms if the function returns false, the storm is complete
         if (this.updateStormData() === false)
@@ -316,12 +315,12 @@ HurrModel.prototype = {
         this.accumulateData();
 
         return false;
-    },
+    }
 
     /**
      * Get the current, possibly interpolated, data for this time step
      */
-    updateStormData: function () {
+    updateStormData () {
         var storm;
         var prevStorm;
         var stormTime;
@@ -371,7 +370,7 @@ HurrModel.prototype = {
         }
 
         return false;
-    },
+    }
 
     /**
      * Interpolates the two values to obtain the linear interpolation for the
@@ -379,7 +378,7 @@ HurrModel.prototype = {
      *    does backwards interpolation.
      */
 
-    interpolate: function (a, b, prop, newValue, missing, bTween) {
+    interpolate (a, b, prop, newValue, missing, bTween) {
         if (a === HurrModel.MISSING || b === HurrModel.MISSING)
             return false;
 
@@ -392,13 +391,13 @@ HurrModel.prototype = {
         }
 
         return true;
-    },
+    }
 
     /**
      * Calculate the cyclone wind velocity, pressure and pressure gradients
      * at a specified point at the current time
      */
-    calcWindSpeeds: function (rDist, Ang) {
+    calcWindSpeeds (rDist, Ang) {
 
         var AziSite = 0;
         var beta = 0;
@@ -487,13 +486,13 @@ HurrModel.prototype = {
         //	TRACE("%8.1f %8.1f %8.1f %8.1f %8.1f %8.1f\n", this.xNow, this.yNow, this.xEye, this.yEye, this.yVelNow, this.xVelNow );
 
         return velocity;
-    },
+    }
 
     /**
      * This accumulates the data from the detailed time-step calcualtions across the nodal grid
      */
 
-    accumulateData: function () {
+    accumulateData () {
 
         // first, find the closest meridian to the hurricane's center
         var nMeridian = Math.round((180.0 + this.xEye) / this.dataNodeStep);
@@ -598,7 +597,7 @@ HurrModel.prototype = {
                 index = -index;
         }
         while (index > -maxRangeX);
-    },
+    }
 
     /**
      *  Find the four closest points in the samplePos array to the specified point
@@ -609,7 +608,7 @@ HurrModel.prototype = {
      * @param aPos          Y-indicies of the four closest points
      * @returns             number of closest points
      */
-    findClosest: function (x, y, rPos, aPos) {
+    findClosest  (x, y, rPos, aPos) {
 
         var n = 0;
         var angle = Math.toDeg(Math.atan2(y, x));
@@ -642,4 +641,4 @@ HurrModel.prototype = {
 
         return 4;
     }
-};
+}
