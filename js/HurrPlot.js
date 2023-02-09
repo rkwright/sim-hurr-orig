@@ -22,7 +22,7 @@ class HurrPlot  {
         //this.gfxScene = gfxScene;
 
         this.ready = false;
-        var gThis = this;
+        //var gThis = this;
 
         // allocate the Scene object, request orbitControls, some of 3D axes 10 units high and the stats
         this.gfxScene = new GFX.Scene( {
@@ -36,16 +36,19 @@ class HurrPlot  {
         this.createSaffirMat();
 
         this.earthMesh;
-        this.earthGlobe;
-        var self = this;
+        this.earthGlobe = new THREE.SphereGeometry(2,32,32);
+        //var self = this;
 
         window.plotObj = this;
     }
 
     // class methods
 
+    createGlobe() {
+        this.createGlobeMat( this.finishGlobe, this );
+    }
 
-    createGlobeMat ( callBack, self ) {
+    createGlobeMat ( callBack, pThis ) {
         var textureLoader = new THREE.TextureLoader();
         var bumpLoader = new THREE.TextureLoader();
         var material = new THREE.MeshPhongMaterial({color: '#ffffff', transparent: true, opacity: 0.75});
@@ -56,19 +59,15 @@ class HurrPlot  {
                 material.bumpMap = bump;
                 material.bumpScale = 0.05;
 
-                callBack(material, self);
+                callBack(material, pThis);
             });
         });
     }
 
-    finishGlobe ( material, self ) {
-        window.plotObj.earthMesh = new THREE.Mesh(self.earthGlobe, material);
-        self.gfxScene.add(window.plotObj.earthMesh);
-        self.animateScene();
-    }
-
-    createGlobe() {
-        this.createGlobeMat( this.finishGlobe, this );
+    finishGlobe ( material, pThis ) {
+        window.plotObj.earthMesh = new THREE.Mesh(pThis.earthGlobe, material);
+        pThis.gfxScene.add(window.plotObj.earthMesh);
+        pThis.animateScene();
     }
 
     /**
