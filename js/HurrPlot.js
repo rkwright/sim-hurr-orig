@@ -7,44 +7,83 @@
  *
  */
 
+//<script src="gfx/gfx-scene.js"></script>
+
 'use strict';
 class HurrPlot  {
 
     // Constants
     static REVISION = '1.0';
 
+    static  fThis = this;
+
     // Constructor
-    constructor( gfxScene ) {
-        this.gfxScene = gfxScene;
+    constructor () {
+        //this.gfxScene = gfxScene;
+
+        this.ready = false;
+        var gThis = this;
+
+        // allocate the Scene object, request orbitControls, some of 3D axes 10 units high and the stats
+        this.gfxScene = new GFX.Scene( {
+            cameraPos : [4, 3, 4],
+            controls:true,
+            datgui:true,
+            guiWidth:350,
+            displayStats:true});
+
         this.saffirMat = [];
         this.createSaffirMat();
 
         this.earthMesh;
+        this.earthGlobe;
+        var self = this;
 
         window.plotObj = this;
     }
 
     // class methods
-    /**
-     * Create the sphere mesh and wrap it with the image
-     */
-    createGlobe () {
-        var globe = new THREE.SphereGeometry(2, 32, 32);
 
+
+    createGlobeMat ( callBack, self ) {
         var textureLoader = new THREE.TextureLoader();
         var bumpLoader = new THREE.TextureLoader();
-        var mat = new THREE.MeshPhongMaterial({color: '#ffffff', transparent: true, opacity: 0.75});
+        var material = new THREE.MeshPhongMaterial({color: '#ffffff', transparent: true, opacity: 0.75});
         textureLoader.load("images/8081-earthmap8k.jpg", function (texture) {
-            mat.map = texture;
-            mat.needsUpdate = true;
+            material.map = texture;
+            material.needsUpdate = true;
             textureLoader.load("images/8081-earthbump8k.jpg", function (bump) {
-                mat.bumpMap = bump;
-                mat.bumpScale = 0.05;
+                material.bumpMap = bump;
+                material.bumpScale = 0.05;
 
-                window.plotObj.earthMesh = new THREE.Mesh(globe, mat);
-                gfxScene.add(window.plotObj.earthMesh);
+                callBack(material, self);
             });
         });
+    }
+
+    finishGlobe ( material, self ) {
+        window.plotObj.earthMesh = new THREE.Mesh(self.earthGlobe, material);
+        self.gfxScene.add(window.plotObj.earthMesh);
+        self.animateScene();
+    }
+
+    createGlobe() {
+        this.createGlobeMat( this.finishGlobe, this );
+    }
+
+    /**
+     * Animate the scene and call rendering.
+     */
+    animateScene = () => {
+
+        // Tell the browser to call this function when page is visible
+        requestAnimationFrame(this.animateScene);
+
+        // tell the hurricane model to update itself and call back to render when it can
+        //hurrModel.timeStep();
+
+        // Map the 3D scene down to the 2D screen (render the frame)
+        this.gfxScene.renderScene();
     }
 
     /**
@@ -57,4 +96,27 @@ class HurrPlot  {
         }
     }
 
+    //////////////
+    /**
+     * Create the sphere mesh and wrap it with the image
+     */
+    createGlobe0 () {
+        this.earthGlobe = new THREE.SphereGeometry(2, 32, 32);
+
+        var textureLoader = new THREE.TextureLoader();
+        var bumpLoader = new THREE.TextureLoader();
+        var mat = new THREE.MeshPhongMaterial({color: '#ffffff', transparent: true, opacity: 0.75});
+        textureLoader.load("images/8081-earthmap8k.jpg", function (texture) {
+            mat.map = texture;
+            mat.needsUpdate = true;
+            textureLoader.load("images/8081-earthbump8k.jpg", function (bump) {
+                mat.bumpMap = bump;
+                mat.bumpScale = 0.05;
+
+                window.plotObj.earthMesh = new THREE.Mesh(globe, mat);
+                fThis.gfxScene.add(window.plotObj.earthMesh);
+                this.ready = true;
+            });
+        });
+    }
 }
