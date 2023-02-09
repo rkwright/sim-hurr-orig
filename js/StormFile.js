@@ -25,7 +25,43 @@ class StormFile {
         window.stormThis = this;
     }
 
-     loadJSONnm ( callbackl ) {
+    // class methods
+
+    /**
+     * Load the data from the specified JSON file, then parse the resulting payload
+     * @param stormFile
+     * @param stormReady
+     */
+    loadData ( stormFile, stormsLoaded ) {
+
+        this.stormFile  = stormFile;
+        this.stormsLoaded = stormsLoaded;
+
+        this.loadJSON(function (response) {
+            // Parse JSON string into object
+            try {
+                stormThis.jsonData = JSON.parse(response);
+
+                if (false)  // debug
+                    stormThis.walkStorms();
+
+                stormThis.stormsLoaded();
+
+            } catch (e) {
+                if (e instanceof SyntaxError) {
+                    console.error(e, true);
+                } else {
+                    console.error(e, false);
+                }
+            }
+        });
+    }
+
+    /**
+     * Load the current stormfile
+     * @param callbackl
+     */
+     loadJSON ( callback ) {
 
         var xobj = new XMLHttpRequest();
         xobj.overrideMimeType("application/json");
@@ -44,35 +80,7 @@ class StormFile {
         xobj.send(null);
     }
 
-    /**
-     * Load the data from the specified JSON file, then parse the resulting payload
-     * @param stormFile
-     * @param stormReady
-     */
-    loadData (stormFile, stormReady ) {
 
-        this.stormFile = stormFile;
-        this.stormReady = stormReady;
-
-        this.loadJSON(function (response) {
-            // Parse JSON string into object
-            try {
-                stormThis.jsonData = JSON.parse(response);
-
-                if (true)  // debug
-                    stormThis.walkStorms();
-
-                stormThis.stormReady( stormThis );
-
-            } catch (e) {
-                if (e instanceof SyntaxError) {
-                    console.error(e, true);
-                } else {
-                    console.error(e, false);
-                }
-            }
-        });
-    }
 
     /**
      * Getter for the JSON data
