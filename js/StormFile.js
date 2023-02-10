@@ -42,8 +42,7 @@ class StormFile {
             try {
                 stormThis.jsonData = JSON.parse(response);
 
-                if (false)  // debug
-                    stormThis.walkStorms();
+                stormThis.curateStorms();
 
                 stormThis.stormsLoaded();
 
@@ -80,8 +79,6 @@ class StormFile {
         xobj.send(null);
     }
 
-
-
     /**
      * Getter for the JSON data
      * @returns {*}
@@ -95,14 +92,12 @@ class StormFile {
      * or more consecutive entries with MISSING data. For storms with missing data (<3)
      * interpolate the missing data.
      */
-    walkStorms () {
-        var i = 0;
-        var k = 0;
+    curateStorms () {
 
-        while (i < this.jsonData.storms.length) {
-            var storm = this.jsonData.storms[i++];
-            this.addUTCDates( storm );
-            this.fillMissingValues( storm );
+        for ( var i in this.jsonData.storms ) {
+            var storm = this.jsonData.storms[i];
+            this.convertNASADates( storm );
+            //this.fillMissingValues( storm );
         }
     }
 
@@ -110,8 +105,8 @@ class StormFile {
      * Walk the storms and convert the NASA-style (F77) dates to JS Data
      * @param storm
      */
-    addUTCDates ( storm ) {
-        for ( var i=0; i< storm.entries.length; i++ ) {
+    convertNASADates ( storm ) {
+        for ( var i in storm.entries ) {
             var entry = storm.entries[i];
             entry.date = this.getUTCDate(entry);
         }
@@ -124,11 +119,21 @@ class StormFile {
      * @param storm
      */
     fillMissingValues ( storm ) {
-
-       // this.fillMissingValuesByCol( storm, StormData.LAT);
+        // this.fillMissingValuesByCol( storm, StormData.LAT);
         //this.fillMissingValuesByCol( storm, StormData.LON);
         //this.fillMissingValuesByCol( storm, StormData.MAXWIND);
         this.fillMissingValuesByCol( storm, StormData.MINPRESS);
+    }
+
+    /**
+     * Walk through the JSON data and for each storm, dump thw relevant data
+     */
+    dumpStorms () {
+
+        for ( var i in this.jsonData.storms ) {
+            var storm = this.jsonData.storms[i];
+            console.log(storm)
+        }
     }
 
     getNextEnt ( entries, skipped ) {

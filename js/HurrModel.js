@@ -19,7 +19,7 @@ class HurrModel {
     //constants
     static REVISION = '1.0';
 
-    static vPERIPHERAL_PRESSURE =        1013.0;	// in mB
+    static PERIPHERAL_PRESSURE =        1013.0;	// in mB
     static INFLOW_ANGLE =                20.0;
     static CORIOLIS =                    2.0e-5;	// Coriolis parameter in the tropics (1/s)
     static MIN_PRESSURE_DIFFERENCE =     0.1;
