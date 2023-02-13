@@ -114,7 +114,7 @@ class HurrGui  {
     /**
      * Set up the datgui controls on the basis of the loaded storm data
      */
-    setupStormsGui () {
+    setupStormsGui = () => {
         this.stormsGui = this.gui.addFolder("Storms");
 
         this.years = this.stormFile.getYears();
@@ -169,7 +169,7 @@ class HurrGui  {
         this.parmsGui.open();
     }
 
-    setupDatGui () {
+    setupDatGui = () => {
 
         this.setupStormsGui();
         this.setupParmsGui();

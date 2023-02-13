@@ -30,7 +30,7 @@ class StormFile {
     /**
      * Load the data from the specified JSON file, then parse the resulting payload
      * @param stormFile
-     * @param stormReady
+     * @param stormLoaded
      */
     loadData ( stormFile, stormsLoaded ) {
 
@@ -42,9 +42,9 @@ class StormFile {
             try {
                 stormThis.jsonData = JSON.parse(response);
 
-                stormThis.curateStorms();
-
-                stormThis.stormsLoaded();
+                if (stormThis.pruneStorms()) {
+                    stormThis.stormsLoaded();
+                }
 
             } catch (e) {
                 if (e instanceof SyntaxError) {
@@ -92,7 +92,19 @@ class StormFile {
      * or more consecutive entries with MISSING data. For storms with missing data (<3)
      * interpolate the missing data.
      */
-    curateStorms () {
+    dumpStorms () {
+
+        for ( var i in this.jsonData.storms ) {
+            var storm = this.jsonData.storms[i];
+
+        }
+    }
+    /**
+     * Walk through the JSON data and for each storm, remove any storm with 3
+     * or more consecutive entries with MISSING data. For storms with missing data (<3)
+     * interpolate the missing data.
+     */
+    pruneStorms () {
 
         for ( var i in this.jsonData.storms ) {
             var storm = this.jsonData.storms[i];
@@ -102,7 +114,7 @@ class StormFile {
     }
 
     /**
-     * Walk the storms and convert the NASA-style (F77) dates to JS Data
+     * For this storm,  convert the NASA-style (F77) dates to JS Data
      * @param storm
      */
     convertNASADates ( storm ) {
@@ -123,29 +135,6 @@ class StormFile {
         //this.fillMissingValuesByCol( storm, StormData.LON);
         //this.fillMissingValuesByCol( storm, StormData.MAXWIND);
         this.fillMissingValuesByCol( storm, StormData.MINPRESS);
-    }
-
-    /**
-     * Walk through the JSON data and for each storm, dump thw relevant data
-     */
-    dumpStorms () {
-
-        for ( var i in this.jsonData.storms ) {
-            var storm = this.jsonData.storms[i];
-            console.log(storm)
-        }
-    }
-
-    getNextEnt ( entries, skipped ) {
-        if ( skipped.length > 0) {
-            this.index = skipped.pop();
-            return true;
-        }
-        else if (this.index < entries.length) {
-            return true;
-        }
-
-        return false;
     }
 
     linearInterp ( entries, col ) {
@@ -185,6 +174,17 @@ class StormFile {
             }
         }
     }
+    getNextEntry ( entries, skipped ) {
+        if ( skipped.length > 0) {
+            this.index = skipped.pop();
+            return true;
+        }
+        else if (this.index < entries.length) {
+            return true;
+        }
+
+        return false;
+    }
 
     /**
      * Given a NASA-style UNIX date, return the JavaScript UTC date object
@@ -206,12 +206,12 @@ class StormFile {
      * Searches the current JSON data-file and returns an array of all the years
      * with storm data. Years are 4-digit Numbers.
      */
-    getYears () {
+    getYearsWithStorms () {
         var results = [];
         var storm;
         var lastYear = undefined;
 
-        for (var index = 0; index < this.jsonData.storms.length; index++) {
+        for (var index in this.jsonData.storms ) {
             storm = this.jsonData.storms[index];
             if (storm && storm.entries[0][0] !== lastYear) {
                 results.push(storm.entries[0][0]);
@@ -220,16 +220,6 @@ class StormFile {
         }
 
         return results;
-    }
-
-    /**
-     * Walk through the storm and, if some are missing, use spline
-     * interpolation to replace their values.
-     * @param storm
-     * @constructor
-     */
-    interpMissingPoints( storm, pc ) {
-        console.log("Storm: " + storm.atcID);
     }
 
     /**
